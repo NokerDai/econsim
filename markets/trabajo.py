@@ -21,7 +21,7 @@ def mercado_laboral(estado):
             trabajador.presupuesto += seleccionada.salario
             seleccionada.presupuesto -= seleccionada.salario
             vacantes_formales.remove(seleccionada)
-        elsif informalidad:
+        elif informalidad:
             if not vacantes_informales:
                 break
             else:
