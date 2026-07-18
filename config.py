@@ -36,5 +36,5 @@ class Config:
     # Parámetros del mercado
     probabilidad_compra: float = 1
     aumento_precio: float = 1.01
-    reducción_precio: float = 0.999
+    reducción_precio: float = 0.99
     intervalo_ajuste: int = 30
