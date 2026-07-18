@@ -17,7 +17,7 @@ def producción(estado):
                 trabajador.presupuesto += salario_diario
                 
                 # El trabajador produce porque cobró su día
-                empresa.stock += 1 / duracion
+                empresa.stock += 2 / duracion
                 
                 # El presupuesto disponible se va liberando progresivamente en la misma
                 # medida que el compromiso futuro se convierte en gasto real ejecutado.
