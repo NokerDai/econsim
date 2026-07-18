@@ -12,7 +12,7 @@ st.set_page_config(
 )
 
 
-# --- Estado de sesión ---
+# --- Estado de sesión --- 
 # Cada sesión de Streamlit tiene su propia Simulación independiente,
 # igual que si cada usuario abriera su propia ventana de escritorio.
 
