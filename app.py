@@ -1,7 +1,7 @@
 # --- app.py ---
 import streamlit as st
 import pandas as pd
-import time  # Importado para medir el tiempo de ejecución exacto
+import time
 
 from config import Config
 from simulation import Simulación
@@ -173,6 +173,33 @@ def registrar_snapshots(snapshots):
         st.session_state.historial = pd.concat([st.session_state.historial, df_nuevos])
 
 
+# Se calcula antes del sidebar para que el fragment de controles de
+# velocidad se refresque con la misma cadencia que el panel de simulación.
+run_every = 1 if st.session_state.auto_avance else None
+
+
+@st.fragment(run_every=run_every)
+def controles_velocidad():
+    st.slider(
+        "Velocidad (días por paso)",
+        min_value=1,
+        max_value=10000,
+        key="velocidad_slider",
+        on_change=sincronizar_velocidad_slider,
+        disabled=st.session_state.ajuste_velocidad_automatico,
+    )
+
+    st.number_input(
+        "Valor exacto",
+        min_value=1,
+        max_value=10000,
+        step=1,
+        key="velocidad_input",
+        on_change=sincronizar_velocidad_input,
+        disabled=st.session_state.ajuste_velocidad_automatico,
+    )
+
+
 with st.sidebar:
     st.subheader("Control de ejecución")
 
@@ -214,26 +241,7 @@ with st.sidebar:
         key="ajuste_velocidad_automatico",
     )
 
-    st.slider(
-        "Velocidad (días por paso)",
-        min_value=1,
-        max_value=10000,
-        key="velocidad_slider",
-        value=st.session_state.velocidad_slider,
-        on_change=sincronizar_velocidad_slider,
-        disabled=st.session_state.ajuste_velocidad_automatico,
-    )
-
-    st.number_input(
-        "Valor exacto",
-        min_value=1,
-        max_value=10000,
-        step=1,
-        key="velocidad_input",
-        value=st.session_state.velocidad_input,
-        on_change=sincronizar_velocidad_input,
-        disabled=st.session_state.ajuste_velocidad_automatico,
-    )
+    controles_velocidad()
 
     st.divider()
 
@@ -334,8 +342,6 @@ with st.sidebar:
 
 
 st.title("📈 Simulación económica")
-
-run_every = 1 if st.session_state.auto_avance else None
 
 
 @st.fragment(run_every=run_every)
