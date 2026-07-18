@@ -1,8 +1,8 @@
-from snapshot import Snapshot
+# --- simulation.py ---
+import snapshot
+import state
 import threading
 import time
-
-from state import Estado
 
 from markets import (
     emisión_monetaria,
@@ -19,7 +19,7 @@ class Simulación:
 
         self.config = config
 
-        self.estado = Estado(config)
+        self.estado = state.Estado(config)
 
         self.corriendo = False
 
@@ -41,7 +41,7 @@ class Simulación:
 
             estadísticas = self.estado.estadisticas
 
-            return Snapshot(
+            return snapshot.Snapshot(
 
                 día=self.estado.día,
 
@@ -91,11 +91,11 @@ class Simulación:
 
     def notificar(self):
 
-        snapshot = self.obtener_snapshot()
+        snapshot_obj = self.obtener_snapshot()
 
         for callback in self.callbacks:
 
-            callback(snapshot)
+            callback(snapshot_obj)
 
 
     def step(self):
@@ -172,7 +172,7 @@ class Simulación:
 
             self.corriendo = False
 
-            self.estado = Estado(self.config)
+            self.estado = state.Estado(self.config)
 
 
         self.notificar()
@@ -214,7 +214,7 @@ class Simulación:
                 "emisión_diaria": self.config.emisión_diaria,
                 "salario_mínimo": self.config.salario_mínimo,
                 "velocidad": self.config.velocidad,
-                "informalidad_por_empresa": elf.config.informalidad_por_empresa,
+                "informalidad_por_empresa": self.config.informalidad_por_empresa,
             }
 
 
