@@ -47,9 +47,10 @@ if "auto_avance" not in st.session_state:
     st.session_state.auto_avance = False
 
 if "historial" not in st.session_state:
+    # Se fuerza la inicialización de las columnas a float para evitar dtypes de tipo 'object'
     st.session_state.historial = pd.DataFrame(
         columns=["Salario", "Salario informal", "Precio"]
-    )
+    ).astype(float)
     st.session_state.historial.index.name = "Día"
 
 if "velocidad" not in st.session_state:
@@ -112,13 +113,14 @@ def registrar_snapshots(snapshots):
     for snap in snapshots:
         if snap.día not in st.session_state.historial.index:
             nuevos_datos.append({
-                "Día": snap.día,
-                "Salario": snap.salario_medio,
-                "Salario informal": snap.salario_informal_medio,
-                "Precio": snap.precio_medio
+                "Día": int(snap.día),
+                "Salario": float(snap.salario_medio),
+                "Salario informal": float(snap.salario_informal_medio),
+                "Precio": float(snap.precio_medio)
             })
     if nuevos_datos:
-        df_nuevos = pd.DataFrame(nuevos_datos).set_index("Día")
+        # Forzar casting a float al registrar nuevos datos
+        df_nuevos = pd.DataFrame(nuevos_datos).set_index("Día").astype(float)
         st.session_state.historial = pd.concat([st.session_state.historial, df_nuevos])
 
 
@@ -146,7 +148,7 @@ with st.sidebar:
         sim.reset()
         st.session_state.historial = pd.DataFrame(
             columns=["Salario", "Salario informal", "Precio"]
-        )
+        ).astype(float)  # Forzar casting a float tras reiniciar
         st.session_state.historial.index.name = "Día"
         st.session_state.auto_avance = False
         st.rerun()
@@ -279,9 +281,10 @@ def panel():
     if hay_datos:
         # El gráfico muestra una ventana móvil de los últimos 365 días simulados
         último_día = st.session_state.historial.index.max()
+        # Se añade un casteo explícito .astype(float) final para garantizar la homogeneidad de datos
         historial_filtrado = st.session_state.historial[
             st.session_state.historial.index > (último_día - 365)
-        ]
+        ].astype(float)
         st.line_chart(historial_filtrado, height=420)
     else:
         st.info("Todavía no hay datos. Iniciá la simulación o avanzá un día.")
