@@ -175,38 +175,37 @@ with st.sidebar:
         st.session_state.salario_slider = int(sim.config.salario_mínimo)
         st.session_state.salario_input = int(sim.config.salario_mínimo)
 
-    # Creamos un contenedor vacío en la sidebar que actualizaremos desde el fragmento
-    salario_placeholder = st.empty()
+    # Creamos un marcador de posición que se actualizará de forma dinámica
+    salario_metric_placeholder = st.empty()
 
     if st.session_state.salario_mínimo_automático:
-        with salario_placeholder.container():
-            st.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
-            st.slider(
-                "Tasa de salario mínimo",
-                min_value=0.0,
-                max_value=2.0,
-                step=0.05,
-                key="tasa_slider",
-                on_change=sincronizar_tasa,
-            )
+        salario_metric_placeholder.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
+        st.slider(
+            "Tasa de salario mínimo",
+            min_value=0.0,
+            max_value=2.0,
+            step=0.05,
+            key="tasa_slider",
+            on_change=sincronizar_tasa,
+        )
     else:
-        with salario_placeholder.container():
-            st.slider(
-                "Salario mínimo",
-                min_value=0,
-                max_value=10000,
-                key="salario_slider",
-                on_change=sincronizar_salario_slider,
-            )
+        salario_metric_placeholder.empty()
+        st.slider(
+            "Salario mínimo",
+            min_value=0,
+            max_value=10000,
+            key="salario_slider",
+            on_change=sincronizar_salario_slider,
+        )
 
-            st.number_input(
-                "Valor exacto",
-                min_value=0,
-                max_value=10000,
-                step=1,
-                key="salario_input",
-                on_change=sincronizar_salario_input,
-            )
+        st.number_input(
+            "Valor exacto",
+            min_value=0,
+            max_value=10000,
+            step=1,
+            key="salario_input",
+            on_change=sincronizar_salario_input,
+        )
 
 
     st.divider()
@@ -252,18 +251,9 @@ def panel():
         if not st.session_state.auto_avance:
             st.rerun()
 
-    # Actualizar dinámicamente el contenedor del salario mínimo en la barra lateral durante el auto-avance
+    # Actualizar dinámicamente solo el elemento de texto métrico en la barra lateral
     if st.session_state.salario_mínimo_automático:
-        with salario_placeholder.container():
-            st.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
-            st.slider(
-                "Tasa de salario mínimo",
-                min_value=0.0,
-                max_value=2.0,
-                step=0.05,
-                key="tasa_slider",
-                on_change=sincronizar_tasa,
-            )
+        salario_metric_placeholder.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
 
     hay_datos = len(st.session_state.historial) > 0
 
