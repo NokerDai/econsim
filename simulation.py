@@ -79,7 +79,7 @@ class Simulación:
                     else 0
                 ),
 
-                emisión_diaria=self.config.emisión_diaria,
+                tasa_emisión=self.config.tasa_emisión,
 
                 salario_mínimo=self.config.salario_mínimo,
 
@@ -178,11 +178,11 @@ class Simulación:
         self.notificar()
 
 
-    def cambiar_emisión(self, valor):
+    def cambiar_tasa_emisión(self, valor):
 
         with self.lock:
 
-            self.config.emisión_diaria = valor
+            self.config.tasa_emisión = valor
 
 
     def cambiar_salario_mínimo(self, valor):

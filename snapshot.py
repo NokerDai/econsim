@@ -18,7 +18,7 @@ class Snapshot:
 
     desempleo: float
 
-    emisión_diaria: float
+    tasa_emisión: float
 
     salario_mínimo: float
 

@@ -86,11 +86,11 @@ if "tasa_slider" not in st.session_state:
     st.session_state.tasa_slider = float(sim.config.tasa_salario_mínimo)
 
 
-if "emisión_slider" not in st.session_state:
-    st.session_state.emisión_slider = int(sim.config.emisión_diaria)
+if "tasa_emisión_slider" not in st.session_state:
+    st.session_state.tasa_emisión_slider = int(sim.config.tasa_tasa_emisión)
 
-if "emisión_input" not in st.session_state:
-    st.session_state.emisión_input = int(sim.config.emisión_diaria)
+if "tasa_emisión_input" not in st.session_state:
+    st.session_state.tasa_emisión_input = int(sim.config.tasa_tasa_emisión)
 
 
 def sincronizar_salario_slider():
@@ -117,14 +117,14 @@ def sincronizar_tasa():
     sim.config.tasa_salario_mínimo = st.session_state.tasa_slider
 
 
-def sincronizar_emisión_slider():
-    st.session_state.emisión_input = st.session_state.emisión_slider
-    sim.cambiar_emisión(st.session_state.emisión_slider)
+def sincronizar_tasa_emisión_slider():
+    st.session_state.tasa_emisión_input = st.session_state.tasa_emisión_slider
+    sim.cambiar_tasa_emisión(st.session_state.tasa_emisión_slider)
 
 
-def sincronizar_emisión_input():
-    st.session_state.emisión_slider = st.session_state.emisión_input
-    sim.cambiar_emisión(st.session_state.emisión_input)
+def sincronizar_tasa_emisión_input():
+    st.session_state.tasa_emisión_slider = st.session_state.tasa_emisión_input
+    sim.cambiar_tasa_emisión(st.session_state.tasa_emisión_input)
 
 
 def registrar_snapshots(snapshots):
@@ -258,14 +258,14 @@ with st.sidebar:
 
     st.divider()
 
-    st.subheader("Emisión monetaria diaria")
+    st.subheader("tasa_emisión monetaria diaria")
 
     st.slider(
-        "Emisión monetaria diaria",
+        "tasa_emisión monetaria diaria",
         min_value=0,
         max_value=100000,
-        key="emisión_slider",
-        on_change=sincronizar_emisión_slider,
+        key="tasa_emisión_slider",
+        on_change=sincronizar_tasa_emisión_slider,
     )
 
     st.number_input(
@@ -273,8 +273,8 @@ with st.sidebar:
         min_value=0,
         max_value=100000,
         step=100,
-        key="emisión_input",
-        on_change=sincronizar_emisión_input,
+        key="tasa_emisión_input",
+        on_change=sincronizar_tasa_emisión_input,
     )
 
 
