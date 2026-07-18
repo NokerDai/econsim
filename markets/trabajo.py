@@ -67,62 +67,7 @@ def mercado_laboral(estado):
         estado.config.salario_mínimo = salario_máximo * estado.config.tasa_salario_mínimo
 
 
-    trabajadores_sin_contrato = [
-        trabajador
-        for trabajador in estado.trabajadores
-        if trabajador.contrato is None
-    ]
-
-    empresas_informales = []
-    vacantes_informales = []
-
-    if trabajadores_sin_contrato:
-        for empresa in estado.empresas:
-            n = int(min(
-                estado.config.informalidad_por_empresa, 
-                empresa.presupuesto / empresa.salario_informal
-            ))
-            if n > 0:
-                empresas_informales.append(empresa)
-                vacantes_informales.append(n)
-
-        for trabajador in trabajadores_sin_contrato:
-            if not empresas_informales:
-                break
-
-            i = estado.aleatorio.choices(
-                range(len(empresas_informales)),
-                weights=vacantes_informales,
-                k=1
-            )[0]
-
-            empresa = empresas_informales[i]
-
-            trabajador.contrato = Contrato(
-                empresa=empresa,
-                vence=estado.día + estado.config.duración_contrato,
-                tipo="informal"
-            )
-
-            empresa.presupuesto -= empresa.salario_informal
-            trabajador.presupuesto += empresa.salario_informal
-
-            empresa.salario_informal *= (
-                estado.config.reducción_salario_contratación
-            )
-
-            vacantes_informales[i] -= 1
-            if vacantes_informales[i] == 0:
-                vacantes_informales.pop(i)
-                empresas_informales.pop(i)
-
-
     for empresa, vacantes in zip(empresas_formales, vacantes_formales):
         empresa.salario *= (
-            estado.config.aumento_salario_vacante ** vacantes
-        )
-
-    for empresa, vacantes in zip(empresas_informales, vacantes_informales):
-        empresa.salario_informal *= (
             estado.config.aumento_salario_vacante ** vacantes
         )
