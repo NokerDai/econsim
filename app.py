@@ -43,6 +43,14 @@ st.markdown(
 if "simulación" not in st.session_state:
     st.session_state.simulación = Simulación(Config())
 
+sim = st.session_state.simulación
+
+if "velocidad" not in st.session_state:
+    st.session_state.velocidad = max(
+        1,
+        int(getattr(sim.config, "velocidad", 1))
+    )
+
 if "_velocidad_ui" not in st.session_state:
     st.session_state._velocidad_ui = st.session_state.velocidad
 
@@ -64,10 +72,6 @@ if "historial" not in st.session_state:
         ]
     ).astype(float)
     st.session_state.historial.index.name = "Día"
-
-
-sim = st.session_state.simulación
-
 
 # Estado de controles
 if "salario_mínimo_automático" not in st.session_state:
