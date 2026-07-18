@@ -28,7 +28,9 @@ def mercado_productos(estado):
 
             if trabajador.presupuesto >= empresa.precio:
                 trabajador.presupuesto -= empresa.precio
+
                 empresa.presupuesto += empresa.precio
+                empresa.presupuesto_disponible += empresa.precio
                 
                 empresa.precio *= estado.config.reducción_precio
                 
