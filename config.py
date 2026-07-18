@@ -30,7 +30,7 @@ class Config:
     # Parámetros del modelo laboral
     duración_contrato: int = 30
     reducción_salario: float = 0.99
-    aumento_salario_vacante: float = 1.01
+    aumento_salario: float = 1.01
     informalidad_por_empresa: int = 100
 
     # Parámetros del mercado
