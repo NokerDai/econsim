@@ -1,5 +1,3 @@
-# --- empresa.py ---
-
 from dataclasses import dataclass
 
 @dataclass
@@ -13,6 +11,6 @@ class Empresa:
 
     salario_informal: float
 
-    ventas: int = 0
+    ventas_mes: int = 0
 
-    ventas_anteriores: int = 1000
+    ventas_mes_anterior: int = 0

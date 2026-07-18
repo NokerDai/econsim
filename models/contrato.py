@@ -12,6 +12,4 @@ class Contrato:
 
     vence: int
 
-    salario: float
-
     tipo: str = "formal"
