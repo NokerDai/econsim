@@ -4,9 +4,9 @@ def mercado_productos(estado):
     productos_diarios = []
 
     for empresa in estado.empresas:
-        if empresa.stock > 0:
+        if empresa.stock >= 1:
             empresas_vendedoras.append(empresa)
-            productos_diarios.append(empresa.stock)
+            productos_diarios.append(int(empresa.stock))
 
     stock_inicial_hoy = {empresa: empresa.stock for empresa in estado.empresas}
     ventas_hoy = {empresa: 0 for empresa in estado.empresas}

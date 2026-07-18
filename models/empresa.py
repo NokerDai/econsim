@@ -15,7 +15,7 @@ class Empresa:
 
     empleados: int = 0
 
-    stock: int = 0
+    stock: float = 0.0
 
     presupuesto_disponible: float = 0.0
 
