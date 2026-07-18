@@ -12,10 +12,6 @@ st.set_page_config(
 )
 
 
-# --- Estado de sesión ---
-# Cada sesión de Streamlit tiene su propia Simulación independiente,
-# igual que si cada usuario abriera su propia ventana de escritorio.
-
 if "simulación" not in st.session_state:
     st.session_state.simulación = Simulación(Config())
 
@@ -27,40 +23,56 @@ if "historial" not in st.session_state:
         columns=["Salario", "Salario informal", "Precio"]
     )
     st.session_state.historial.index.name = "Día"
-else:
-    columnas_esperadas = ["Salario", "Salario informal", "Precio"]
-    if list(st.session_state.historial.columns) != columnas_esperadas:
-        st.session_state.historial = st.session_state.historial.reindex(
-            columns=columnas_esperadas
-        )
-        st.session_state.historial.index.name = "Día"
-
 
 sim = st.session_state.simulación
 
-# ---- Estado de los controles ----
-if "salario_minimo_ui" not in st.session_state:
-    st.session_state.salario_minimo_ui = int(sim.config.salario_mínimo)
 
-if "emision_ui" not in st.session_state:
-    st.session_state.emision_ui = int(sim.config.emisión_diaria)
+# Estado de controles sincronizados
+if "salario_slider" not in st.session_state:
+    st.session_state.salario_slider = int(sim.config.salario_mínimo)
+
+if "salario_input" not in st.session_state:
+    st.session_state.salario_input = int(sim.config.salario_mínimo)
+
+if "emision_slider" not in st.session_state:
+    st.session_state.emision_slider = int(sim.config.emisión_diaria)
+
+if "emision_input" not in st.session_state:
+    st.session_state.emision_input = int(sim.config.emisión_diaria)
+
+
+def sync_salario_slider():
+    st.session_state.salario_input = st.session_state.salario_slider
+    sim.cambiar_salario_mínimo(st.session_state.salario_slider)
+
+
+def sync_salario_input():
+    st.session_state.salario_slider = st.session_state.salario_input
+    sim.cambiar_salario_mínimo(st.session_state.salario_input)
+
+
+def sync_emision_slider():
+    st.session_state.emision_input = st.session_state.emision_slider
+    sim.cambiar_emisión(st.session_state.emision_slider)
+
+
+def sync_emision_input():
+    st.session_state.emision_slider = st.session_state.emision_input
+    sim.cambiar_emisión(st.session_state.emision_input)
 
 
 def registrar_snapshot():
     snapshot = sim.obtener_snapshot()
-    st.session_state.historial = st.session_state.historial.reindex(
-        columns=["Salario", "Salario informal", "Precio"]
-    )
+
     st.session_state.historial.loc[snapshot.día] = [
         snapshot.salario_medio,
         snapshot.salario_informal_medio,
         snapshot.precio_medio,
     ]
 
-    # Conservar solo los últimos 365 días simulados.
-    último_día = st.session_state.historial.index.max()
+    ultimo_día = st.session_state.historial.index.max()
     st.session_state.historial = st.session_state.historial[
-        st.session_state.historial.index > último_día - 365
+        st.session_state.historial.index > ultimo_día - 365
     ]
 
 
@@ -81,12 +93,11 @@ def reiniciar():
     )
     st.session_state.historial.index.name = "Día"
 
-    # Sincronizar controles con la nueva simulación
-    st.session_state.salario_minimo_ui = int(sim.config.salario_mínimo)
-    st.session_state.emision_ui = int(sim.config.emisión_diaria)
+    st.session_state.salario_slider = int(sim.config.salario_mínimo)
+    st.session_state.salario_input = int(sim.config.salario_mínimo)
+    st.session_state.emision_slider = int(sim.config.emisión_diaria)
+    st.session_state.emision_input = int(sim.config.emisión_diaria)
 
-
-# --- Barra lateral: controles ---
 
 with st.sidebar:
     st.header("Controles")
@@ -122,11 +133,11 @@ with st.sidebar:
     st.subheader("Salario mínimo")
 
     st.slider(
-        "",
+        "Salario mínimo",
         min_value=0,
         max_value=10000,
-        key="salario_minimo_ui",
-        label_visibility="collapsed",
+        key="salario_slider",
+        on_change=sync_salario_slider,
     )
 
     st.number_input(
@@ -134,22 +145,20 @@ with st.sidebar:
         min_value=0,
         max_value=10000,
         step=1,
-        key="salario_minimo_ui",
+        key="salario_input",
+        on_change=sync_salario_input,
     )
-
-    if st.session_state.salario_minimo_ui != sim.config.salario_mínimo:
-        sim.cambiar_salario_mínimo(st.session_state.salario_minimo_ui)
 
     st.divider()
 
     st.subheader("Emisión monetaria diaria")
 
     st.slider(
-        "",
+        "Emisión monetaria diaria",
         min_value=0,
         max_value=100000,
-        key="emision_ui",
-        label_visibility="collapsed",
+        key="emision_slider",
+        on_change=sync_emision_slider,
     )
 
     st.number_input(
@@ -157,11 +166,9 @@ with st.sidebar:
         min_value=0,
         max_value=100000,
         step=100,
-        key="emision_ui",
+        key="emision_input",
+        on_change=sync_emision_input,
     )
-
-    if st.session_state.emision_ui != sim.config.emisión_diaria:
-        sim.cambiar_emisión(st.session_state.emision_ui)
 
     st.caption(
         f"{sim.config.num_trabajadores} trabajadores · "
@@ -171,8 +178,6 @@ with st.sidebar:
 
 st.title("📈 Simulación económica")
 
-# El intervalo del fragment solo está activo mientras "auto_avance" esté
-# encendido; si no, run_every=None y el panel se queda quieto.
 run_every = 0.4 if st.session_state.auto_avance else None
 
 
@@ -194,29 +199,17 @@ def panel():
 
     col_salario.metric(
         "Salario medio",
-        (
-            f"{st.session_state.historial['Salario'].iloc[-1]:.2f}"
-            if hay_datos
-            else "—"
-        ),
+        f"{st.session_state.historial['Salario'].iloc[-1]:.2f}" if hay_datos else "—",
     )
 
     col_salario_informal.metric(
         "Salario informal medio",
-        (
-            f"{st.session_state.historial['Salario informal'].iloc[-1]:.2f}"
-            if hay_datos
-            else "—"
-        ),
+        f"{st.session_state.historial['Salario informal'].iloc[-1]:.2f}" if hay_datos else "—",
     )
 
     col_precio.metric(
         "Precio medio",
-        (
-            f"{st.session_state.historial['Precio'].iloc[-1]:.2f}"
-            if hay_datos
-            else "—"
-        ),
+        f"{st.session_state.historial['Precio'].iloc[-1]:.2f}" if hay_datos else "—",
     )
 
     if hay_datos:
