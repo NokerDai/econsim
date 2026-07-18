@@ -148,7 +148,7 @@ def panel():
     )
 
     if hay_datos:
-        st.line_chart(st.session_state.historial, height=420)
+        st.line_chart(st.session_state.historial.tail(365), height=420)
     else:
         st.info("Todavía no hay datos. Iniciá la simulación o avanzá un día.")
 
