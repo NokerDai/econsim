@@ -367,15 +367,15 @@ def panel():
     if hay_datos:
         # Obtenemos los últimos N registros correspondientes a la velocidad actual
         n_dias = max(1, int(st.session_state.velocidad))
-        historial_reciente = st.session_state.historial.tail(n_dias) [1]
+        historial_reciente = st.session_state.historial.tail(n_dias)
 
         # Calculamos los promedios de este tramo
-        val_salario = historial_reciente["Salario"].mean() [1]
-        val_salario_inf = historial_reciente["Salario informal"].mean() [1]
-        val_precio = historial_reciente["Precio"].mean() [1]
-        val_emp_formal = historial_reciente["Empleo formal"].mean() [1]
-        val_emp_informal = historial_reciente["Empleo informal"].mean() [1]
-        val_desempleo = historial_reciente["Desempleo"].mean() [1]
+        val_salario = historial_reciente["Salario"].mean()
+        val_salario_inf = historial_reciente["Salario informal"].mean()
+        val_precio = historial_reciente["Precio"].mean()
+        val_emp_formal = historial_reciente["Empleo formal"].mean()
+        val_emp_informal = historial_reciente["Empleo informal"].mean()
+        val_desempleo = historial_reciente["Desempleo"].mean()
 
         # Renderizamos las tarjetas con el promedio calculado
         col_salario.metric("Salario medio", f"{val_salario:.2f}")
