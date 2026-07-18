@@ -63,6 +63,24 @@ class Simulación:
                     else 0
                 ),
 
+                empleo_formal=(
+                    estadísticas.empleo_formal[-1]
+                    if estadísticas.empleo_formal
+                    else 0
+                ),
+
+                empleo_informal=(
+                    estadísticas.empleo_informal[-1]
+                    if estadísticas.empleo_informal
+                    else 0
+                ),
+
+                desempleo=(
+                    estadísticas.desempleo[-1]
+                    if estadísticas.desempleo
+                    else 0
+                ),
+
                 tasa_emisión=self.config.tasa_emisión,
 
                 salario_mínimo=self.config.salario_mínimo,

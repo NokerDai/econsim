@@ -1,3 +1,4 @@
+# --- snapshot.py ---
 from dataclasses import dataclass
 
 
@@ -11,6 +12,12 @@ class Snapshot:
     salario_informal_medio: float
 
     precio_medio: float
+
+    empleo_formal: float
+
+    empleo_informal: float
+
+    desempleo: float
 
     tasa_emisión: float
 

@@ -52,6 +52,8 @@ if "historial" not in st.session_state:
             "Salario",
             "Salario informal",
             "Precio",
+            "Empleo formal",
+            "Empleo informal",
             "Desempleo"
         ]
     ).astype(float)
@@ -158,6 +160,9 @@ def registrar_snapshots(snapshots):
                 "Salario": float(snap.salario_medio),
                 "Salario informal": float(snap.salario_informal_medio),
                 "Precio": float(snap.precio_medio),
+                "Empleo formal": float(snap.empleo_formal),
+                "Empleo informal": float(snap.empleo_informal),
+                "Desempleo": float(snap.desempleo),
             })
     if nuevos_datos:
         df_nuevos = pd.DataFrame(nuevos_datos).set_index("Día").astype(float)
@@ -191,6 +196,9 @@ with st.sidebar:
                 "Salario",
                 "Salario informal",
                 "Precio",
+                "Empleo formal",
+                "Empleo informal",
+                "Desempleo"
             ]
         ).astype(float)
         st.session_state.historial.index.name = "Día"
@@ -240,7 +248,6 @@ with st.sidebar:
         st.session_state.salario_input = valor_salario
         sim.cambiar_salario_mínimo(valor_salario)
 
-    # Creamos un marcador de posición que se actualizará de forma dinámica
     salario_metric_placeholder = st.empty()
 
     if st.session_state.salario_mínimo_automático:
@@ -344,7 +351,15 @@ def panel():
     # ---------------------------------------------------------
     # 1. TARJETAS / MÉTRICAS SUPERIORES
     # ---------------------------------------------------------
-    col_día, col_salario, col_salario_inf, col_precio = st.columns(4)
+    (
+        col_día, 
+        col_salario, 
+        col_salario_inf, 
+        col_precio, 
+        col_emp_formal, 
+        col_emp_informal, 
+        col_desempleo
+    ) = st.columns(7)
 
     col_día.metric("Día", sim.estado.día)
 
@@ -353,9 +368,29 @@ def panel():
         f"{st.session_state.historial['Salario'].iloc[-1]:.2f}" if hay_datos else "—",
     )
 
+    col_salario_inf.metric(
+        "Salario informal med.",
+        f"{st.session_state.historial['Salario informal'].iloc[-1]:.2f}" if hay_datos else "—",
+    )
+
     col_precio.metric(
         "Precio medio",
         f"{st.session_state.historial['Precio'].iloc[-1]:.2f}" if hay_datos else "—",
+    )
+
+    col_emp_formal.metric(
+        "Empleo formal",
+        f"{st.session_state.historial['Empleo formal'].iloc[-1] * 100:.1f}%" if hay_datos else "—",
+    )
+
+    col_emp_informal.metric(
+        "Empleo informal",
+        f"{st.session_state.historial['Empleo informal'].iloc[-1] * 100:.1f}%" if hay_datos else "—",
+    )
+
+    col_desempleo.metric(
+        "Desempleo",
+        f"{st.session_state.historial['Desempleo'].iloc[-1] * 100:.1f}%" if hay_datos else "—",
     )
 
     # ---------------------------------------------------------
@@ -368,15 +403,23 @@ def panel():
             st.session_state.historial.index > (último_día - 365)
         ].astype(float)
 
-        # Gráfico 2: Evolución de Salarios
+        # Gráfico 1: Evolución de Salarios
         st.subheader("1. Evolución de Salarios")
         st.line_chart(
             historial_filtrado[["Salario", "Salario informal"]],
             height=300
         )
 
+        # Gráfico 2: Evolución de Tasas de Empleo y Desempleo (%)
+        st.subheader("2. Evolución de Tasas de Empleo y Desempleo (%)")
+        df_empleo_pct = historial_filtrado[["Empleo formal", "Empleo informal", "Desempleo"]] * 100
+        st.line_chart(
+            df_empleo_pct,
+            height=300
+        )
+
         # Gráfico 3: Evolución de Precios
-        st.subheader("2. Evolución del Precio Medio")
+        st.subheader("3. Evolución del Precio Medio")
         st.line_chart(
             historial_filtrado[["Precio"]],
             height=300

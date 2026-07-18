@@ -1,3 +1,4 @@
+# --- estadisticas.py ---
 from dataclasses import dataclass, field
 
 
@@ -9,3 +10,9 @@ class Estadisticas:
     salario_informal_medio: list = field(default_factory=list)
 
     precio_medio: list = field(default_factory=list)
+
+    empleo_formal: list = field(default_factory=list)
+
+    empleo_informal: list = field(default_factory=list)
+
+    desempleo: list = field(default_factory=list)
