@@ -28,7 +28,7 @@ class Config:
     tasa_emisión: float = 0
 
     # Parámetros del modelo laboral
-    duración_contrato: int = 1
+    duración_contrato: int = 30
     reducción_salario_contratación: float = 0.99
     aumento_salario_vacante: float = 1.01
     informalidad_por_empresa: int = 100
