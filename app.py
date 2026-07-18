@@ -275,7 +275,10 @@ def panel():
 
     hay_datos = len(st.session_state.historial) > 0
 
-    col_día, col_salario, col_salario_informal, col_precio = st.columns(4)
+    # ---------------------------------------------------------
+    # 1. TARJETAS / MÉTRICAS SUPERIORES
+    # ---------------------------------------------------------
+    col_día, col_salario, col_salario_inf, col_precio = st.columns(4)
 
     col_día.metric("Día", sim.estado.día)
 
@@ -284,7 +287,7 @@ def panel():
         f"{st.session_state.historial['Salario'].iloc[-1]:.2f}" if hay_datos else "—",
     )
 
-    col_salario_informal.metric(
+    col_salario_inf.metric(
         "Salario informal medio",
         f"{st.session_state.historial['Salario informal'].iloc[-1]:.2f}" if hay_datos else "—",
     )
@@ -295,60 +298,53 @@ def panel():
     )
 
     if hay_datos:
-        # El gráfico muestra una ventana móvil de los últimos 365 días simulados
-        último_día = st.session_state.historial.index.max()
-        # Se añade un casteo explícito .astype(float) final para garantizar la homogeneidad de datos
-        historial_filtrado = st.session_state.historial[
-            st.session_state.historial.index > (último_día - 365)
-        ].astype(float)
-        
-        # Gráfico de Salarios (Formal e Informal)
-        st.subheader("Evolución de Salarios")
-        st.line_chart(
-            historial_filtrado[["Salario", "Salario informal"]], 
-            height=300
+        col_emp, col_emp_inf, col_des = st.columns(3)
+        col_emp.metric(
+            "Empleo formal", 
+            int(st.session_state.historial['Empleo formal'].iloc[-1])
         )
-        
-        # Gráfico de Precios
-        st.subheader("Evolución de Precios")
-        st.line_chart(
-            historial_filtrado[["Precio"]], 
-            height=300
+        col_emp_inf.metric(
+            "Empleo informal", 
+            int(st.session_state.historial['Empleo informal'].iloc[-1])
         )
-
-    if hay_datos:
-        col_emp, col_inf, col_des = st.columns(3)
-        col_emp.metric("Empleo formal", int(st.session_state.historial['Empleo formal'].iloc[-1]))
-        col_inf.metric("Empleo informal", int(st.session_state.historial['Empleo informal'].iloc[-1]))
-        col_des.metric("Desempleo", int(st.session_state.historial['Desempleo'].iloc[-1]))
+        col_des.metric(
+            "Desempleo", 
+            int(st.session_state.historial['Desempleo'].iloc[-1])
+        )
 
     st.divider()
 
+    # ---------------------------------------------------------
+    # 2. LOS TRES GRÁFICOS APILADOS UNO DEBAJO DEL OTRO
+    # ---------------------------------------------------------
     if hay_datos:
+        # Filtrar la ventana móvil de los últimos 365 días simulados
         último_día = st.session_state.historial.index.max()
         historial_filtrado = st.session_state.historial[
             st.session_state.historial.index > (último_día - 365)
         ].astype(float)
-        
-        # Columna 1: Gráficos de Dinero/Salarios
-        col_izq, col_der = st.columns(2)
-        
-        with col_izq:
-            st.subheader("Salarios Medios (Móvil 365d)")
-            st.line_chart(historial_filtrado[["Salario", "Salario informal"]], height=280)
-            
-            st.subheader("Precio Medio (Móvil 365d)")
-            st.line_chart(historial_filtrado[["Precio"]], height=200)
-            
-        # Columna 2: Gráfico del Mercado Laboral
-        with col_der:
-            st.subheader("Estado del Mercado Laboral (Móvil 365d)")
-            # Graficamos el empleo formal, informal y desempleo juntos en un mismo lienzo
-            st.line_chart(
-                historial_filtrado[["Empleo formal", "Empleo informal", "Desempleo"]], 
-                height=520
-            )
-            
+
+        # Gráfico 1: Evolución del Mercado Laboral (Nivel de ocupación)
+        st.subheader("1. Mercado Laboral (Empleo formal, informal y desempleo)")
+        st.line_chart(
+            historial_filtrado[["Empleo formal", "Empleo informal", "Desempleo"]],
+            height=300
+        )
+
+        # Gráfico 2: Evolución de Salarios
+        st.subheader("2. Evolución de Salarios (Formal vs. Informal)")
+        st.line_chart(
+            historial_filtrado[["Salario", "Salario informal"]],
+            height=300
+        )
+
+        # Gráfico 3: Evolución de Precios
+        st.subheader("3. Evolución del Precio Medio")
+        st.line_chart(
+            historial_filtrado[["Precio"]],
+            height=300
+        )
+
     else:
         st.info("Todavía no hay datos. Iniciá la simulación o avanzá un día.")
 
