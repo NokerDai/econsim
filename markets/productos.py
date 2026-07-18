@@ -1,6 +1,6 @@
 def mercado_productos(estado):
 
-    productos_disponibles = [empresa for empresa in estado.empresas for vacante in range(int(estado.config.num_trabajadores/estado.config.num_empresas))]
+    productos_disponibles = [empresa for empresa in estado.empresas for vacante in range(1)]
 
     for trabajador in estado.trabajadores:
         if not productos_disponibles:
