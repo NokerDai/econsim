@@ -44,6 +44,8 @@ def mercado_laboral(estado):
 
             if nuevo_salario >= estado.config.salario_mínimo:
                 empresa.salario = nuevo_salario
+            else:
+                empresa.salario = estado.config.salario_mínimo
 
             vacantes_diarias.remove(empresa)
     
