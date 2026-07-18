@@ -10,7 +10,3 @@ class Empresa:
     salario: float
 
     salario_informal: float
-
-    contrató: bool = False
-
-    vendió: bool = False
