@@ -4,7 +4,7 @@ from statistics import mean
 def actualizar_estadisticas(estado):
 
     precio_medio = mean(e.precio for e in estado.empresas)
-    salario_formales = [trabajador.salario for trabajador in estado.trabajadores if trabajador.trabajo == 1]
+    salarios_formales = [trabajador.salario for trabajador in estado.trabajadores if trabajador.trabajo == 1]
     salarios_informales = [trabajador.salario for trabajador in estado.trabajadores if trabajador.trabajo == 2]
 
     estado.estadisticas.salario_medio.append(
