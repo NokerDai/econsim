@@ -13,8 +13,5 @@ def mercado_laboral(estado):
         empresa.presupuesto -= empresa.salario
         empresa.salario *= estado.config.reducción_salario
 
-        vacantes_formales[i] = vacantes_formales[-1]
-        vacantes_formales.pop()
-
     for empresa in vacantes_formales:
         empresa.salario *= estado.config.aumento_salario

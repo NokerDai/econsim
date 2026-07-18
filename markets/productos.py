@@ -14,8 +14,5 @@ def mercado_productos(estado):
             empresa.presupuesto += empresa.precio
             empresa.precio *= estado.config.aumento_precio
 
-            productos_disponibles[i] = productos_disponibles[-1]
-            productos_disponibles.pop()
-
     for empresa in productos_disponibles:
         empresa.precio *= estado.config.reducción_precio
