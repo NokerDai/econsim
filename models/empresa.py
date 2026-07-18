@@ -11,6 +11,6 @@ class Empresa:
 
     salario_informal: float
 
-    ventas_mes: int = 0
+    contrató: bool = False
 
-    ventas_mes_anterior: int = 0
+    vendió: bool = False

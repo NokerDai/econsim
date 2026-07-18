@@ -12,6 +12,9 @@ def mercado_laboral(estado):
         trabajador.presupuesto += empresa.salario
         empresa.presupuesto -= empresa.salario
         empresa.salario *= estado.config.reducción_salario
+        empresa.contrató = True
 
-    for empresa in vacantes_formales:
-        empresa.salario *= estado.config.aumento_salario
+    for empresa in estado.empresas:
+        if not empresa.contrató:
+            empresa.salario *= estado.config.aumento_salario
+        empresa.contrató = False

@@ -13,6 +13,9 @@ def mercado_productos(estado):
             trabajador.presupuesto -= empresa.precio
             empresa.presupuesto += empresa.precio
             empresa.precio *= estado.config.aumento_precio
+            empresa.vendió = True
 
-    for empresa in productos_disponibles:
-        empresa.precio *= estado.config.reducción_precio
+    for empresa in estado.empresas:
+        if not empresa.vendió:
+            empresa.precio *= estado.config.reducción_precio
+        empresa.vendió = False
