@@ -71,6 +71,9 @@ def mercado_laboral(estado):
         empresa.salario *= (
             estado.config.aumento_salario_vacante ** vacantes
         )
+        empresa.salario_informal *= (
+            estado.config.aumento_salario_vacante ** vacantes
+        )
 
     # MERCADO LABORAL INFORMAL
     trabajadores_desempleados = len([trabajador for trabajador in estado.trabajadores if trabajador.contrato is None])
@@ -126,8 +129,3 @@ def mercado_laboral(estado):
                 if vacantes_informales[i] == 0:
                     vacantes_informales.pop(i)
                     empresas_informales.pop(i)
-
-        for empresa, vacantes in zip(empresas_informales, vacantes_informales):
-            empresa.salario_informal *= (
-                estado.config.aumento_salario_vacante ** vacantes
-            )
