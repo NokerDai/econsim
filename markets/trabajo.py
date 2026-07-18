@@ -46,8 +46,6 @@ def mercado_laboral(estado):
             empresa.presupuesto -= empresa.salario
             trabajador.presupuesto += empresa.salario
 
-            empresa.salario_informal *= estado.config.reducción_salario_contratación
-
             nuevo_salario = (
                 empresa.salario *
                 estado.config.reducción_salario_contratación
@@ -68,12 +66,7 @@ def mercado_laboral(estado):
 
     # Ajuste de salarios formales por vacantes no cubiertas
     for empresa, vacantes in zip(empresas_formales, vacantes_formales):
-        empresa.salario *= (
-            estado.config.aumento_salario_vacante ** vacantes
-        )
-        empresa.salario_informal *= (
-            estado.config.aumento_salario_vacante ** vacantes
-        )
+        empresa.salario *= estado.config.aumento_salario_vacante
 
     # MERCADO LABORAL INFORMAL
     trabajadores_desempleados = len([trabajador for trabajador in estado.trabajadores if trabajador.contrato is None])
@@ -123,7 +116,12 @@ def mercado_laboral(estado):
                 empresa.presupuesto -= empresa.salario_informal
                 trabajador.presupuesto += empresa.salario_informal
 
+                empresa.salario_informal *= estado.config.reducción_salario_contratación
+
                 vacantes_informales[i] -= 1
                 if vacantes_informales[i] == 0:
                     vacantes_informales.pop(i)
                     empresas_informales.pop(i)
+
+        for empresa, vacantes in zip(empresas_informales, vacantes_informales):
+            empresa.salario_informal *= estado.config.aumento_salario_vacante
