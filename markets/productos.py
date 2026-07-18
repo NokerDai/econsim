@@ -1,3 +1,5 @@
+# --- productos.py ---
+
 def mercado_productos(estado):
     # Identificar empresas que tienen stock para vender hoy
     empresas_vendedoras = []
@@ -42,12 +44,13 @@ def mercado_productos(estado):
                     productos_diarios.pop(i)
                     empresas_vendedoras.pop(i)
 
-
     for empresa in estado.empresas:
-        stock_sobrante = empresa.stock
+        stock_inicial_entero = int(stock_inicial_hoy[empresa])
+        stock_sobrante_vendible = stock_inicial_entero - ventas_hoy[empresa]
 
-        if stock_sobrante > 0:
-            empresa.precio *= (estado.config.reducción_precio ** stock_sobrante)
+        if stock_sobrante_vendible > 0:
+            empresa.precio *= (estado.config.reducción_precio ** stock_sobrante_vendible)
         else:
-            if stock_inicial_hoy[empresa] > 0:
+            # Si se vendió todo el stock entero ofertado hoy
+            if stock_inicial_entero > 0:
                 empresa.precio *= estado.config.aumento_precio

@@ -125,13 +125,16 @@ def mercado_laboral(estado):
                 vacantes_informales.pop(i)
                 empresas_informales.pop(i)
 
-    # Ajuste de salarios en empresas que se quedaron con vacantes sin cubrir
-    for empresa, vacantes in zip(empresas_formales, vacantes_formales):
-        empresa.salario *= (
-            estado.config.aumento_salario_vacante ** vacantes
-        )
 
-    for empresa, vacantes in zip(empresas_informales, vacantes_informales):
-        empresa.salario_informal *= (
-            estado.config.aumento_salario_vacante ** vacantes
-        )
+    hay_desempleados_reales = any(t.contrato is None for t in estado.trabajadores)
+
+    if hay_desempleados_reales:
+        for empresa, vacantes in zip(empresas_formales, vacantes_formales):
+            empresa.salario *= (
+                estado.config.aumento_salario_vacante ** vacantes
+            )
+
+        for empresa, vacantes in zip(empresas_informales, vacantes_informales):
+            empresa.salario_informal *= (
+                estado.config.aumento_salario_vacante ** vacantes
+            )

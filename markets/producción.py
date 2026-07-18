@@ -1,3 +1,5 @@
+# --- producción.py ---
+
 def producción(estado):
     duracion = estado.config.duración_contrato
 
@@ -18,10 +20,6 @@ def producción(estado):
                 
                 # El trabajador produce porque cobró su día
                 empresa.stock += 1 / duracion
-                
-                # El presupuesto disponible se va liberando progresivamente en la misma
-                # medida que el compromiso futuro se convierte en gasto real ejecutado.
-                empresa.presupuesto_disponible += salario_diario
             else:
                 # Si la empresa quiebra/no puede pagar, se rescinde el contrato.
                 # Devolvemos el presupuesto comprometido de los días que faltaban por cumplir.
