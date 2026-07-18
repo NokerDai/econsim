@@ -7,7 +7,7 @@ def mercado_laboral(estado):
         if not vacantes_formales:
             break
 
-        empresa = estado.aleatorio.pop(0)
+        empresa = vacantes_formales.pop(0)
 
         trabajador.presupuesto += empresa.salario
         empresa.presupuesto -= empresa.salario
