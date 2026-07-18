@@ -4,9 +4,8 @@ from statistics import mean
 def actualizar_estadisticas(estado):
 
     salarios_formales = [
-        trabajador.contrato.empresa.salario
-        for trabajador in estado.trabajadores
-        if trabajador.contrato is not None and trabajador.contrato.tipo == "formal"
+        empresa.salario
+        for empresa in estado.empresas
     ]
 
     estado.estadisticas.salario_medio.append(
