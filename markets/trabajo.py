@@ -107,17 +107,15 @@ def mercado_laboral(estado):
         estado.config.num_empresas
     )
 
-    sensibilidad = 0.001
-
     for empresa in estado.empresas:
 
-        ratio = empresa.vacantes_formales / vacantes_promedio
-        empresa.salario *= ratio ** sensibilidad
+        ratio = empresa.vacantes_formales - vacantes_promedio
+        empresa.salario *= 1 + ratio / 100
         empresa.salario = max(
             empresa.salario,
             estado.config.salario_mínimo
         )
 
         if empresa.vacantes_informales > 0:
-            ratio = empresa.vacantes_informales / vacantes_promedio
-            empresa.salario_informal *= ratio ** sensibilidad
+            ratio = empresa.vacantes_informales - vacantes_promedio
+            empresa.salario_informal *= 1 + ratio / 100
