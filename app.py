@@ -277,7 +277,7 @@ with st.sidebar:
     st.slider(
         "Informalidad por empresa",
         min_value=0,
-        max_value=100,
+        max_value=1000,
         key="informalidad_por_empresa_slider",
         on_change=sincronizar_informalidad_por_empresa_slider,
     )
@@ -285,7 +285,7 @@ with st.sidebar:
     st.number_input(
         "Valor exacto",
         min_value=0,
-        max_value=100,
+        max_value=1000,
         step=1,
         key="informalidad_por_empresa_input",
         on_change=sincronizar_informalidad_por_empresa_input,
