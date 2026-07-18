@@ -1,6 +1,6 @@
 def mercado_productos(estado):
 
-    productos_disponibles = [empresa for empresa in estado.empresas for vacante in range(1)]
+    productos_disponibles = [empresa for empresa in estado.empresas for vacante in range(10)]
     productos_disponibles.sort(key=lambda e: e.precio)
 
     for trabajador in estado.trabajadores:
