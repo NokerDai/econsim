@@ -13,17 +13,6 @@ class Empresa:
 
     salario_informal: float
 
-    empleados: int = 0
+    ventas: int = 0
 
-    stock: float = 0.0
-
-    presupuesto_disponible: float = 0.0
-
-    def __post_init__(self):
-        self.presupuesto_disponible = self.presupuesto
-
-    def __hash__(self):
-        return id(self)
-
-    def __eq__(self, other):
-        return self is other
+    ventas_anteriores: int = 0

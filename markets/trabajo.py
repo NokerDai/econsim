@@ -9,25 +9,20 @@ def mercado_laboral(estado):
     empresas_formales = []
     vacantes_formales = []
 
-    # 1. Liberar contratos vencidos y devolver el compromiso al presupuesto disponible
     for trabajador in estado.trabajadores:
         if trabajador.contrato is not None:
             contrato = trabajador.contrato
             if contrato.vence <= estado.día:
-                # El contrato venció: restamos el empleado activo
-                contrato.empresa.empleados -= 1
                 trabajador.contrato = None
 
-    # 2. Calcular vacantes formales basadas en el Presupuesto Disponible Proyectado
+
     for empresa in estado.empresas:
-        costo_total_contrato = empresa.salario
-        # Solo abrimos vacantes si podemos asegurar el costo de todo el contrato (30 días)
-        n = int(empresa.presupuesto_disponible / costo_total_contrato)
+        n = int(empresa.presupuesto / empresa.salario)
         if n > 0:
             empresas_formales.append(empresa)
             vacantes_formales.append(n)
 
-    # 3. Contratación Formal
+
     for trabajador in estado.trabajadores:
         if trabajador.contrato is None:
             if not empresas_formales:
@@ -40,7 +35,6 @@ def mercado_laboral(estado):
             )[0]
 
             empresa = empresas_formales[i]
-            empresa.empleados += 1
 
             trabajador.contrato = Contrato(
                 empresa=empresa,
@@ -51,8 +45,8 @@ def mercado_laboral(estado):
             if empresa.salario > salario_máximo:
                 salario_máximo = empresa.salario
 
-            # Comprometer el presupuesto del contrato para que no se use en otras contrataciones
-            empresa.presupuesto_disponible -= empresa.salario
+            empresa.presupuesto -= empresa.salario
+            trabajador.presupuesto += empresa.salario
 
             nuevo_salario = (
                 empresa.salario *
@@ -72,7 +66,7 @@ def mercado_laboral(estado):
     if estado.config.salario_mínimo_automático and estado.config.salario_mínimo < salario_máximo * estado.config.tasa_salario_mínimo:
         estado.config.salario_mínimo = salario_máximo * estado.config.tasa_salario_mínimo
 
-    # 4. Contratación Informal
+
     trabajadores_sin_contrato = [
         trabajador
         for trabajador in estado.trabajadores
@@ -84,11 +78,9 @@ def mercado_laboral(estado):
 
     if trabajadores_sin_contrato:
         for empresa in estado.empresas:
-            costo_total_contrato_inf = empresa.salario_informal
-            # Evaluamos cuántos informales puede contratar según su presupuesto disponible proyectado
             n = int(min(
                 estado.config.informalidad_por_empresa, 
-                empresa.presupuesto_disponible / costo_total_contrato_inf
+                empresa.presupuesto_disponible / empresa.salario_informal
             ))
             if n > 0:
                 empresas_informales.append(empresa)
@@ -113,8 +105,8 @@ def mercado_laboral(estado):
                 tipo="informal"
             )
 
-            # Comprometer el presupuesto informal proyectado
-            empresa.presupuesto_disponible -= empresa.salario_informal
+            empresa.presupuesto -= empresa.salario_informal
+            trabajador.presupuesto += empresa.salario_informal
 
             empresa.salario_informal *= (
                 estado.config.reducción_salario_contratación
@@ -126,15 +118,12 @@ def mercado_laboral(estado):
                 empresas_informales.pop(i)
 
 
-    hay_desempleados_reales = any(t.contrato is None for t in estado.trabajadores)
+    for empresa, vacantes in zip(empresas_formales, vacantes_formales):
+        empresa.salario *= (
+            estado.config.aumento_salario_vacante ** vacantes
+        )
 
-    if hay_desempleados_reales:
-        for empresa, vacantes in zip(empresas_formales, vacantes_formales):
-            empresa.salario *= (
-                estado.config.aumento_salario_vacante ** vacantes
-            )
-
-        for empresa, vacantes in zip(empresas_informales, vacantes_informales):
-            empresa.salario_informal *= (
-                estado.config.aumento_salario_vacante ** vacantes
-            )
+    for empresa, vacantes in zip(empresas_informales, vacantes_informales):
+        empresa.salario_informal *= (
+            estado.config.aumento_salario_vacante ** vacantes
+        )
