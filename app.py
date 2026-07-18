@@ -59,8 +59,6 @@ if "historial" not in st.session_state:
     ).astype(float)
     st.session_state.historial.index.name = "Día"
 
-if "velocidad" not in st.session_state:
-    st.session_state.velocidad = 100
 
 sim = st.session_state.simulación
 
@@ -75,6 +73,13 @@ if "salario_slider" not in st.session_state:
 
 if "salario_input" not in st.session_state:
     st.session_state.salario_input = int(sim.config.salario_mínimo)
+
+
+if "informalidad_por_empresa_slider" not in st.session_state:
+    st.session_state.informalidad_por_empresa_slider = int(sim.config.informalidad_por_empresa)
+
+if "informalidad_por_empresa_input" not in st.session_state:
+    st.session_state.informalidad_por_empresa_input = int(sim.config.informalidad_por_empresa)
 
 
 if "tasa_slider" not in st.session_state:
@@ -96,6 +101,16 @@ def sincronizar_salario_slider():
 def sincronizar_salario_input():
     st.session_state.salario_slider = st.session_state.salario_input
     sim.cambiar_salario_mínimo(st.session_state.salario_input)
+
+
+def sincronizar_informalidad_por_empresa_slider():
+    st.session_state.informalidad_por_empresa_input = st.session_state.informalidad_por_empresa_slider
+    sim.cambiar_informalidad_por_empresa(st.session_state.informalidad_por_empresa_slider)
+
+
+def sincronizar_informalidad_por_empresa_input():
+    st.session_state.informalidad_por_empresa_slider = st.session_state.informalidad_por_empresa_input
+    sim.cambiar_informalidad_por_empresa(st.session_state.informalidad_por_empresa_input)
 
 
 def sincronizar_tasa():
@@ -177,8 +192,6 @@ with st.sidebar:
 
     st.divider()
 
-    st.subheader("Salario mínimo")
-
     st.checkbox(
         "Salario mínimo automático",
         key="salario_mínimo_automático",
@@ -223,6 +236,24 @@ with st.sidebar:
             key="salario_input",
             on_change=sincronizar_salario_input,
         )
+
+
+    st.slider(
+        "Informalidad por empresa",
+        min_value=0,
+        max_value=100,
+        key="informalidad_por_empresa_slider",
+        on_change=sincronizar_informalidad_por_empresa_slider,
+    )
+
+    st.number_input(
+        "Valor exacto",
+        min_value=0,
+        max_value=100,
+        step=1,
+        key="informalidad_por_empresa_input",
+        on_change=sincronizar_informalidad_por_empresa_input,
+    )
 
 
     st.divider()

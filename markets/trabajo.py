@@ -78,7 +78,7 @@ def mercado_laboral(estado):
     if trabajadores_sin_contrato:
 
         for empresa in estado.empresas:
-            n = int(empresa.presupuesto / empresa.salario_informal)
+            n = int(min(estado.config.informalidad_por_empresa, empresa.presupuesto / empresa.salario_informal))
             if n > 0:
                 empresas_informales.append(empresa)
                 vacantes_informales.append(n)

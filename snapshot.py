@@ -23,3 +23,5 @@ class Snapshot:
     salario_mínimo: float
 
     salario_mínimo_automático: bool
+
+    informalidad_por_empresa: int

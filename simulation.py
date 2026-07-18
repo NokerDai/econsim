@@ -84,6 +84,8 @@ class Simulación:
                 salario_mínimo=self.config.salario_mínimo,
 
                 salario_mínimo_automático=self.config.salario_mínimo_automático,
+
+                informalidad_por_empresa=self.config.informalidad_por_empresa,
             )
 
 
@@ -190,6 +192,13 @@ class Simulación:
             self.config.salario_mínimo = valor
 
 
+    def cambiar_informalidad_por_empresa(self, valor):
+
+        with self.lock:
+
+            self.config.informalidad_por_empresa = valor
+
+
     def cambiar_velocidad(self, valor):
 
         with self.lock:
@@ -205,6 +214,7 @@ class Simulación:
                 "emisión_diaria": self.config.emisión_diaria,
                 "salario_mínimo": self.config.salario_mínimo,
                 "velocidad": self.config.velocidad,
+                "informalidad_por_empresa": elf.config.informalidad_por_empresa,
             }
 
 
