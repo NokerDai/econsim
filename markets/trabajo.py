@@ -12,8 +12,11 @@ def mercado_laboral(estado):
     for trabajador in estado.trabajadores:
         if trabajador.contrato is not None:
             contrato = trabajador.contrato
-            if contrato.vence <= estado.día:
+            if contrato.empresa.presupuesto < contrato.salario or contrato.vence <= estado.día:
                 trabajador.contrato = None
+            else:
+                trabajador.presupuesto += contrato.salario
+                contrato.empresa -= contrato.salario
 
     for empresa in estado.empresas:
         n = int(empresa.presupuesto / empresa.salario)
@@ -37,6 +40,7 @@ def mercado_laboral(estado):
             trabajador.contrato = Contrato(
                 empresa=empresa,
                 vence=estado.día + estado.config.duración_contrato,
+                salario=empresa.salario,
                 tipo="formal"
             )
             
@@ -105,6 +109,7 @@ def mercado_laboral(estado):
                 trabajador.contrato = Contrato(
                     empresa=empresa,
                     vence=estado.día + estado.config.duración_contrato,
+                    salario=empresa.salario_informal,
                     tipo="informal"
                 )
 
