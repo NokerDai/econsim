@@ -40,6 +40,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+if "_velocidad_ui" not in st.session_state:
+    st.session_state._velocidad_ui = st.session_state.velocidad
 
 if "simulación" not in st.session_state:
     st.session_state.simulación = Simulación(Config())
@@ -132,15 +134,23 @@ def sincronizar_tasa():
 
 
 def sincronizar_velocidad_slider():
-    st.session_state.velocidad_input = st.session_state.velocidad_slider
-    st.session_state.velocidad = max(1, int(st.session_state.velocidad_slider))
-    sim.cambiar_velocidad(st.session_state.velocidad)
+    valor = max(1, int(st.session_state.velocidad_slider))
+
+    st.session_state.velocidad = valor
+    st.session_state.velocidad_input = valor
+    st.session_state._velocidad_ui = valor
+
+    sim.cambiar_velocidad(valor)
 
 
 def sincronizar_velocidad_input():
-    st.session_state.velocidad_slider = st.session_state.velocidad_input
-    st.session_state.velocidad = max(1, int(st.session_state.velocidad_input))
-    sim.cambiar_velocidad(st.session_state.velocidad)
+    valor = max(1, int(st.session_state.velocidad_input))
+
+    st.session_state.velocidad = valor
+    st.session_state.velocidad_slider = valor
+    st.session_state._velocidad_ui = valor
+
+    sim.cambiar_velocidad(valor)
 
 
 def sincronizar_tasa_emisión_slider():
@@ -180,6 +190,16 @@ run_every = 1 if st.session_state.auto_avance else None
 
 @st.fragment(run_every=run_every)
 def controles_velocidad():
+
+    velocidad = max(1, int(st.session_state.velocidad))
+
+    # Sincronizar solamente si hace falta.
+    # Como esto ocurre antes de crear los widgets, Streamlit lo permite.
+    if st.session_state.get("_velocidad_ui") != velocidad:
+        st.session_state._velocidad_ui = velocidad
+        st.session_state.velocidad_slider = velocidad
+        st.session_state.velocidad_input = velocidad
+
     st.slider(
         "Velocidad (días por paso)",
         min_value=1,
@@ -376,8 +396,6 @@ def panel():
                 
                 if v_nueva_entera != v_actual:
                     st.session_state.velocidad = v_nueva_entera
-                    st.session_state.velocidad_slider = v_nueva_entera
-                    st.session_state.velocidad_input = v_nueva_entera
                     sim.cambiar_velocidad(v_nueva_entera)
 
         if not st.session_state.auto_avance:
