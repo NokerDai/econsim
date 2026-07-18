@@ -46,6 +46,8 @@ def mercado_laboral(estado):
             empresa.presupuesto -= empresa.salario
             trabajador.presupuesto += empresa.salario
 
+            empresa.salario_informal *= estado.config.reducción_salario_contratación
+
             nuevo_salario = (
                 empresa.salario *
                 estado.config.reducción_salario_contratación
