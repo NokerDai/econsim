@@ -2,7 +2,7 @@
 
 def mercado_productos(estado):
     for trabajador in estado.trabajadores:
-        empresa = aleatorio.choice(estado.empresas)
+        empresa = estado.aleatorio.choice(estado.empresas)
         if trabajador.presupuesto >= empresa.precio:
             trabajador.presupuesto -= empresa.precio
             empresa.presupuesto += empresa.precio
