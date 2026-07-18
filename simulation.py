@@ -51,31 +51,9 @@ class Simulación:
                     else 0
                 ),
 
-                salario_informal_medio=(
-                    estadísticas.salario_informal_medio[-1]
-                    if estadísticas.salario_informal_medio
-                    else 0
-                ),
-
                 precio_medio=(
                     estadísticas.precio_medio[-1]
                     if estadísticas.precio_medio
-                    else 0
-                ),
-
-                empleo_formal=(
-                    estadísticas.empleo_formal[-1]
-                    if estadísticas.empleo_formal
-                    else 0
-                ),
-                empleo_informal=(
-                    estadísticas.empleo_informal[-1]
-                    if estadísticas.empleo_informal
-                    else 0
-                ),
-                desempleo=(
-                    estadísticas.desempleo[-1]
-                    if estadísticas.desempleo
                     else 0
                 ),
 
