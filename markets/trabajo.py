@@ -1,3 +1,5 @@
+# --- trabajo.py ---
+
 from models import Contrato
 
 
@@ -8,7 +10,9 @@ def mercado_laboral(estado):
     vacantes_formales = []
 
     for empresa in estado.empresas:
-        n = int(empresa.presupuesto / empresa.salario)
+        salario_diario = empresa.salario / estado.config.duración_contrato
+        # Una empresa puede contratar si tiene presupuesto para pagar al menos el primer día
+        n = int(empresa.presupuesto / salario_diario)
         if n > 0:
             empresas_formales.append(empresa)
             vacantes_formales.append(n)
@@ -47,9 +51,6 @@ def mercado_laboral(estado):
             if empresa.salario > salario_máximo:
                 salario_máximo = empresa.salario
 
-            trabajador.presupuesto += empresa.salario
-            empresa.presupuesto -= empresa.salario
-
             nuevo_salario = (
                 empresa.salario *
                 estado.config.reducción_salario_contratación
@@ -81,7 +82,11 @@ def mercado_laboral(estado):
     if trabajadores_sin_contrato:
 
         for empresa in estado.empresas:
-            n = int(min(estado.config.informalidad_por_empresa, empresa.presupuesto / empresa.salario_informal))
+            salario_informal_diario = empresa.salario_informal / estado.config.duración_contrato
+            n = int(min(
+                estado.config.informalidad_por_empresa, 
+                empresa.presupuesto / salario_informal_diario
+            ))
             if n > 0:
                 empresas_informales.append(empresa)
                 vacantes_informales.append(n)
@@ -105,9 +110,6 @@ def mercado_laboral(estado):
                 vence=estado.día + estado.config.duración_contrato,
                 tipo="informal"
             )
-
-            trabajador.presupuesto += empresa.salario_informal
-            empresa.presupuesto -= empresa.salario_informal
 
             empresa.salario_informal *= (
                 estado.config.reducción_salario_contratación
