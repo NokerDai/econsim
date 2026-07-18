@@ -36,13 +36,11 @@ def mercado_productos(estado):
                 if productos_diarios[i] == 0:
                     productos_diarios.pop(i)
                     empresas_vendedoras.pop(i)
-            else:
-                empresa.precio *= estado.config.reducción_precio
 
     for empresa in estado.empresas:
-        stock_inicial = empresa.stock + ventas_hoy[empresa]
-        if stock_inicial > 0:
-            stock_restante = stock_inicial - ventas_hoy[empresa]
-            if stock_restante > 0:
-                factor_reducción = (estado.config.reducción_precio) ** stock_restante
+        producción_hoy = empresa.empleados
+        if producción_hoy > 0:
+            exceso_hoy = producción_hoy - ventas_hoy[empresa]
+            if exceso_hoy > 0:
+                factor_reducción = (estado.config.reducción_precio) ** exceso_hoy
                 empresa.precio *= factor_reducción
