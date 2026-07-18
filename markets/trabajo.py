@@ -23,7 +23,7 @@ def mercado_laboral(estado):
     if trabajadores_desempleados:
         vacantes_diarias = [empresa
                   for empresa in estado.empresas
-                  for vacante in range(int(empresa.presupuesto / empresa.salario_informal))]
+                  for vacante in range(int(min(estado.config.informalidad_por_empresa, empresa.presupuesto / empresa.salario_informal)))]
         vacantes_diarias.sort(key=lambda e: e.salario_informal, reverse=True)
 
         for trabajador in trabajadores_desempleados:

@@ -30,6 +30,7 @@ class Config:
     # Parámetros del modelo laboral
     reducción_salario: float = 0.99
     aumento_salario: float = 1.01
+    informalidad_por_empresa: int = 100
 
     # Parámetros del mercado
     aumento_precio: float = 1.01
