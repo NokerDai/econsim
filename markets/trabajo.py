@@ -17,7 +17,7 @@ def mercado_laboral(estado):
 
     for empresa in estado.empresas:
         n_presupuesto = empresa.presupuesto / empresa.salario
-        n_proyectado = empresa.ventas_anterior * empresa.precio / empresa.salario
+        n_proyectado = empresa.ventas_anteriores * empresa.precio / empresa.salario
         límite_poblacional = estado.config.num_trabajadores / estado.config.num_empresas
         n = int(min(n_presupuesto, n_proyectado, límite_poblacional))
         if n > 0:
@@ -89,7 +89,7 @@ def mercado_laboral(estado):
         for empresa in estado.empresas:
             if activos < limite_informal:
                 n_presupuesto = empresa.presupuesto / empresa.salario_informal
-                n_proyectado = empresa.ventas_anterior * empresa.precio / empresa.salario_informal
+                n_proyectado = empresa.ventas_anteriores * empresa.precio / empresa.salario_informal
                 límite_poblacional = estado.config.num_trabajadores / estado.config.num_empresas
                 n = int(min(n_presupuesto, n_proyectado, límite_poblacional,  estado.config.informalidad_por_empresa))
                 if n > 0:
