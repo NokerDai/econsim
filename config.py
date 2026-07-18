@@ -35,6 +35,6 @@ class Config:
     informalidad_por_empresa: int = 100
 
     # Parámetros del mercado
-    período_actualización_precios: int = 30
+    período_actualización_precios: int = 5
     aumento_precio: float = 1.01
     reducción_precio: float = 0.99
