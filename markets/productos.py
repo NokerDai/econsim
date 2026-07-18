@@ -14,4 +14,4 @@ def mercado_productos(estado):
 
         else:
 
-            empresa.precio *= estado.config.aumento_precio
+            empresa.precio *= estado.config.reducción_precio
