@@ -11,6 +11,6 @@ class Empresa:
 
     salario_informal: float
 
-    empleados: int
+    empleados: int = 0
 
-    stock: int
+    stock: int = 0
