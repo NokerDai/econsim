@@ -1,3 +1,4 @@
 def producción(estado):
     for empresa in estado.empresas:
-        empresa.stock = 1
+        producción_hoy = empresa.empleados
+        empresa.stock += producción_hoy

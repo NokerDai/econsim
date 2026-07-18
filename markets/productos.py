@@ -1,6 +1,5 @@
-# --- productos.py ---
-
 def mercado_productos(estado):
+    # Identificar empresas que tienen stock para vender hoy
     empresas_vendedoras = []
     productos_diarios = []
 
@@ -9,11 +8,14 @@ def mercado_productos(estado):
             empresas_vendedoras.append(empresa)
             productos_diarios.append(empresa.stock)
 
+    stock_inicial_hoy = {empresa: empresa.stock for empresa in estado.empresas}
     ventas_hoy = {empresa: 0 for empresa in estado.empresas}
 
     for trabajador in estado.trabajadores:
         if estado.aleatorio.random() <= estado.config.probabilidad_compra:
             if not empresas_vendedoras:
+                for emp in estado.empresas:
+                    emp.precio *= estado.config.aumento_precio
                 break
 
             i = estado.aleatorio.choices(
@@ -27,7 +29,8 @@ def mercado_productos(estado):
             if trabajador.presupuesto >= empresa.precio:
                 trabajador.presupuesto -= empresa.precio
                 empresa.presupuesto += empresa.precio
-                empresa.precio *= estado.config.aumento_precio
+                
+                empresa.precio *= estado.config.reducción_precio
                 
                 ventas_hoy[empresa] += 1
                 empresa.stock -= 1
@@ -37,10 +40,12 @@ def mercado_productos(estado):
                     productos_diarios.pop(i)
                     empresas_vendedoras.pop(i)
 
+
     for empresa in estado.empresas:
-        producción_hoy = empresa.empleados
-        if producción_hoy > 0:
-            exceso_hoy = producción_hoy - ventas_hoy[empresa]
-            if exceso_hoy > 0:
-                factor_reducción = (estado.config.reducción_precio) ** exceso_hoy
-                empresa.precio *= factor_reducción
+        stock_sobrante = empresa.stock
+
+        if stock_sobrante > 0:
+            empresa.precio *= (estado.config.reducción_precio ** stock_sobrante)
+        else:
+            if stock_inicial_hoy[empresa] > 0:
+                empresa.precio *= estado.config.aumento_precio
