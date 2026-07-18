@@ -63,8 +63,8 @@ def mercado_laboral(estado):
                 vacantes_formales.pop(i)
                 empresas_formales.pop(i)
 
-    if estado.config.salario_mínimo_automático and estado.config.salario_mínimo < salario_máximo:
-        estado.config.salario_mínimo = salario_máximo
+    if estado.config.salario_mínimo_automático and estado.config.salario_mínimo < salario_máximo * estado.config.tasa_salario_mínimo:
+        estado.config.salario_mínimo = salario_máximo * estado.config.tasa_salario_mínimo
 
     trabajadores_sin_contrato = [
         trabajador

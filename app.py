@@ -1,3 +1,4 @@
+# --- app.py ---
 import streamlit as st
 import pandas as pd
 
@@ -9,6 +10,33 @@ st.set_page_config(
     page_title="Simulación económica",
     page_icon="📈",
     layout="wide",
+)
+
+
+# Inyección de estilos CSS para ocultar los botones + y - de los campos numéricos
+st.markdown(
+    """
+    <style>
+    /* Ocultar botones de subir/bajar de Streamlit */
+    div[data-testid="stNumberInput"] button {
+        display: none !important;
+    }
+    /* Quitar el espaciado derecho de los botones eliminados */
+    div[data-testid="stNumberInput"] input {
+        padding-right: 1rem !important;
+    }
+    /* Ocultar botones de incremento nativos del navegador */
+    div[data-testid="stNumberInput"] input[type=number]::-webkit-inner-spin-button, 
+    div[data-testid="stNumberInput"] input[type=number]::-webkit-outer-spin-button { 
+        -webkit-appearance: none; 
+        margin: 0; 
+    }
+    div[data-testid="stNumberInput"] input[type=number] {
+        -moz-appearance: textfield;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
 
 
@@ -42,6 +70,10 @@ if "salario_input" not in st.session_state:
     st.session_state.salario_input = int(sim.config.salario_mínimo)
 
 
+if "tasa_slider" not in st.session_state:
+    st.session_state.tasa_slider = float(sim.config.tasa_salario_mínimo)
+
+
 if "emisión_slider" not in st.session_state:
     st.session_state.emisión_slider = int(sim.config.emisión_diaria)
 
@@ -57,6 +89,10 @@ def sincronizar_salario_slider():
 def sincronizar_salario_input():
     st.session_state.salario_slider = st.session_state.salario_input
     sim.cambiar_salario_mínimo(st.session_state.salario_input)
+
+
+def sincronizar_tasa():
+    sim.config.tasa_salario_mínimo = st.session_state.tasa_slider
 
 
 def sincronizar_emisión_slider():
@@ -143,7 +179,16 @@ with st.sidebar:
     salario_placeholder = st.empty()
 
     if st.session_state.salario_mínimo_automático:
-        salario_placeholder.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
+        with salario_placeholder.container():
+            st.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
+            st.slider(
+                "Tasa de salario mínimo",
+                min_value=0.0,
+                max_value=2.0,
+                step=0.05,
+                key="tasa_slider",
+                on_change=sincronizar_tasa,
+            )
     else:
         with salario_placeholder.container():
             st.slider(
@@ -207,9 +252,18 @@ def panel():
         if not st.session_state.auto_avance:
             st.rerun()
 
-    # Actualizar dinámicamente el valor del salario mínimo en la barra lateral durante el auto-avance
+    # Actualizar dinámicamente el contenedor del salario mínimo en la barra lateral durante el auto-avance
     if st.session_state.salario_mínimo_automático:
-        salario_placeholder.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
+        with salario_placeholder.container():
+            st.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
+            st.slider(
+                "Tasa de salario mínimo",
+                min_value=0.0,
+                max_value=2.0,
+                step=0.05,
+                key="tasa_slider",
+                on_change=sincronizar_tasa,
+            )
 
     hay_datos = len(st.session_state.historial) > 0
 

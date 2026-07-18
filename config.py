@@ -1,3 +1,4 @@
+# --- config.py ---
 from dataclasses import dataclass
 
 
@@ -23,6 +24,7 @@ class Config:
     # Políticas
     salario_mínimo: float = 0
     salario_mínimo_automático: bool = False
+    tasa_salario_mínimo: float = 1.0
     emisión_diaria: float = 0
 
     # Parámetros del modelo laboral
