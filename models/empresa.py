@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-@dataclass
+@dataclass(eq=False)
 class Empresa:
 
     presupuesto: float
