@@ -26,7 +26,8 @@ class Estado:
             Empresa(
                 presupuesto=config.presupuesto_inicial,
                 precio=config.precio_inicial,
-                salario=config.salario_inicial
+                salario=config.salario_inicial,
+                salario_informal=config.salario_informal_inicial
             )
             for _ in range(config.num_empresas)
         ]
