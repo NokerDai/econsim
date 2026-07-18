@@ -26,7 +26,7 @@ class Config:
     # Parámetros del modelo laboral
     duración_contrato: int = 30
     probabilidad_renuncia: float = 0.20
-    reducción_salario_contratación: float = 0.995
+    reducción_salario_contratación: float = 0.99
     reducción_salario_renovación: float = 0.99
     aumento_salario_vacante: float = 1.01
 
