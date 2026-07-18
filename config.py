@@ -8,7 +8,7 @@ class Config:
     # Simulación
     semilla: int = 0
     días: int = 100000
-    velocidad: float = 0
+    velocidad: float = 0.001
     frecuencia_actualización: int = 100
 
     # Población
