@@ -6,4 +6,6 @@ class Trabajador:
 
     presupuesto: float = 0
 
-    trabajo: bool = False
+    trabajo: int = 0
+
+    salario: float = 0
