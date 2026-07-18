@@ -40,11 +40,11 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-if "_velocidad_ui" not in st.session_state:
-    st.session_state._velocidad_ui = st.session_state.velocidad
-
 if "simulación" not in st.session_state:
     st.session_state.simulación = Simulación(Config())
+
+if "_velocidad_ui" not in st.session_state:
+    st.session_state._velocidad_ui = st.session_state.velocidad
 
 if "auto_avance" not in st.session_state:
     st.session_state.auto_avance = False
