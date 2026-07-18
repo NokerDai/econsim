@@ -5,3 +5,7 @@ def emisión_monetaria(estado):
     for trabajador in estado.trabajadores:
 
         trabajador.presupuesto *= 1 + tasa
+
+    for empresa in estado.empresas:
+
+        empresa.presupuesto *= 1 + tasa
