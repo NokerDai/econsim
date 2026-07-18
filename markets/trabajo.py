@@ -107,7 +107,7 @@ def mercado_laboral(estado):
         estado.config.num_empresas
     )
 
-    sensibilidad = 0.1
+    sensibilidad = 0.001
 
     for empresa in estado.empresas:
 
