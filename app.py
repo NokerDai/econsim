@@ -36,7 +36,7 @@ def registrar_snapshot():
         snapshot.salario_medio,
         snapshot.precio_medio,
     ]
-    # Igual que la versión de escritorio: solo se conserva el último año
+    # Conservar solo los últimos 365 días
     if len(st.session_state.historial) > 365:
         st.session_state.historial = st.session_state.historial.iloc[-365:]
 
