@@ -258,8 +258,6 @@ with st.sidebar:
 
     st.divider()
 
-    st.subheader("tasa_emisión monetaria diaria")
-
     st.slider(
         "Tasa emisión",
         min_value=-1.0,
