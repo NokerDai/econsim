@@ -12,7 +12,7 @@ st.set_page_config(
 )
 
 
-# --- Estado de sesión --- 
+# --- Estado de sesión ---
 # Cada sesión de Streamlit tiene su propia Simulación independiente,
 # igual que si cada usuario abriera su propia ventana de escritorio.
 
@@ -23,16 +23,27 @@ if "auto_avance" not in st.session_state:
     st.session_state.auto_avance = False
 
 if "historial" not in st.session_state:
-    st.session_state.historial = pd.DataFrame(columns=["Salario", "Salario informal", "Precio"])
+    st.session_state.historial = pd.DataFrame(
+        columns=["Salario", "Salario informal", "Precio"]
+    )
     st.session_state.historial.index.name = "Día"
 else:
     columnas_esperadas = ["Salario", "Salario informal", "Precio"]
     if list(st.session_state.historial.columns) != columnas_esperadas:
-        st.session_state.historial = st.session_state.historial.reindex(columns=columnas_esperadas)
+        st.session_state.historial = st.session_state.historial.reindex(
+            columns=columnas_esperadas
+        )
         st.session_state.historial.index.name = "Día"
 
 
 sim = st.session_state.simulación
+
+# ---- Estado de los controles ----
+if "salario_minimo_ui" not in st.session_state:
+    st.session_state.salario_minimo_ui = int(sim.config.salario_mínimo)
+
+if "emision_ui" not in st.session_state:
+    st.session_state.emision_ui = int(sim.config.emisión_diaria)
 
 
 def registrar_snapshot():
@@ -45,10 +56,8 @@ def registrar_snapshot():
         snapshot.salario_informal_medio,
         snapshot.precio_medio,
     ]
-    # Conservar solo los últimos 365 días simulados. Se filtra por el valor
-    # del día (no por cantidad de filas), porque con auto-avance cada fila
-    # puede representar un salto de varios días ("Velocidad"), y recortar
-    # por cantidad de filas terminaba dejando ventanas de miles de días.
+
+    # Conservar solo los últimos 365 días simulados.
     último_día = st.session_state.historial.index.max()
     st.session_state.historial = st.session_state.historial[
         st.session_state.historial.index > último_día - 365
@@ -67,8 +76,14 @@ def avanzar_un_día():
 def reiniciar():
     sim.reset()
     st.session_state.auto_avance = False
-    st.session_state.historial = pd.DataFrame(columns=["Salario", "Salario informal", "Precio"])
+    st.session_state.historial = pd.DataFrame(
+        columns=["Salario", "Salario informal", "Precio"]
+    )
     st.session_state.historial.index.name = "Día"
+
+    # Sincronizar controles con la nueva simulación
+    st.session_state.salario_minimo_ui = int(sim.config.salario_mínimo)
+    st.session_state.emision_ui = int(sim.config.emisión_diaria)
 
 
 # --- Barra lateral: controles ---
@@ -77,11 +92,13 @@ with st.sidebar:
     st.header("Controles")
 
     col1, col2 = st.columns(2)
+
     col1.button(
         "⏸️ Pausar" if st.session_state.auto_avance else "▶️ Iniciar",
         on_click=alternar_auto_avance,
         use_container_width=True,
     )
+
     col2.button(
         "⏭️ Día siguiente",
         on_click=avanzar_un_día,
@@ -98,28 +115,53 @@ with st.sidebar:
         min_value=1,
         max_value=50,
         value=5,
-        disabled=not st.session_state.auto_avance,
     )
 
     st.divider()
 
-    salario_mínimo = st.slider(
-        "Salario mínimo",
+    st.subheader("Salario mínimo")
+
+    st.slider(
+        "",
         min_value=0,
         max_value=10000,
-        value=int(sim.config.salario_mínimo),
+        key="salario_minimo_ui",
+        label_visibility="collapsed",
     )
-    if salario_mínimo != sim.config.salario_mínimo:
-        sim.cambiar_salario_mínimo(salario_mínimo)
 
-    emisión_diaria = st.slider(
-        "Emisión monetaria diaria",
+    st.number_input(
+        "Valor exacto",
+        min_value=0,
+        max_value=10000,
+        step=1,
+        key="salario_minimo_ui",
+    )
+
+    if st.session_state.salario_minimo_ui != sim.config.salario_mínimo:
+        sim.cambiar_salario_mínimo(st.session_state.salario_minimo_ui)
+
+    st.divider()
+
+    st.subheader("Emisión monetaria diaria")
+
+    st.slider(
+        "",
         min_value=0,
         max_value=100000,
-        value=int(sim.config.emisión_diaria),
+        key="emision_ui",
+        label_visibility="collapsed",
     )
-    if emisión_diaria != sim.config.emisión_diaria:
-        sim.cambiar_emisión(emisión_diaria)
+
+    st.number_input(
+        "Valor exacto",
+        min_value=0,
+        max_value=100000,
+        step=100,
+        key="emision_ui",
+    )
+
+    if st.session_state.emision_ui != sim.config.emisión_diaria:
+        sim.cambiar_emisión(st.session_state.emision_ui)
 
     st.caption(
         f"{sim.config.num_trabajadores} trabajadores · "
@@ -130,8 +172,7 @@ with st.sidebar:
 st.title("📈 Simulación económica")
 
 # El intervalo del fragment solo está activo mientras "auto_avance" esté
-# encendido; si no, run_every=None y el panel se queda quieto (equivalente
-# a pausar el hilo en la versión de escritorio).
+# encendido; si no, run_every=None y el panel se queda quieto.
 run_every = 0.4 if st.session_state.auto_avance else None
 
 
@@ -153,17 +194,29 @@ def panel():
 
     col_salario.metric(
         "Salario medio",
-        f"{st.session_state.historial['Salario'].iloc[-1]:.2f}" if hay_datos else "—",
+        (
+            f"{st.session_state.historial['Salario'].iloc[-1]:.2f}"
+            if hay_datos
+            else "—"
+        ),
     )
 
     col_salario_informal.metric(
         "Salario informal medio",
-        f"{st.session_state.historial['Salario informal'].iloc[-1]:.2f}" if hay_datos else "—",
+        (
+            f"{st.session_state.historial['Salario informal'].iloc[-1]:.2f}"
+            if hay_datos
+            else "—"
+        ),
     )
 
     col_precio.metric(
         "Precio medio",
-        f"{st.session_state.historial['Precio'].iloc[-1]:.2f}" if hay_datos else "—",
+        (
+            f"{st.session_state.historial['Precio'].iloc[-1]:.2f}"
+            if hay_datos
+            else "—"
+        ),
     )
 
     if hay_datos:
