@@ -217,7 +217,7 @@ with st.sidebar:
     st.slider(
         "Velocidad (días por paso)",
         min_value=1,
-        max_value=1000,
+        max_value=10000,
         key="velocidad_slider",
         value=st.session_state.velocidad_slider,
         on_change=sincronizar_velocidad_slider,
@@ -227,7 +227,7 @@ with st.sidebar:
     st.number_input(
         "Valor exacto",
         min_value=1,
-        max_value=1000,
+        max_value=10000,
         step=1,
         key="velocidad_input",
         value=st.session_state.velocidad_input,
@@ -366,7 +366,7 @@ def panel():
             if fuera_de_rango:
                 v_nueva = v_actual * (1.0 / t_transcurrido)
                 
-                v_nueva_entera = max(1, min(1000, int(round(v_nueva))))
+                v_nueva_entera = max(1, min(10000, int(round(v_nueva))))
                 
                 if v_nueva_entera != v_actual:
                     st.session_state.velocidad = v_nueva_entera
