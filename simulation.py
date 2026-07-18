@@ -65,7 +65,9 @@ class Simulación:
 
                 emisión_diaria=self.config.emisión_diaria,
 
-                salario_mínimo=self.config.salario_mínimo
+                salario_mínimo=self.config.salario_mínimo,
+
+                salario_mínimo_automático=self.config.salario_mínimo_automático,
             )
 
 
