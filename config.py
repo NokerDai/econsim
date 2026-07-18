@@ -18,6 +18,7 @@ class Config:
     presupuesto_inicial: float = 330e2
     precio_inicial: float = 300
     salario_inicial: float = 300
+    salario_informal_inicial: float = 200
 
     # Políticas
     salario_mínimo: float = 0
