@@ -8,6 +8,8 @@ class Snapshot:
 
     salario_medio: float
 
+    salario_informal_medio: float
+
     precio_medio: float
 
     tasa_emisión: float

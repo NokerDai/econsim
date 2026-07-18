@@ -51,6 +51,12 @@ class Simulación:
                     else 0
                 ),
 
+                salario_informal_medio=(
+                    estadísticas.salario_informal_medio[-1]
+                    if estadísticas.salario_informal_medio
+                    else 0
+                ),
+
                 precio_medio=(
                     estadísticas.precio_medio[-1]
                     if estadísticas.precio_medio

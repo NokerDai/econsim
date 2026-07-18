@@ -49,7 +49,8 @@ if "historial" not in st.session_state:
     st.session_state.historial = pd.DataFrame(
         columns=[
             "Salario",
-            "Precio", 
+            "Salario informal",
+            "Precio",
             "Desempleo"
         ]
     ).astype(float)
@@ -132,6 +133,7 @@ def registrar_snapshots(snapshots):
             nuevos_datos.append({
                 "Día": int(snap.día),
                 "Salario": float(snap.salario_medio),
+                "Salario informal": float(snap.salario_informal_medio),
                 "Precio": float(snap.precio_medio),
             })
     if nuevos_datos:
@@ -164,7 +166,8 @@ with st.sidebar:
         st.session_state.historial = pd.DataFrame(
             columns=[
                 "Salario",
-                "Precio", 
+                "Salario informal",
+                "Precio",
             ]
         ).astype(float)
         st.session_state.historial.index.name = "Día"
@@ -322,7 +325,7 @@ def panel():
         # Gráfico 2: Evolución de Salarios
         st.subheader("1. Evolución de Salarios")
         st.line_chart(
-            historial_filtrado[["Salario"]],
+            historial_filtrado[["Salario", "Salario informal"]],
             height=300
         )
 
