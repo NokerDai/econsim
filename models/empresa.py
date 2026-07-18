@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-@dataclass(eq=False)
+@dataclass
 class Empresa:
 
     presupuesto: float
@@ -14,3 +14,9 @@ class Empresa:
     empleados: int = 0
 
     stock: int = 0
+
+    def __hash__(self):
+        return id(self)
+
+    def __eq__(self, other):
+        return self is other
