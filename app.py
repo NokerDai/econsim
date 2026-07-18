@@ -48,11 +48,8 @@ if "auto_avance" not in st.session_state:
 if "historial" not in st.session_state:
     st.session_state.historial = pd.DataFrame(
         columns=[
-            "Salario", 
-            "Salario informal", 
+            "Salario",
             "Precio", 
-            "Empleo formal", 
-            "Empleo informal", 
             "Desempleo"
         ]
     ).astype(float)
@@ -135,11 +132,7 @@ def registrar_snapshots(snapshots):
             nuevos_datos.append({
                 "Día": int(snap.día),
                 "Salario": float(snap.salario_medio),
-                "Salario informal": float(snap.salario_informal_medio),
                 "Precio": float(snap.precio_medio),
-                "Empleo formal": float(snap.empleo_formal),
-                "Empleo informal": float(snap.empleo_informal),
-                "Desempleo": float(snap.desempleo)
             })
     if nuevos_datos:
         df_nuevos = pd.DataFrame(nuevos_datos).set_index("Día").astype(float)
@@ -170,12 +163,8 @@ with st.sidebar:
         sim.reset()
         st.session_state.historial = pd.DataFrame(
             columns=[
-                "Salario", 
-                "Salario informal", 
+                "Salario",
                 "Precio", 
-                "Empleo formal", 
-                "Empleo informal", 
-                "Desempleo"
             ]
         ).astype(float)
         st.session_state.historial.index.name = "Día"
@@ -315,30 +304,10 @@ def panel():
         f"{st.session_state.historial['Salario'].iloc[-1]:.2f}" if hay_datos else "—",
     )
 
-    col_salario_inf.metric(
-        "Salario informal medio",
-        f"{st.session_state.historial['Salario informal'].iloc[-1]:.2f}" if hay_datos else "—",
-    )
-
     col_precio.metric(
         "Precio medio",
         f"{st.session_state.historial['Precio'].iloc[-1]:.2f}" if hay_datos else "—",
     )
-
-    if hay_datos:
-        col_emp, col_emp_inf, col_des = st.columns(3)
-        col_emp.metric(
-            "Empleo formal", 
-            round(st.session_state.historial['Empleo formal'].iloc[-1], 2)
-        )
-        col_emp_inf.metric(
-            "Empleo informal", 
-            round(st.session_state.historial['Empleo informal'].iloc[-1], 2)
-        )
-        col_des.metric(
-            "Desempleo", 
-            round(st.session_state.historial['Desempleo'].iloc[-1], 2)
-        )
 
     # ---------------------------------------------------------
     # 2. LOS TRES GRÁFICOS APILADOS UNO DEBAJO DEL OTRO
@@ -350,22 +319,15 @@ def panel():
             st.session_state.historial.index > (último_día - 365)
         ].astype(float)
 
-        # Gráfico 1: Evolución del Mercado Laboral (Nivel de ocupación)
-        st.subheader("1. Mercado Laboral (Empleo formal, informal y desempleo)")
-        st.line_chart(
-            historial_filtrado[["Empleo formal", "Empleo informal", "Desempleo"]],
-            height=300
-        )
-
         # Gráfico 2: Evolución de Salarios
-        st.subheader("2. Evolución de Salarios (Formal vs. Informal)")
+        st.subheader("1. Evolución de Salarios")
         st.line_chart(
-            historial_filtrado[["Salario", "Salario informal"]],
+            historial_filtrado[["Salario"]],
             height=300
         )
 
         # Gráfico 3: Evolución de Precios
-        st.subheader("3. Evolución del Precio Medio")
+        st.subheader("2. Evolución del Precio Medio")
         st.line_chart(
             historial_filtrado[["Precio"]],
             height=300
