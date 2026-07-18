@@ -71,7 +71,7 @@ def mercado_laboral(estado):
         )
 
     # MERCADO LABORAL INFORMAL
-    trabajadores_desempleados = len(trabajador for trabajador in estado.trabajadores if trabajador.contrato is None)
+    trabajadores_desempleados = len([trabajador for trabajador in estado.trabajadores if trabajador.contrato is None])
 
     if trabajadores_desempleados:
 
