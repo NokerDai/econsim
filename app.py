@@ -80,8 +80,17 @@ if "informalidad_por_empresa_input" not in st.session_state:
 
 
 if "tasa_slider" not in st.session_state:
-    st.session_state.tasa_slider = float(sim.config.tasa_salario_mínimo)
+    st.session_state.tasa_slider = 0.3
+    sim.config.tasa_salario_mínimo = 0.3
 
+if "velocidad_slider" not in st.session_state:
+    st.session_state.velocidad_slider = max(1, int(getattr(sim.config, "velocidad", 1)))
+
+if "velocidad_input" not in st.session_state:
+    st.session_state.velocidad_input = max(1, int(getattr(sim.config, "velocidad", 1)))
+
+if "velocidad" not in st.session_state:
+    st.session_state.velocidad = max(1, int(getattr(sim.config, "velocidad", 1)))
 
 if "tasa_emisión_slider" not in st.session_state:
     st.session_state.tasa_emisión_slider = float(sim.config.tasa_emisión)
@@ -111,7 +120,20 @@ def sincronizar_informalidad_por_empresa_input():
 
 
 def sincronizar_tasa():
+    st.session_state.tasa_slider = float(st.session_state.tasa_slider)
     sim.config.tasa_salario_mínimo = st.session_state.tasa_slider
+
+
+def sincronizar_velocidad_slider():
+    st.session_state.velocidad_input = st.session_state.velocidad_slider
+    st.session_state.velocidad = max(1, int(st.session_state.velocidad_slider))
+    sim.cambiar_velocidad(st.session_state.velocidad)
+
+
+def sincronizar_velocidad_input():
+    st.session_state.velocidad_slider = st.session_state.velocidad_input
+    st.session_state.velocidad = max(1, int(st.session_state.velocidad_input))
+    sim.cambiar_velocidad(st.session_state.velocidad)
 
 
 def sincronizar_tasa_emisión_slider():
@@ -178,7 +200,19 @@ with st.sidebar:
         "Velocidad (días por paso)",
         min_value=1,
         max_value=1000,
-        key="velocidad"
+        key="velocidad_slider",
+        value=st.session_state.velocidad_slider,
+        on_change=sincronizar_velocidad_slider,
+    )
+
+    st.number_input(
+        "Valor exacto",
+        min_value=1,
+        max_value=1000,
+        step=1,
+        key="velocidad_input",
+        value=st.session_state.velocidad_input,
+        on_change=sincronizar_velocidad_input,
     )
 
     st.divider()
@@ -207,6 +241,7 @@ with st.sidebar:
             max_value=2.0,
             step=0.01,
             key="tasa_slider",
+            value=st.session_state.tasa_slider,
             on_change=sincronizar_tasa,
         )
     else:
@@ -278,7 +313,7 @@ def panel():
 
     if st.session_state.auto_avance:
         snapshots = []
-        for _ in range(st.session_state.velocidad):
+        for _ in range(int(st.session_state.velocidad)):
             if sim.step():
                 snapshots.append(sim.obtener_snapshot())
             else:
