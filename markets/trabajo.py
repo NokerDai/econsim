@@ -80,7 +80,7 @@ def mercado_laboral(estado):
         for empresa in estado.empresas:
             n = int(min(
                 estado.config.informalidad_por_empresa, 
-                empresa.presupuesto_disponible / empresa.salario_informal
+                empresa.presupuesto / empresa.salario_informal
             ))
             if n > 0:
                 empresas_informales.append(empresa)
