@@ -39,7 +39,7 @@ def mercado_laboral(estado):
             vacantes_informales.sort(key=lambda e: e.salario, reverse=True)
 
     for empresa in estado.empresas:
-        seleccionada.salario = max(seleccionada.salario * estado.config.reducción_salario ** empresa.empleados_formales, estado.config.salario_mínimo)
-        seleccionada.salario *= estado.config.aumento_salario ** (empresa.vacantes_formales - empresa.empleados_formales)
-        seleccionada.salario_informal *= estado.config.reducción_salario ** empresa.empleados_informales
-        seleccionada.salario_informal *= estado.config.aumento_salario ** (empresa.vacantes_informales - empresa.empleados_informales)
+        empresa.salario = max(empresa.salario * estado.config.reducción_salario ** empresa.empleados_formales, estado.config.salario_mínimo)
+        empresa.salario *= estado.config.aumento_salario ** (empresa.vacantes_formales - empresa.empleados_formales)
+        empresa.salario_informal *= estado.config.reducción_salario ** empresa.empleados_informales
+        empresa.salario_informal *= estado.config.aumento_salario ** (empresa.vacantes_informales - empresa.empleados_informales)
