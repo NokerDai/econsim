@@ -9,9 +9,9 @@ def actualizar_estadisticas(estado):
     
     ajuste_formal = 0
     ajuste_informal = 0
-    if estado.estadisticas.salario_medio:
+    if len(estado.estadisticas.salario_medio) > 0:
         formal = estado.estadisticas.salario_medio[-1]
-    if estado.estadisticas.salario_informal_medio:
+    if len(estado.estadisticas.salario_informal_medio) > 0:
         informal = estado.estadisticas.salario_informal_medio[-1]
 
     estado.estadisticas.salario_medio.append(
