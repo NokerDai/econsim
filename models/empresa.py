@@ -10,7 +10,3 @@ class Empresa:
     salario: float
 
     salario_informal: float
-
-    ventas_mes: int = 0
-
-    ventas_mes_anterior: int = 0
