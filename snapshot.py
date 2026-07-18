@@ -15,3 +15,5 @@ class Snapshot:
     emisión_diaria: float
 
     salario_mínimo: float
+
+    salario_mínimo_automático: bool

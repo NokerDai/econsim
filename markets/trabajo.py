@@ -2,6 +2,7 @@ from models import Contrato
 
 
 def mercado_laboral(estado):
+    salario_máximo = 0
 
     empresas_formales = []
     vacantes_formales = []
@@ -39,6 +40,9 @@ def mercado_laboral(estado):
                 vence=estado.día + estado.config.duración_contrato,
                 tipo="formal"
             )
+            
+            if empresa.salario > salario_máximo:
+                salario_máximo = empresa.salario
 
             trabajador.presupuesto += empresa.salario
             empresa.presupuesto -= empresa.salario
@@ -58,6 +62,9 @@ def mercado_laboral(estado):
             if vacantes_formales[i] == 0:
                 vacantes_formales.pop(i)
                 empresas_formales.pop(i)
+
+    if estado.config.salario_mínimo_automático and estado.config.salario_mínimo < salario_máximo:
+        estado.config.salario_mínimo = salario_máximo
 
     trabajadores_sin_contrato = [
         trabajador

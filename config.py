@@ -22,6 +22,7 @@ class Config:
 
     # Políticas
     salario_mínimo: float = 0
+    salario_mínimo_automático: bool = False
     emisión_diaria: float = 0
 
     # Parámetros del modelo laboral
