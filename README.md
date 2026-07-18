@@ -34,3 +34,7 @@ Se abre en `http://localhost:8501`.
 - **Velocidad**: cuántos días avanza por cada actualización automática (~cada 0.4s).
 - **Salario mínimo** / **Emisión monetaria diaria**: las mismas políticas configurables que en la versión de escritorio.
 - **Reiniciar**: vuelve a crear el estado desde cero (misma semilla).
+
+El gráfico muestra una ventana móvil de los últimos 365 días simulados,
+igual que la versión de escritorio (el recorte se hace por valor de día,
+no por cantidad de puntos, para que funcione bien también con "Velocidad" > 1).

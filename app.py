@@ -36,12 +36,14 @@ def registrar_snapshot():
         snapshot.salario_medio,
         snapshot.precio_medio,
     ]
-    st.session_state.historial = (
-        st.session_state.historial
-        .sort_index()
-        .iloc[-365:]
-        .copy()
-    )
+    # Conservar solo los últimos 365 días simulados. Se filtra por el valor
+    # del día (no por cantidad de filas), porque con auto-avance cada fila
+    # puede representar un salto de varios días ("Velocidad"), y recortar
+    # por cantidad de filas terminaba dejando ventanas de miles de días.
+    último_día = st.session_state.historial.index.max()
+    st.session_state.historial = st.session_state.historial[
+        st.session_state.historial.index > último_día - 365
+    ]
 
 
 def alternar_auto_avance():
@@ -121,7 +123,7 @@ st.title("📈 Simulación económica")
 # El intervalo del fragment solo está activo mientras "auto_avance" esté
 # encendido; si no, run_every=None y el panel se queda quieto (equivalente
 # a pausar el hilo en la versión de escritorio).
-run_every = 0.01 if st.session_state.auto_avance else None
+run_every = 0.4 if st.session_state.auto_avance else None
 
 
 @st.fragment(run_every=run_every)
@@ -151,7 +153,7 @@ def panel():
     )
 
     if hay_datos:
-        st.line_chart(st.session_state.historial.tail(365), height=420)
+        st.line_chart(st.session_state.historial, height=420)
     else:
         st.info("Todavía no hay datos. Iniciá la simulación o avanzá un día.")
 
