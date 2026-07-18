@@ -36,9 +36,7 @@ def registrar_snapshot():
         snapshot.salario_medio,
         snapshot.precio_medio,
     ]
-    # Conservar solo los últimos 365 días
-    if len(st.session_state.historial) > 365:
-        st.session_state.historial = st.session_state.historial.iloc[-365:]
+    st.session_state.historial = st.session_state.historial.tail(365).copy()
 
 
 def alternar_auto_avance():
@@ -118,7 +116,7 @@ st.title("📈 Simulación económica")
 # El intervalo del fragment solo está activo mientras "auto_avance" esté
 # encendido; si no, run_every=None y el panel se queda quieto (equivalente
 # a pausar el hilo en la versión de escritorio).
-run_every = 0.01 if st.session_state.auto_avance else None
+run_every = 0 if st.session_state.auto_avance else None
 
 
 @st.fragment(run_every=run_every)
