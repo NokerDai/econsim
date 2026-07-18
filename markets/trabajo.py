@@ -10,6 +10,8 @@ def mercado_laboral(estado):
             empresa.presupuesto / empresa.salario))
     ]
 
+    vacantes_informales = []
+
     for trabajador in estado.trabajadores:
 
         if trabajador.contrato is not None:
@@ -30,7 +32,8 @@ def mercado_laboral(estado):
 
             trabajador.contrato = Contrato(
                 empresa=empresa,
-                vence=estado.día + estado.config.duración_contrato
+                vence=estado.día + estado.config.duración_contrato,
+                tipo="formal"
             )
 
             trabajador.presupuesto += empresa.salario
@@ -71,7 +74,8 @@ def mercado_laboral(estado):
 
             trabajador.contrato = Contrato(
                 empresa=empresa,
-                vence=estado.día + estado.config.duración_contrato
+                vence=estado.día + estado.config.duración_contrato,
+                tipo="informal"
             )
 
             trabajador.presupuesto += empresa.salario_informal

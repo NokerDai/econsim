@@ -11,3 +11,5 @@ class Contrato:
     empresa: "Empresa"
 
     vence: int
+
+    tipo: str = "formal"

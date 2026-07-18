@@ -23,8 +23,13 @@ if "auto_avance" not in st.session_state:
     st.session_state.auto_avance = False
 
 if "historial" not in st.session_state:
-    st.session_state.historial = pd.DataFrame(columns=["Salario", "Precio"])
+    st.session_state.historial = pd.DataFrame(columns=["Salario", "Salario informal", "Precio"])
     st.session_state.historial.index.name = "Día"
+else:
+    columnas_esperadas = ["Salario", "Salario informal", "Precio"]
+    if list(st.session_state.historial.columns) != columnas_esperadas:
+        st.session_state.historial = st.session_state.historial.reindex(columns=columnas_esperadas)
+        st.session_state.historial.index.name = "Día"
 
 
 sim = st.session_state.simulación
@@ -32,8 +37,12 @@ sim = st.session_state.simulación
 
 def registrar_snapshot():
     snapshot = sim.obtener_snapshot()
+    st.session_state.historial = st.session_state.historial.reindex(
+        columns=["Salario", "Salario informal", "Precio"]
+    )
     st.session_state.historial.loc[snapshot.día] = [
         snapshot.salario_medio,
+        snapshot.salario_informal_medio,
         snapshot.precio_medio,
     ]
     # Conservar solo los últimos 365 días simulados. Se filtra por el valor
@@ -58,7 +67,7 @@ def avanzar_un_día():
 def reiniciar():
     sim.reset()
     st.session_state.auto_avance = False
-    st.session_state.historial = pd.DataFrame(columns=["Salario", "Precio"])
+    st.session_state.historial = pd.DataFrame(columns=["Salario", "Salario informal", "Precio"])
     st.session_state.historial.index.name = "Día"
 
 
@@ -138,13 +147,18 @@ def panel():
 
     hay_datos = len(st.session_state.historial) > 0
 
-    col_día, col_salario, col_precio = st.columns(3)
+    col_día, col_salario, col_salario_informal, col_precio = st.columns(4)
 
     col_día.metric("Día", sim.estado.día)
 
     col_salario.metric(
         "Salario medio",
         f"{st.session_state.historial['Salario'].iloc[-1]:.2f}" if hay_datos else "—",
+    )
+
+    col_salario_informal.metric(
+        "Salario informal medio",
+        f"{st.session_state.historial['Salario informal'].iloc[-1]:.2f}" if hay_datos else "—",
     )
 
     col_precio.metric(
