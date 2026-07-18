@@ -124,9 +124,6 @@ class Simulación:
             actualizar_estadisticas(self.estado)
 
 
-        actualizar_estadisticas(self.estado)
-
-
         if self.estado.día % self.config.frecuencia_actualización == 0:
 
             self.notificar()

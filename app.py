@@ -1,6 +1,7 @@
 # --- app.py ---
 import streamlit as st
 import pandas as pd
+import time  # Importado para medir el tiempo de ejecución exacto
 
 from config import Config
 from simulation import Simulación
@@ -45,6 +46,9 @@ if "simulación" not in st.session_state:
 
 if "auto_avance" not in st.session_state:
     st.session_state.auto_avance = False
+
+if "ajuste_velocidad_automatico" not in st.session_state:
+    st.session_state.ajuste_velocidad_automatico = True
 
 if "historial" not in st.session_state:
     st.session_state.historial = pd.DataFrame(
@@ -205,6 +209,11 @@ with st.sidebar:
         st.session_state.auto_avance = False
         st.rerun()
 
+    st.checkbox(
+        "Ajuste automático de velocidad",
+        key="ajuste_velocidad_automatico",
+    )
+
     st.slider(
         "Velocidad (días por paso)",
         min_value=1,
@@ -212,6 +221,7 @@ with st.sidebar:
         key="velocidad_slider",
         value=st.session_state.velocidad_slider,
         on_change=sincronizar_velocidad_slider,
+        disabled=st.session_state.ajuste_velocidad_automatico,
     )
 
     st.number_input(
@@ -222,6 +232,7 @@ with st.sidebar:
         key="velocidad_input",
         value=st.session_state.velocidad_input,
         on_change=sincronizar_velocidad_input,
+        disabled=st.session_state.ajuste_velocidad_automatico,
     )
 
     st.divider()
@@ -331,19 +342,41 @@ run_every = 1 if st.session_state.auto_avance else None
 def panel():
 
     if st.session_state.auto_avance:
+        # Registrar el tiempo antes de comenzar los pasos de simulación
+        t_inicio = time.perf_counter()
+        
         snapshots = []
-        for _ in range(int(st.session_state.velocidad)):
+        v_actual = int(st.session_state.velocidad)
+        for _ in range(v_actual):
             if sim.step():
                 snapshots.append(sim.obtener_snapshot())
             else:
                 st.session_state.auto_avance = False
                 break
         registrar_snapshots(snapshots)
-        # Forzar un rerun del script principal si se detuvo el auto_avance
+        
+        # Registrar el tiempo transcurrido en procesar los pasos
+        t_fin = time.perf_counter()
+        t_transcurrido = t_fin - t_inicio
+
+        # Lógica de ajuste automático de velocidad
+        if st.session_state.get("ajuste_velocidad_automatico", True) and t_transcurrido > 0:
+            fuera_de_rango = t_transcurrido < 0.99 or t_transcurrido > 1.01
+            
+            if fuera_de_rango:
+                v_nueva = v_actual * (1.0 / t_transcurrido)
+                
+                v_nueva_entera = max(1, min(1000, int(round(v_nueva))))
+                
+                if v_nueva_entera != v_actual:
+                    st.session_state.velocidad = v_nueva_entera
+                    st.session_state.velocidad_slider = v_nueva_entera
+                    st.session_state.velocidad_input = v_nueva_entera
+                    sim.cambiar_velocidad(v_nueva_entera)
+
         if not st.session_state.auto_avance:
             st.rerun()
 
-    # Actualizar dinámicamente solo el elemento de texto métrico en la barra lateral
     if st.session_state.salario_mínimo_automático:
         salario_metric_placeholder.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
 
