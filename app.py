@@ -301,18 +301,16 @@ def panel():
         col_emp, col_emp_inf, col_des = st.columns(3)
         col_emp.metric(
             "Empleo formal", 
-            int(st.session_state.historial['Empleo formal'].iloc[-1])
+            round(st.session_state.historial['Empleo formal'].iloc[-1], 2)
         )
         col_emp_inf.metric(
             "Empleo informal", 
-            int(st.session_state.historial['Empleo informal'].iloc[-1])
+            round(st.session_state.historial['Empleo informal'].iloc[-1], 2)
         )
         col_des.metric(
             "Desempleo", 
-            int(st.session_state.historial['Desempleo'].iloc[-1])
+            round(st.session_state.historial['Desempleo'].iloc[-1], 2)
         )
-
-    st.divider()
 
     # ---------------------------------------------------------
     # 2. LOS TRES GRÁFICOS APILADOS UNO DEBAJO DEL OTRO
