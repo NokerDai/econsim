@@ -99,6 +99,8 @@ class Simulación:
 
             mercado_laboral(self.estado)
 
+            self.estado.aleatorio.shuffle(self.estado.trabajadores)
+
             mercado_productos(self.estado)
 
             actualizar_estadisticas(self.estado)
