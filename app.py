@@ -285,7 +285,20 @@ def panel():
         historial_filtrado = st.session_state.historial[
             st.session_state.historial.index > (último_día - 365)
         ].astype(float)
-        st.line_chart(historial_filtrado, height=420)
+        
+        # Gráfico de Salarios (Formal e Informal)
+        st.subheader("Evolución de Salarios")
+        st.line_chart(
+            historial_filtrado[["Salario", "Salario informal"]], 
+            height=300
+        )
+        
+        # Gráfico de Precios
+        st.subheader("Evolución de Precios")
+        st.line_chart(
+            historial_filtrado[["Precio"]], 
+            height=300
+        )
     else:
         st.info("Todavía no hay datos. Iniciá la simulación o avanzá un día.")
 
