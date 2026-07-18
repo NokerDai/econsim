@@ -118,7 +118,7 @@ st.title("📈 Simulación económica")
 # El intervalo del fragment solo está activo mientras "auto_avance" esté
 # encendido; si no, run_every=None y el panel se queda quieto (equivalente
 # a pausar el hilo en la versión de escritorio).
-run_every = 0.4 if st.session_state.auto_avance else None
+run_every = 0.01 if st.session_state.auto_avance else None
 
 
 @st.fragment(run_every=run_every)
