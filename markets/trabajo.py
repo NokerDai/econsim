@@ -16,7 +16,7 @@ def mercado_laboral(estado):
                 trabajador.contrato = None
             else:
                 trabajador.presupuesto += contrato.salario
-                contrato.empresa -= contrato.salario
+                contrato.empresa.presupuesto -= contrato.salario
 
     for empresa in estado.empresas:
         n = int(empresa.presupuesto / empresa.salario)
