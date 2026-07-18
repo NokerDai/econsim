@@ -296,18 +296,18 @@ with st.sidebar:
 
     st.slider(
         "Tasa emisión",
-        min_value=-1.0,
-        max_value=1.0,
-        step=0.01,
+        min_value=-1.00,
+        max_value=1.00,
+        step=0.001,
         key="tasa_emisión_slider",
         on_change=sincronizar_tasa_emisión_slider,
     )
 
     st.number_input(
         "Valor exacto",
-        min_value=-1.0,
-        max_value=1.0,
-        step=0.01,
+        min_value=-1.00,
+        max_value=1.00,
+        step=0.001,
         key="tasa_emisión_input",
         on_change=sincronizar_tasa_emisión_input,
     )
