@@ -1,13 +1,13 @@
 def mercado_laboral(estado):
 
     vacantes_formales = [empresa for empresa in estado.empresas for vacante in range(int(empresa.presupuesto / empresa.salario))]
+    vacantes_formales.sort(key=lambda e: e.salario, reverse=True)
 
     for trabajador in estado.trabajadores:
         if not vacantes_formales:
             break
 
-        i = estado.aleatorio.randrange(len(vacantes_formales))
-        empresa = vacantes_formales[i]
+        empresa = vacantes_formales.pop(0)
 
         trabajador.presupuesto += empresa.salario
         empresa.presupuesto -= empresa.salario

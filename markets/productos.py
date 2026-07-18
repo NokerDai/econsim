@@ -1,13 +1,13 @@
 def mercado_productos(estado):
 
     productos_disponibles = [empresa for empresa in estado.empresas for vacante in range(1)]
+    productos_disponibles.sort(key=lambda e: e.precio)
 
     for trabajador in estado.trabajadores:
         if not productos_disponibles:
             break
 
-        i = estado.aleatorio.randrange(len(productos_disponibles))
-        empresa = productos_disponibles[i]
+        empresa = productos_disponibles.pop(0)
 
         if trabajador.presupuesto >= empresa.precio:
             trabajador.presupuesto -= empresa.precio
