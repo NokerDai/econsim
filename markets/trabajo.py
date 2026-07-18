@@ -51,24 +51,9 @@ def mercado_laboral(estado):
             vacantes = []
 
             for empresa in estado.empresas:
+                empresa.vacantes_informales = int(empresa.presupuesto / empresa.salario_informal)
+                vacantes.extend([empresa] * empresa.vacantes_informales)
 
-                if empresa.salario_informal != 0:
-                    n = empresa.presupuesto / empresa.salario_informal
-                else:
-                    n = estado.config.informalidad_por_empresa
-
-                empresa.vacantes_informales = int(
-                    min(
-                        estado.config.informalidad_por_empresa,
-                        n
-                    )
-                )
-
-                vacantes.extend(
-                    [empresa] * empresa.vacantes_informales
-                )
-
-            # Orden correcto
             vacantes.sort(
                 key=lambda e: e.salario_informal,
                 reverse=True
@@ -105,7 +90,7 @@ def mercado_laboral(estado):
     vacantes_formales_proyectadas = estado.config.num_trabajadores / estado.config.num_empresas
     num_empleados_formales = sum([empresa.empleados_formales for empresa in estado.empresas])
     num_empleados_informales_proyectados = estado.config.num_trabajadores - num_empleados_formales
-    vacantes_informales_proyectadas = num_empleados_informales_proyectados / estado.config.num_empresas
+    vacantes_informales_proyectadas = (num_empleados_informales_proyectados / estado.config.num_empresas) * estado.config.informalidad_por_empresa
 
     for empresa in estado.empresas:
 
@@ -116,5 +101,5 @@ def mercado_laboral(estado):
             estado.config.salario_mínimo
         )
 
-        ratio = empresa.vacantes_informales - min(estado.config.informalidad_por_empresa, vacantes_informales_proyectadas)
+        ratio = empresa.vacantes_informales - vacantes_informales_proyectadas
         empresa.salario_informal *= 1 + ratio / 100
