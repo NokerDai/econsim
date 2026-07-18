@@ -6,16 +6,15 @@ def mercado_laboral(estado):
         if not vacantes_formales:
             break
 
-        empresa = estado.aleatorio.choice(vacantes_formales)
+        i = estado.aleatorio.randrange(len(vacantes_formales))
+        empresa = vacantes_formales[i]
 
         trabajador.presupuesto += empresa.salario
-
         empresa.presupuesto -= empresa.salario
-
         empresa.salario *= estado.config.reducción_salario
 
-        vacantes_formales.remove(empresa)
+        vacantes_formales[i] = vacantes_formales[-1]
+        vacantes_formales.pop()
 
     for empresa in vacantes_formales:
-
         empresa.salario *= estado.config.aumento_salario
