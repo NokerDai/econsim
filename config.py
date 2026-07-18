@@ -28,12 +28,9 @@ class Config:
     tasa_emisión: float = 0
 
     # Parámetros del modelo laboral
-    duración_contrato: int = 30
     reducción_salario: float = 0.99
     aumento_salario: float = 1.01
-    informalidad_por_empresa: int = 100
 
     # Parámetros del mercado
-    período_actualización_precios: int = 30
     aumento_precio: float = 1.01
     reducción_precio: float = 0.99

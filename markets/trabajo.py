@@ -9,9 +9,11 @@ def mercado_laboral(estado):
         if vacantes_diarias:
             trabajador.trabajo = True
             seleccionada = vacantes_diarias[0]
+            if estado.config.salario_mínimo_automático and seleccionada.salario > estado.config.salario_mínimo * estado.config.tasa_salario_mínimo:
+                estado.config.salario_mínimo = seleccionada.salario
             trabajador.presupuesto += seleccionada.salario
             seleccionada.presupuesto -= seleccionada.salario
-            seleccionada.salario *= estado.config.reducción_salario
+            seleccionada.salario = max(seleccionada.salario * estado.config.reducción_salario, estado.config.salario_mínimo)
             vacantes_diarias.remove(seleccionada)
 
     for vacante in vacantes_diarias:
