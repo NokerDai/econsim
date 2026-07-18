@@ -1,21 +1,31 @@
 def mercado_laboral(estado):
 
-    vacantes_formales = [empresa for empresa in estado.empresas for vacante in range(int(empresa.presupuesto / empresa.salario))]
+    vacantes = {
+        empresa: int(empresa.presupuesto / empresa.salario)
+        for empresa in estado.empresas
+    }
+
+    vacantes_totales = sum(vacantes.values())
 
     for trabajador in estado.trabajadores:
-        if not vacantes_formales:
+        if vacantes_totales == 0:
             break
 
-        empresa = estado.aleatorio.choice(vacantes_formales)
+        objetivo = estado.aleatorio.randrange(vacantes_totales)
+
+        acumuladas = 0
+        for empresa, cantidad in vacantes.items():
+            acumuladas += cantidad
+            if objetivo < acumuladas:
+                break
 
         trabajador.presupuesto += empresa.salario
-
         empresa.presupuesto -= empresa.salario
-
         empresa.salario *= estado.config.reducción_salario
 
-        vacantes_formales.remove(empresa)
+        vacantes[empresa] -= 1
+        vacantes_totales -= 1
 
-    for empresa in vacantes_formales:
-
-        empresa.salario *= estado.config.aumento_salario
+    for empresa, cantidad in vacantes.items():
+        if cantidad:
+            empresa.salario *= estado.config.aumento_salario
