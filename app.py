@@ -186,7 +186,7 @@ with st.sidebar:
     st.slider(
         "Velocidad (días por paso)",
         min_value=1,
-        max_value=100,
+        max_value=1000,
         key="velocidad"
     )
 
@@ -214,7 +214,7 @@ with st.sidebar:
             "Tasa de salario mínimo",
             min_value=0.0,
             max_value=2.0,
-            step=0.05,
+            step=0.01,
             key="tasa_slider",
             on_change=sincronizar_tasa,
         )
