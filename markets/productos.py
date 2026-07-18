@@ -2,16 +2,18 @@ def mercado_productos(estado):
 
     for trabajador in estado.trabajadores:
 
-        empresa = estado.aleatorio.choice(estado.empresas)
+        if estado.aleatorio.random() <= estado.config.probabilidad_compra:
 
-        if trabajador.presupuesto >= empresa.precio:
+            empresa = estado.aleatorio.choice(estado.empresas)
 
-            trabajador.presupuesto -= empresa.precio
+            if trabajador.presupuesto >= empresa.precio:
 
-            empresa.presupuesto += empresa.precio
+                trabajador.presupuesto -= empresa.precio
 
-            empresa.precio *= estado.config.aumento_precio
+                empresa.presupuesto += empresa.precio
 
-        else:
+                empresa.precio *= estado.config.aumento_precio
 
-            empresa.precio *= estado.config.reducción_precio
+            else:
+
+                empresa.precio *= estado.config.reducción_precio
