@@ -10,19 +10,8 @@ def mercado_productos(estado):
 
             empresa.presupuesto += empresa.precio
 
-            empresa.ventas_mes += 1
+            empresa.precio *= estado.config.reducción_precio
 
-    if estado.día % estado.config.período_actualización_precios == 0:
-
-        for empresa in estado.empresas:
-
-            if empresa.ventas_mes < empresa.ventas_mes_anterior:
-
-                empresa.precio *= estado.config.reducción_precio
-
-            elif empresa.ventas_mes > empresa.ventas_mes_anterior:
-
-                empresa.precio *= estado.config.aumento_precio
-
-            empresa.ventas_mes_anterior = empresa.ventas_mes
-            empresa.ventas_mes = 0
+        else:
+            
+            empresa.precio *= estado.config.aumento_precio
