@@ -97,7 +97,6 @@ def mercado_laboral(estado):
             )[0]
 
             empresa = empresas_informales[i]
-            empresa.empleados += 1 
 
             trabajador.contrato = Contrato(
                 empresa=empresa,
