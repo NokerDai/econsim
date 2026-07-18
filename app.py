@@ -47,9 +47,15 @@ if "auto_avance" not in st.session_state:
     st.session_state.auto_avance = False
 
 if "historial" not in st.session_state:
-    # Se fuerza la inicialización de las columnas a float para evitar dtypes de tipo 'object'
     st.session_state.historial = pd.DataFrame(
-        columns=["Salario", "Salario informal", "Precio"]
+        columns=[
+            "Salario", 
+            "Salario informal", 
+            "Precio", 
+            "Empleo formal", 
+            "Empleo informal", 
+            "Desempleo"
+        ]
     ).astype(float)
     st.session_state.historial.index.name = "Día"
 
@@ -116,10 +122,13 @@ def registrar_snapshots(snapshots):
                 "Día": int(snap.día),
                 "Salario": float(snap.salario_medio),
                 "Salario informal": float(snap.salario_informal_medio),
-                "Precio": float(snap.precio_medio)
+                "Precio": float(snap.precio_medio),
+                # NUEVAS VARIABLES:
+                "Empleo formal": float(snap.empleo_formal),
+                "Empleo informal": float(snap.empleo_informal),
+                "Desempleo": float(snap.desempleo)
             })
     if nuevos_datos:
-        # Forzar casting a float al registrar nuevos datos
         df_nuevos = pd.DataFrame(nuevos_datos).set_index("Día").astype(float)
         st.session_state.historial = pd.concat([st.session_state.historial, df_nuevos])
 
@@ -147,8 +156,15 @@ with st.sidebar:
     if st.button("🔄 Reiniciar", use_container_width=True):
         sim.reset()
         st.session_state.historial = pd.DataFrame(
-            columns=["Salario", "Salario informal", "Precio"]
-        ).astype(float)  # Forzar casting a float tras reiniciar
+            columns=[
+                "Salario", 
+                "Salario informal", 
+                "Precio", 
+                "Empleo formal", 
+                "Empleo informal", 
+                "Desempleo"
+            ]
+        ).astype(float)
         st.session_state.historial.index.name = "Día"
         st.session_state.auto_avance = False
         st.rerun()
@@ -299,6 +315,40 @@ def panel():
             historial_filtrado[["Precio"]], 
             height=300
         )
+
+    if hay_datos:
+        col_emp, col_inf, col_des = st.columns(3)
+        col_emp.metric("Empleo formal", int(st.session_state.historial['Empleo formal'].iloc[-1]))
+        col_inf.metric("Empleo informal", int(st.session_state.historial['Empleo informal'].iloc[-1]))
+        col_des.metric("Desempleo", int(st.session_state.historial['Desempleo'].iloc[-1]))
+
+    st.divider()
+
+    if hay_datos:
+        último_día = st.session_state.historial.index.max()
+        historial_filtrado = st.session_state.historial[
+            st.session_state.historial.index > (último_día - 365)
+        ].astype(float)
+        
+        # Columna 1: Gráficos de Dinero/Salarios
+        col_izq, col_der = st.columns(2)
+        
+        with col_izq:
+            st.subheader("Salarios Medios (Móvil 365d)")
+            st.line_chart(historial_filtrado[["Salario", "Salario informal"]], height=280)
+            
+            st.subheader("Precio Medio (Móvil 365d)")
+            st.line_chart(historial_filtrado[["Precio"]], height=200)
+            
+        # Columna 2: Gráfico del Mercado Laboral
+        with col_der:
+            st.subheader("Estado del Mercado Laboral (Móvil 365d)")
+            # Graficamos el empleo formal, informal y desempleo juntos en un mismo lienzo
+            st.line_chart(
+                historial_filtrado[["Empleo formal", "Empleo informal", "Desempleo"]], 
+                height=520
+            )
+            
     else:
         st.info("Todavía no hay datos. Iniciá la simulación o avanzá un día.")
 
