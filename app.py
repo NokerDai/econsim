@@ -60,7 +60,7 @@ if "historial" not in st.session_state:
     st.session_state.historial.index.name = "Día"
 
 if "velocidad" not in st.session_state:
-    st.session_state.velocidad = 1
+    st.session_state.velocidad = 100
 
 sim = st.session_state.simulación
 
@@ -123,7 +123,6 @@ def registrar_snapshots(snapshots):
                 "Salario": float(snap.salario_medio),
                 "Salario informal": float(snap.salario_informal_medio),
                 "Precio": float(snap.precio_medio),
-                # NUEVAS VARIABLES:
                 "Empleo formal": float(snap.empleo_formal),
                 "Empleo informal": float(snap.empleo_informal),
                 "Desempleo": float(snap.desempleo)
@@ -250,7 +249,7 @@ with st.sidebar:
 
 st.title("📈 Simulación económica")
 
-run_every = 0.4 if st.session_state.auto_avance else None
+run_every = 1 if st.session_state.auto_avance else None
 
 
 @st.fragment(run_every=run_every)
