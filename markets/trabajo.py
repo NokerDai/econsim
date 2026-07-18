@@ -102,14 +102,14 @@ def mercado_laboral(estado):
     # Ajustar salarios empresas
     # ===========================
 
-    vacantes_promedio = (
-        estado.config.num_trabajadores /
-        estado.config.num_empresas
-    )
+    vacantes_formales_proyectadas = estado.config.num_trabajadores / estado.config.num_empresas
+    num_empleados_formales = sum[(empresa.empleados_formales for empresa in estado.empresas)]
+    num_empleados_informales_proyectados = estado.config.num_trabajadores - num_empleados_formales
+    vacantes_informales_proyectadas = num_empleados_informales_proyectados / estado.config.num_empresas
 
     for empresa in estado.empresas:
 
-        ratio = empresa.vacantes_formales - vacantes_promedio
+        ratio = empresa.vacantes_formales - vacantes_formales_proyectadas
         empresa.salario *= 1 + ratio / 100
         empresa.salario = max(
             empresa.salario,
@@ -117,5 +117,5 @@ def mercado_laboral(estado):
         )
 
         if empresa.vacantes_informales > 0:
-            ratio = empresa.vacantes_informales - vacantes_promedio
+            ratio = empresa.vacantes_informales - vacantes_informales_proyectadas
             empresa.salario_informal *= 1 + ratio / 100
