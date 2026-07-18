@@ -103,7 +103,7 @@ def mercado_laboral(estado):
     # ===========================
 
     vacantes_formales_proyectadas = estado.config.num_trabajadores / estado.config.num_empresas
-    num_empleados_formales = sum[(empresa.empleados_formales for empresa in estado.empresas)]
+    num_empleados_formales = sum([empresa.empleados_formales for empresa in estado.empresas])
     num_empleados_informales_proyectados = estado.config.num_trabajadores - num_empleados_formales
     vacantes_informales_proyectadas = num_empleados_informales_proyectados / estado.config.num_empresas
 
