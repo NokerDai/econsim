@@ -16,7 +16,7 @@ class Config:
     num_empresas: int = 100
     
     # Economía
-    presupuesto_inicial: float = 100e2
+    presupuesto_inicial: float = 330e2
     precio_inicial: float = 300
     salario_inicial: float = 300
     salario_informal_inicial: float = 200
