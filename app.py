@@ -58,7 +58,7 @@ if "auto_avance" not in st.session_state:
     st.session_state.auto_avance = False
 
 if "ajuste_velocidad_automatico" not in st.session_state:
-    st.session_state.ajuste_velocidad_automatico = True
+    st.session_state.ajuste_velocidad_automatico = False
 
 if "historial" not in st.session_state:
     st.session_state.historial = pd.DataFrame(
