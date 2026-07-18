@@ -9,21 +9,18 @@ def mercado_laboral(estado):
     empresas_formales = []
     vacantes_formales = []
 
-    # 1. Liberar contratos vencidos (aplica tanto a formales como informales)
     for trabajador in estado.trabajadores:
         if trabajador.contrato is not None:
             contrato = trabajador.contrato
             if contrato.vence <= estado.día:
                 trabajador.contrato = None
 
-    # 2. Calcular vacantes para el mercado laboral formal
     for empresa in estado.empresas:
         n = int(empresa.presupuesto / empresa.salario)
         if n > 0:
             empresas_formales.append(empresa)
             vacantes_formales.append(n)
 
-    # 3. Contratación en el mercado formal
     for trabajador in estado.trabajadores:
         if trabajador.contrato is None:
             if not empresas_formales:
@@ -64,7 +61,6 @@ def mercado_laboral(estado):
                 vacantes_formales.pop(i)
                 empresas_formales.pop(i)
 
-    # Ajustar dinámicamente el salario mínimo si la opción automática está activa
     if estado.config.salario_mínimo_automático and estado.config.salario_mínimo < salario_máximo * estado.config.tasa_salario_mínimo:
         estado.config.salario_mínimo = salario_máximo * estado.config.tasa_salario_mínimo
 
@@ -74,19 +70,21 @@ def mercado_laboral(estado):
             estado.config.aumento_salario_vacante ** vacantes
         )
 
-    #### MERCADO INFORMAL ####
+    # MERCADO LABORAL INFORMAL
 
     empresas_informales = []
     vacantes_informales = []
 
-    empleados_informales_activos = {empresa: 0 for empresa in estado.empresas}
+    empleados_informales_activos = {id(empresa): 0 for empresa in estado.empresas}
     for t in estado.trabajadores:
         if t.contrato is not None and t.contrato.tipo == "informal":
-            empleados_informales_activos[t.contrato.empresa] += 1
+            id_empresa = id(t.contrato.empresa)
+            if id_empresa in empleados_informales_activos:
+                empleados_informales_activos[id_empresa] += 1
 
     for empresa in estado.empresas:
         limite_informal = estado.config.informalidad_por_empresa
-        activos = empleados_informales_activos[empresa]
+        activos = empleados_informales_activos[id(empresa)]
         
         if activos < limite_informal:
             n_presupuesto = int(empresa.presupuesto / empresa.salario_informal)
@@ -109,7 +107,6 @@ def mercado_laboral(estado):
 
             empresa = empresas_informales[i]
 
-            # Creamos un contrato informal
             trabajador.contrato = Contrato(
                 empresa=empresa,
                 vence=estado.día + estado.config.duración_contrato,
