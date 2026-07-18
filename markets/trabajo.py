@@ -71,59 +71,61 @@ def mercado_laboral(estado):
         )
 
     # MERCADO LABORAL INFORMAL
+    trabajadores_desempleados = len(trabajador for trabajador in estado.trabajadores if trabajador.contrato is None)
 
-    empresas_informales = []
-    vacantes_informales = []
+    if trabajadores_desempleados:
 
-    empleados_informales_activos = {id(empresa): 0 for empresa in estado.empresas}
-    for t in estado.trabajadores:
-        if t.contrato is not None and t.contrato.tipo == "informal":
-            id_empresa = id(t.contrato.empresa)
-            if id_empresa in empleados_informales_activos:
-                empleados_informales_activos[id_empresa] += 1
+        empresas_informales = []
+        vacantes_informales = []
 
-    for empresa in estado.empresas:
-        limite_informal = estado.config.informalidad_por_empresa
-        activos = empleados_informales_activos[id(empresa)]
+        empleados_informales_activos = {id(empresa): 0 for empresa in estado.empresas}
+        for t in estado.trabajadores:
+            if t.contrato is not None and t.contrato.tipo == "informal":
+                id_empresa = id(t.contrato.empresa)
+                if id_empresa in empleados_informales_activos:
+                    empleados_informales_activos[id_empresa] += 1
+
+        for empresa in estado.empresas:
+            limite_informal = estado.config.informalidad_por_empresa
+            activos = empleados_informales_activos[id(empresa)]
         
-        if activos < limite_informal:
-            n_presupuesto = int(empresa.presupuesto / empresa.salario_informal)
-            # El límite de vacantes es la capacidad restante permitida por empresa
-            n = min(n_presupuesto, limite_informal - activos)
-            if n > 0:
-                empresas_informales.append(empresa)
-                vacantes_informales.append(n)
+            if activos < limite_informal:
+                n_presupuesto = int(empresa.presupuesto / empresa.salario_informal)
+                n = min(n_presupuesto, limite_informal - activos)
+                if n > 0:
+                    empresas_informales.append(empresa)
+                    vacantes_informales.append(n)
 
-    for trabajador in estado.trabajadores:
-        if trabajador.contrato is None:
-            if not empresas_informales:
-                break
+        for trabajador in estado.trabajadores:
+            if trabajador.contrato is None:
+                if not empresas_informales:
+                    break
 
-            i = estado.aleatorio.choices(
-                range(len(empresas_informales)),
-                weights=vacantes_informales,
-                k=1
-            )[0]
+                i = estado.aleatorio.choices(
+                    range(len(empresas_informales)),
+                    weights=vacantes_informales,
+                    k=1
+                )[0]
 
-            empresa = empresas_informales[i]
+                empresa = empresas_informales[i]
 
-            trabajador.contrato = Contrato(
-                empresa=empresa,
-                vence=estado.día + estado.config.duración_contrato,
-                tipo="informal"
+                trabajador.contrato = Contrato(
+                    empresa=empresa,
+                    vence=estado.día + estado.config.duración_contrato,
+                    tipo="informal"
+                )
+
+                empresa.presupuesto -= empresa.salario_informal
+                trabajador.presupuesto += empresa.salario_informal
+
+                empresa.salario_informal *= estado.config.reducción_salario_contratación
+
+                vacantes_informales[i] -= 1
+                if vacantes_informales[i] == 0:
+                    vacantes_informales.pop(i)
+                    empresas_informales.pop(i)
+
+        for empresa, vacantes in zip(empresas_informales, vacantes_informales):
+            empresa.salario_informal *= (
+                estado.config.aumento_salario_vacante ** vacantes
             )
-
-            empresa.presupuesto -= empresa.salario_informal
-            trabajador.presupuesto += empresa.salario_informal
-
-            empresa.salario_informal *= estado.config.reducción_salario_contratación
-
-            vacantes_informales[i] -= 1
-            if vacantes_informales[i] == 0:
-                vacantes_informales.pop(i)
-                empresas_informales.pop(i)
-
-    for empresa, vacantes in zip(empresas_informales, vacantes_informales):
-        empresa.salario_informal *= (
-            estado.config.aumento_salario_vacante ** vacantes
-        )
