@@ -10,8 +10,8 @@ def mercado_productos(estado):
 
             empresa.presupuesto += empresa.precio
 
-            empresa.precio *= estado.config.reducción_precio
+            empresa.precio *= estado.config.aumento_precio
 
         else:
             
-            empresa.precio *= estado.config.aumento_precio
+            empresa.precio *= estado.config.reducción_precio
