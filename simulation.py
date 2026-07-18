@@ -8,6 +8,7 @@ from markets import (
     emisión_monetaria,
     mercado_laboral,
     mercado_productos,
+    producción,
 )
 
 from estadisticas import actualizar_estadisticas
@@ -114,6 +115,8 @@ class Simulación:
             emisión_monetaria(self.estado)
 
             mercado_laboral(self.estado)
+
+            producción(self.estado)
 
             mercado_productos(self.estado)
 

@@ -1,21 +1,13 @@
 # --- productos.py ---
 
 def mercado_productos(estado):
-    empleados_por_empresa = {empresa: 0 for empresa in estado.empresas}
-    for trabajador in estado.trabajadores:
-        if trabajador.contrato is not None:
-            empleados_por_empresa[trabajador.contrato.empresa] += 1
-            
-    for empresa in estado.empresas:
-        empresa.empleados = empleados_por_empresa[empresa]
-
     empresas_vendedoras = []
-    productos_diarios = []  # Almacena el stock diario disponible para la venta
+    productos_diarios = []
 
     for empresa in estado.empresas:
-        if empresa.empleados > 0:
+        if empresa.stock > 0:
             empresas_vendedoras.append(empresa)
-            productos_diarios.append(empresa.empleados)
+            productos_diarios.append(empresa.stock)
 
     ventas_hoy = {empresa: 0 for empresa in estado.empresas}
 
@@ -38,6 +30,7 @@ def mercado_productos(estado):
                 empresa.precio *= estado.config.aumento_precio
                 
                 ventas_hoy[empresa] += 1
+                empresa.stock -= 1
                 
                 productos_diarios[i] -= 1
                 if productos_diarios[i] == 0:
@@ -47,7 +40,7 @@ def mercado_productos(estado):
                 empresa.precio *= estado.config.reducción_precio
 
     for empresa in estado.empresas:
-        stock_inicial = empresa.empleados
+        stock_inicial = empresa.stock + ventas_hoy[empresa]
         if stock_inicial > 0:
             stock_restante = stock_inicial - ventas_hoy[empresa]
             if stock_restante > 0:

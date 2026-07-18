@@ -20,6 +20,7 @@ def mercado_laboral(estado):
             contrato = trabajador.contrato
 
             if contrato.vence <= estado.día:
+                trabajador.contrato.empresa.empleados -= 1
                 trabajador.contrato = None
 
         if trabajador.contrato is None:
@@ -34,6 +35,8 @@ def mercado_laboral(estado):
             )[0]
 
             empresa = empresas_formales[i]
+
+            empresa.empleados += 1
 
             trabajador.contrato = Contrato(
                 empresa=empresa,
@@ -95,6 +98,7 @@ def mercado_laboral(estado):
             )[0]
 
             empresa = empresas_informales[i]
+            empresa.empleados += 1 
 
             trabajador.contrato = Contrato(
                 empresa=empresa,

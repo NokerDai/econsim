@@ -10,3 +10,7 @@ class Empresa:
     salario: float
 
     salario_informal: float
+
+    empleados: int
+
+    stock: int
