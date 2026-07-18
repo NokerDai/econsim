@@ -15,4 +15,4 @@ class Empresa:
 
     ventas: int = 0
 
-    ventas_anteriores: int = 0
+    ventas_anteriores: int = 1000
