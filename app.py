@@ -13,7 +13,6 @@ st.set_page_config(
 )
 
 
-# Inyección de estilos CSS para ocultar los botones + y - de los campos numéricos
 st.markdown(
     """
     <style>
