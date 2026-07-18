@@ -87,10 +87,10 @@ if "tasa_slider" not in st.session_state:
 
 
 if "tasa_emisión_slider" not in st.session_state:
-    st.session_state.tasa_emisión_slider = int(sim.config.tasa_tasa_emisión)
+    st.session_state.tasa_emisión_slider = int(sim.config.tasa_emisión)
 
 if "tasa_emisión_input" not in st.session_state:
-    st.session_state.tasa_emisión_input = int(sim.config.tasa_tasa_emisión)
+    st.session_state.tasa_emisión_input = int(sim.config.tasa_emisión)
 
 
 def sincronizar_salario_slider():
@@ -261,18 +261,19 @@ with st.sidebar:
     st.subheader("tasa_emisión monetaria diaria")
 
     st.slider(
-        "tasa_emisión monetaria diaria",
-        min_value=0,
-        max_value=100000,
+        "Tasa emisión",
+        min_value=-1,
+        max_value=1,
+        step=0.01,
         key="tasa_emisión_slider",
         on_change=sincronizar_tasa_emisión_slider,
     )
 
     st.number_input(
         "Valor exacto",
-        min_value=0,
-        max_value=100000,
-        step=100,
+        min_value=-1,
+        max_value=1,
+        step=0.01,
         key="tasa_emisión_input",
         on_change=sincronizar_tasa_emisión_input,
     )
