@@ -248,6 +248,7 @@ with st.sidebar:
         st.session_state.salario_input = valor_salario
         sim.cambiar_salario_mínimo(valor_salario)
 
+    # Creamos un marcador de posición que se actualizará de forma dinámica
     salario_metric_placeholder = st.empty()
 
     if st.session_state.salario_mínimo_automático:
@@ -349,7 +350,7 @@ def panel():
     hay_datos = len(st.session_state.historial) > 0
 
     # ---------------------------------------------------------
-    # 1. TARJETAS / MÉTRICAS SUPERIORES
+    # 1. TARJETAS / MÉTRICAS SUPERIORES (PROMEDIO DEL TRAMO DE VELOCIDAD)
     # ---------------------------------------------------------
     (
         col_día, 
@@ -363,35 +364,33 @@ def panel():
 
     col_día.metric("Día", sim.estado.día)
 
-    col_salario.metric(
-        "Salario medio",
-        f"{st.session_state.historial['Salario'].iloc[-1]:.2f}" if hay_datos else "—",
-    )
+    if hay_datos:
+        # Obtenemos los últimos N registros correspondientes a la velocidad actual
+        n_dias = max(1, int(st.session_state.velocidad))
+        historial_reciente = st.session_state.historial.tail(n_dias) [1]
 
-    col_salario_inf.metric(
-        "Salario informal med.",
-        f"{st.session_state.historial['Salario informal'].iloc[-1]:.2f}" if hay_datos else "—",
-    )
+        # Calculamos los promedios de este tramo
+        val_salario = historial_reciente["Salario"].mean() [1]
+        val_salario_inf = historial_reciente["Salario informal"].mean() [1]
+        val_precio = historial_reciente["Precio"].mean() [1]
+        val_emp_formal = historial_reciente["Empleo formal"].mean() [1]
+        val_emp_informal = historial_reciente["Empleo informal"].mean() [1]
+        val_desempleo = historial_reciente["Desempleo"].mean() [1]
 
-    col_precio.metric(
-        "Precio medio",
-        f"{st.session_state.historial['Precio'].iloc[-1]:.2f}" if hay_datos else "—",
-    )
-
-    col_emp_formal.metric(
-        "Empleo formal",
-        f"{st.session_state.historial['Empleo formal'].iloc[-1] * 100:.1f}%" if hay_datos else "—",
-    )
-
-    col_emp_informal.metric(
-        "Empleo informal",
-        f"{st.session_state.historial['Empleo informal'].iloc[-1] * 100:.1f}%" if hay_datos else "—",
-    )
-
-    col_desempleo.metric(
-        "Desempleo",
-        f"{st.session_state.historial['Desempleo'].iloc[-1] * 100:.1f}%" if hay_datos else "—",
-    )
+        # Renderizamos las tarjetas con el promedio calculado
+        col_salario.metric("Salario medio", f"{val_salario:.2f}")
+        col_salario_inf.metric("Salario informal med.", f"{val_salario_inf:.2f}")
+        col_precio.metric("Precio medio", f"{val_precio:.2f}")
+        col_emp_formal.metric("Empleo formal", f"{val_emp_formal * 100:.1f}%")
+        col_emp_informal.metric("Empleo informal", f"{val_emp_informal * 100:.1f}%")
+        col_desempleo.metric("Desempleo", f"{val_desempleo * 100:.1f}%")
+    else:
+        col_salario.metric("Salario medio", "—")
+        col_salario_inf.metric("Salario informal med.", "—")
+        col_precio.metric("Precio medio", "—")
+        col_emp_formal.metric("Empleo formal", "—")
+        col_emp_informal.metric("Empleo informal", "—")
+        col_desempleo.metric("Desempleo", "—")
 
     # ---------------------------------------------------------
     # 2. LOS TRES GRÁFICOS APILADOS UNO DEBAJO DEL OTRO
