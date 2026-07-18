@@ -123,8 +123,6 @@ def mercado_laboral(estado):
                 empresa.presupuesto -= empresa.salario_informal
                 trabajador.presupuesto += empresa.salario_informal
 
-                empresa.salario_informal *= estado.config.reducción_salario_contratación
-
                 vacantes_informales[i] -= 1
                 if vacantes_informales[i] == 0:
                     vacantes_informales.pop(i)
