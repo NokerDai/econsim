@@ -87,6 +87,43 @@ def registrar_snapshots(snapshots):
 
 
 with st.sidebar:
+    st.subheader("Control de ejecución")
+
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        if st.session_state.auto_avance:
+            if st.button("⏸ Pausar", use_container_width=True):
+                st.session_state.auto_avance = False
+                st.rerun()
+        else:
+            if st.button("▶ Iniciar", use_container_width=True):
+                st.session_state.auto_avance = True
+                st.rerun()
+
+    with col_btn2:
+        if st.button("⏭ Día", disabled=st.session_state.auto_avance, use_container_width=True):
+            if sim.step():
+                registrar_snapshots([sim.obtener_snapshot()])
+            st.rerun()
+
+    if st.button("🔄 Reiniciar", use_container_width=True):
+        sim.reset()
+        st.session_state.historial = pd.DataFrame(
+            columns=["Salario", "Salario informal", "Precio"]
+        )
+        st.session_state.historial.index.name = "Día"
+        st.session_state.auto_avance = False
+        st.rerun()
+
+    st.slider(
+        "Velocidad (días por paso)",
+        min_value=1,
+        max_value=100,
+        key="velocidad"
+    )
+
+    st.divider()
+
     st.subheader("Salario mínimo")
 
     st.checkbox(
@@ -101,25 +138,26 @@ with st.sidebar:
     if st.session_state.salario_mínimo_automático:
         st.session_state.salario_slider = int(sim.config.salario_mínimo)
         st.session_state.salario_input = int(sim.config.salario_mínimo)
+        
+        # Muestra el valor actual de forma informativa
+        st.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
+    else:
+        st.slider(
+            "Salario mínimo",
+            min_value=0,
+            max_value=10000,
+            key="salario_slider",
+            on_change=sincronizar_salario_slider,
+        )
 
-    st.slider(
-        "Salario mínimo",
-        min_value=0,
-        max_value=10000,
-        key="salario_slider",
-        disabled=st.session_state.salario_mínimo_automático,
-        on_change=sincronizar_salario_slider,
-    )
-
-    st.number_input(
-        "Valor exacto",
-        min_value=0,
-        max_value=10000,
-        step=1,
-        key="salario_input",
-        disabled=st.session_state.salario_mínimo_automático,
-        on_change=sincronizar_salario_input,
-    )
+        st.number_input(
+            "Valor exacto",
+            min_value=0,
+            max_value=10000,
+            step=1,
+            key="salario_input",
+            on_change=sincronizar_salario_input,
+        )
 
 
     st.divider()
@@ -145,45 +183,6 @@ with st.sidebar:
 
 
 st.title("📈 Simulación económica")
-
-# Botones de control de ejecución de la simulación
-col_btn1, col_btn2, col_btn3, col_vel = st.columns([1.5, 1.5, 1.5, 3])
-
-with col_btn1:
-    if st.session_state.auto_avance:
-        if st.button("⏸ Pausar", use_container_width=True):
-            st.session_state.auto_avance = False
-            st.rerun()
-    else:
-        if st.button("▶ Iniciar", use_container_width=True):
-            st.session_state.auto_avance = True
-            st.rerun()
-
-with col_btn2:
-    if st.button("⏭ Día siguiente", disabled=st.session_state.auto_avance, use_container_width=True):
-        if sim.step():
-            registrar_snapshots([sim.obtener_snapshot()])
-        st.rerun()
-
-with col_btn3:
-    if st.button("🔄 Reiniciar", use_container_width=True):
-        sim.reset()
-        st.session_state.historial = pd.DataFrame(
-            columns=["Salario", "Salario informal", "Precio"]
-        )
-        st.session_state.historial.index.name = "Día"
-        st.session_state.auto_avance = False
-        st.rerun()
-
-with col_vel:
-    st.slider(
-        "Velocidad (días por paso)",
-        min_value=1,
-        max_value=100,
-        key="velocidad"
-    )
-
-st.divider()
 
 run_every = 0.4 if st.session_state.auto_avance else None
 
