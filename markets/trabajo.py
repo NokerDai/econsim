@@ -102,25 +102,26 @@ def mercado_laboral(estado):
     # Ajustar salarios empresas
     # ===========================
 
+    def actualizar_salario(salario, empleados, vacantes, aumento, reduccion):
+        return (salario * reduccion**empleados * aumento**(vacantes - empleados))
+
     for empresa in estado.empresas:
 
         empresa.salario = max(
-            empresa.salario *
-            estado.config.reducción_salario ** empresa.empleados_formales,
+            actualizar_salario(
+                empresa.salario,
+                empresa.empleados_formales,
+                empresa.vacantes_formales,
+                estado.config.aumento_salario,
+                estado.config.reducción_salario
+            ),
             estado.config.salario_mínimo
         )
 
-        empresa.salario *= (
-            estado.config.aumento_salario **
-            (empresa.vacantes_formales - empresa.empleados_formales)
-        )
-
-        empresa.salario_informal *= (
-            estado.config.reducción_salario **
-            empresa.empleados_informales
-        )
-
-        empresa.salario_informal *= (
-            estado.config.aumento_salario **
-            (empresa.vacantes_informales - empresa.empleados_informales)
+        empresa.salario_informal = actualizar_salario(
+            empresa.salario_informal,
+            empresa.empleados_informales,
+            empresa.vacantes_informales,
+            estado.config.aumento_salario,
+            estado.config.reducción_salario
         )
