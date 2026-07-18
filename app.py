@@ -4,6 +4,7 @@ import pandas as pd
 
 from config import Config
 from simulation import Simulación
+from salario_utils import resolver_valor_salario
 
 
 st.set_page_config(
@@ -66,10 +67,10 @@ if "salario_mínimo_automático" not in st.session_state:
 
 
 if "salario_slider" not in st.session_state:
-    st.session_state.salario_slider = int(sim.config.salario_mínimo)
+    st.session_state.salario_slider = int(sim.config.salario_mínimo or 0)
 
 if "salario_input" not in st.session_state:
-    st.session_state.salario_input = int(sim.config.salario_mínimo)
+    st.session_state.salario_input = int(sim.config.salario_mínimo or 0)
 
 
 if "informalidad_por_empresa_slider" not in st.session_state:
@@ -225,10 +226,19 @@ with st.sidebar:
     if st.session_state.salario_mínimo_automático != sim.config.salario_mínimo_automático:
         sim.config.salario_mínimo_automático = st.session_state.salario_mínimo_automático
 
-    # Sincronizar sliders si el salario mínimo se controla automáticamente
     if st.session_state.salario_mínimo_automático:
-        st.session_state.salario_slider = int(sim.config.salario_mínimo)
-        st.session_state.salario_input = int(sim.config.salario_mínimo)
+        st.session_state.salario_slider = int(sim.config.salario_mínimo or 0)
+        st.session_state.salario_input = int(sim.config.salario_mínimo or 0)
+    else:
+        valor_salario = resolver_valor_salario(
+            False,
+            st.session_state.salario_slider,
+            st.session_state.salario_input,
+            sim.config.salario_mínimo,
+        )
+        st.session_state.salario_slider = valor_salario
+        st.session_state.salario_input = valor_salario
+        sim.cambiar_salario_mínimo(valor_salario)
 
     # Creamos un marcador de posición que se actualizará de forma dinámica
     salario_metric_placeholder = st.empty()
