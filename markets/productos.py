@@ -1,20 +1,20 @@
 def mercado_productos(estado):
 
-    empresas = estado.empresas
-    aleatorio = estado.aleatorio
-    aumento = estado.config.aumento_precio
-    reduccion = estado.config.reducción_precio
+    productos_disponibles = [empresa for empresa in estado.empresas for vacante in range(3)]
 
     for trabajador in estado.trabajadores:
+        if not productos_disponibles:
+            break
 
-        empresa = aleatorio.choice(empresas)
+        i = estado.aleatorio.randrange(len(productos_disponibles))
+        empresa = productos_disponibles[i]
 
-        if trabajador.presupuesto >= empresa.precio:
-            precio = empresa.precio
+        trabajador.presupuesto -= empresa.precio
+        empresa.presupuesto += empresa.precio
+        empresa.precio *= estado.config.aumento_precio
 
-            trabajador.presupuesto -= precio
-            empresa.presupuesto += precio
-            empresa.precio = precio * aumento
+        productos_disponibles[i] = productos_disponibles[-1]
+        productos_disponibles.pop()
 
-        else:
-            empresa.precio *= reduccion
+    for empresa in productos_disponibles:
+        empresa.precio *= estado.config.reducción_precio
