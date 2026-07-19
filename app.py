@@ -415,7 +415,7 @@ def graficar_precio_y_poder_compra(df):
     else:
         y_scale_price = alt.Scale(zero=False)
 
-    # Línea del precio medio (Color gris/azul pizarra para diferenciar de los poderes de compra)
+    # Línea del precio medio (Color gris/azul pizarra)
     chart_price = alt.Chart(df_reset).mark_line(color="#4A5568").encode(
         x=alt.X("Día:Q", title="Día"),
         y=alt.Y("Precio:Q", title="Precio Medio", scale=y_scale_price, axis=alt.Axis(titleColor="#4A5568"))
@@ -429,7 +429,7 @@ def graficar_precio_y_poder_compra(df):
         value_name="Valor"
     )
 
-    # Estabilidad del eje Y derecho (Poder de compra) ante nula variación
+    # Estabilidad del eje Y derecho (Poder de compra)
     min_poder = df_melted_poder["Valor"].min()
     max_poder = df_melted_poder["Valor"].max()
 
@@ -487,18 +487,19 @@ def graficar_precio_y_poder_compra(df):
             text="nombre:N"
         )
 
-        # Capa combinada con resolución de escala Y independiente (Eje izquierdo vs. derecho)
+        # Combinamos las capas resolviendo escalas sin activar .interactive()
         chart = alt.layer(chart_price, chart_poder, rules, labels).resolve_scale(
             y="independent"
         ).properties(
             height=320
-        ).interactive()
+        )
     else:
+        # Combinamos sin activar .interactive()
         chart = alt.layer(chart_price, chart_poder).resolve_scale(
             y="independent"
         ).properties(
             height=320
-        ).interactive()
+        )
 
     st.altair_chart(chart, use_container_width=True)
 
