@@ -19,6 +19,8 @@ class Empresa:
 
     empleados_informales: int = 0
 
-    inventario: float = 20
+    producción: float = 0.0
+
+    inventario: float = 0
 
     unidades_vendidas: float = 0.0
