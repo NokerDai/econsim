@@ -288,28 +288,44 @@ def graficar_line_chart(df, columnas, titulo=""):
     if not columnas_validas:
         return
 
-    # Creamos una copia defensiva asegurando que el índice tiene el nombre 'Día'
     df_reset = df.copy()
     if df_reset.index.name is None:
         df_reset.index.name = "Día"
     df_reset = df_reset.reset_index()
 
-    # Formateamos el dataframe a una estructura vertical (melted) para que Altair grafique múltiples líneas
-    df_melted = df_reset.melt(
-        id_vars=["Día"],
-        value_vars=columnas_validas,
-        var_name="Métrica",
-        value_name="Valor"
-    )
+    if len(columnas_validas) == 1:
+        col = columnas_validas[0]
+        min_val = df_reset[col].min()
+        max_val = df_reset[col].max()
+    else:
+        min_val = df_reset[columnas_validas].min().min()
+        max_val = df_reset[columnas_validas].max().max()
 
-    # Gráfico base con las líneas de datos
-    chart_line = alt.Chart(df_melted).mark_line().encode(
-        x=alt.X("Día:Q", title="Día"),
-        y=alt.Y("Valor:Q", title=None, scale=alt.Scale(zero=False)),
-        color=alt.Color("Métrica:N", legend=alt.Legend(orient="top", title=None))
-    )
+    if pd.notna(min_val) and pd.notna(max_val) and abs(max_val - min_val) < 1e-4:
+        margen = max(1.0, abs(min_val) * 0.1)
+        y_scale = alt.Scale(domain=[min_val - margen, max_val + margen], zero=False)
+    else:
+        y_scale = alt.Scale(zero=False)
 
-    # Extraemos las marcas activas que entren dentro del intervalo temporal del gráfico actual
+    if len(columnas_validas) == 1:
+        col = columnas_validas[0]
+        chart_line = alt.Chart(df_reset).mark_line().encode(
+            x=alt.X("Día:Q", title="Día"),
+            y=alt.Y(f"{col}:Q", title=None, scale=y_scale)
+        )
+    else:
+        df_melted = df_reset.melt(
+            id_vars=["Día"],
+            value_vars=columnas_validas,
+            var_name="Métrica",
+            value_name="Valor"
+        )
+        chart_line = alt.Chart(df_melted).mark_line().encode(
+            x=alt.X("Día:Q", title="Día"),
+            y=alt.Y("Valor:Q", title=None, scale=y_scale),
+            color=alt.Color("Métrica:N", legend=alt.Legend(orient="top", title=None))
+        )
+
     marcadores_activos = obtener_marcadores_activos()
     min_dia = df_reset["Día"].min()
     max_dia = df_reset["Día"].max()
@@ -336,7 +352,6 @@ def graficar_line_chart(df, columnas, titulo=""):
             ]
         )
 
-        # 2. Etiquetas de texto en la parte superior para identificar de qué parámetro se trata
         labels = alt.Chart(df_rules).mark_text(
             align="left",
             dx=5,
@@ -346,7 +361,7 @@ def graficar_line_chart(df, columnas, titulo=""):
             fontWeight="bold"
         ).encode(
             x="día:Q",
-            y=alt.value(8),  # Ubicación estática en píxeles desde el borde superior
+            y=alt.value(8),
             text="nombre:N"
         )
 
