@@ -8,7 +8,7 @@ def mercado_productos(estado):
         empresa.inventario = empresa.empleados_formales * estado.config.productividad_formal + empresa.empleados_informales * estado.config.productividad_informal
         empresa.unidades_vendidas = 0
         
-        productos_disponibles.extend([empresa] * int(unidades_producidas))
+        productos_disponibles.extend([empresa] * int(empresa.inventario))
         
     productos_disponibles.sort(key=lambda e: e.precio)
     cola_productos = deque(productos_disponibles)
