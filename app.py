@@ -360,7 +360,7 @@ def graficar_con_marca(df, columnas, titulo="", marcadores=None):
     if titulo:
         spec["title"] = titulo
 
-    st.vega_lite_chart(spec, use_container_width=True, height=300)
+    st.vega_lite_chart(spec, width="stretch", height=300)
 
 
 @st.fragment(run_every=run_every)
@@ -403,21 +403,21 @@ with st.sidebar:
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
         if st.session_state.auto_avance:
-            if st.button("⏸ Pausar", use_container_width=True):
+            if st.button("⏸ Pausar", width="stretch"):
                 st.session_state.auto_avance = False
                 st.rerun()
         else:
-            if st.button("▶ Iniciar", use_container_width=True):
+            if st.button("▶ Iniciar", width="stretch"):
                 st.session_state.auto_avance = True
                 st.rerun()
 
     with col_btn2:
-        if st.button("⏭ Día", disabled=st.session_state.auto_avance, use_container_width=True):
+        if st.button("⏭ Día", disabled=st.session_state.auto_avance, width="stretch"):
             if sim.step():
                 registrar_snapshots([sim.obtener_snapshot()])
             st.rerun()
 
-    if st.button("🔄 Reiniciar", use_container_width=True):
+    if st.button("🔄 Reiniciar", width="stretch"):
         sim.reset()
         st.session_state.historial = pd.DataFrame(
             columns=[
