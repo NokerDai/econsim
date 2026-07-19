@@ -1,6 +1,7 @@
 # --- app.py ---
 import streamlit as st
 import pandas as pd
+import threading
 import time
 
 from config import Config
@@ -57,6 +58,9 @@ if "_velocidad_ui" not in st.session_state:
 
 if "auto_avance" not in st.session_state:
     st.session_state.auto_avance = False
+
+if "avance_thread" not in st.session_state:
+    st.session_state.avance_thread = None
 
 if "historial" not in st.session_state:
     st.session_state.historial = pd.DataFrame(
@@ -255,6 +259,36 @@ def marcar_valor(nombre, valor, día=None):
     st.session_state.marcadores = marcadores
 
 
+def iniciar_avance():
+    if getattr(sim, "corriendo", False):
+        return
+
+    def worker():
+        while getattr(sim, "corriendo", False):
+            if not sim.step():
+                break
+            registrar_snapshots([sim.obtener_snapshot()])
+            time.sleep(max(0.01, float(sim.config.velocidad)))
+
+        st.session_state.auto_avance = False
+        st.session_state.avance_thread = None
+        try:
+            st.rerun()
+        except Exception:
+            pass
+
+    sim.corriendo = True
+    thread = threading.Thread(target=worker, daemon=True)
+    st.session_state.avance_thread = thread
+    thread.start()
+
+
+def detener_avance():
+    sim.corriendo = False
+    st.session_state.auto_avance = False
+    st.session_state.avance_thread = None
+
+
 def obtener_marcadores_activos():
     dia_actual = int(getattr(sim.estado, "día", 0))
     return [
@@ -400,11 +434,12 @@ with st.sidebar:
     with col_btn1:
         if st.session_state.auto_avance:
             if st.button("⏸ Pausar", width="stretch"):
-                st.session_state.auto_avance = False
+                detener_avance()
                 st.rerun()
         else:
             if st.button("▶ Iniciar", width="stretch"):
                 st.session_state.auto_avance = True
+                iniciar_avance()
                 st.rerun()
 
     with col_btn2:
@@ -414,6 +449,7 @@ with st.sidebar:
             st.rerun()
 
     if st.button("🔄 Reiniciar", width="stretch"):
+        detener_avance()
         sim.reset()
         st.session_state.historial = pd.DataFrame(
             columns=[
@@ -595,26 +631,6 @@ with st.sidebar:
 
 
 def panel():
-
-    if st.session_state.auto_avance:
-        if "ultimo_tick" not in st.session_state:
-            st.session_state.ultimo_tick = time.time()
-
-        ahora = time.time()
-        if ahora - st.session_state.ultimo_tick >= 0.15:
-            st.session_state.ultimo_tick = ahora
-            snapshots = []
-            v_actual = max(1, int(st.session_state.velocidad))
-            for _ in range(v_actual):
-                if sim.step():
-                    snapshots.append(sim.obtener_snapshot())
-                else:
-                    st.session_state.auto_avance = False
-                    break
-            registrar_snapshots(snapshots)
-
-            if st.session_state.auto_avance:
-                st.rerun()
 
     if st.session_state.salario_mínimo_automático:
         st.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
