@@ -376,7 +376,7 @@ def graficar_con_marca(df, columnas, titulo="", marcadores=None):
 def auto_avance_fragment():
     if st.session_state.auto_avance:
         ahora = time.time()
-        if ahora - st.session_state.last_auto_step >= 1:
+        if ahora - st.session_state.last_auto_step >= 0.15:
             st.session_state.last_auto_step = ahora
             snapshots = []
             v_actual = max(1, int(st.session_state.velocidad))
