@@ -232,8 +232,7 @@ def registrar_snapshots(snapshots):
         st.session_state.historial = pd.concat([st.session_state.historial, df_nuevos])
 
 
-# Se calcula antes del sidebar para que el fragment de controles de
-# velocidad se refresque con la misma cadencia que el panel de simulación.
+
 run_every = 1 if st.session_state.auto_avance else None
 
 
@@ -242,8 +241,6 @@ def controles_velocidad():
 
     velocidad = max(1, int(st.session_state.velocidad))
 
-    # Sincronizar solamente si hace falta.
-    # Como esto ocurre antes de crear los widgets, Streamlit lo permite.
     if st.session_state.get("_velocidad_ui") != velocidad:
         st.session_state._velocidad_ui = velocidad
         st.session_state.velocidad_slider = velocidad
@@ -336,7 +333,6 @@ with st.sidebar:
         st.session_state.salario_input = valor_salario
         sim.cambiar_salario_mínimo(valor_salario)
 
-    # Creamos un marcador de posición que se actualizará de forma dinámica
     salario_metric_placeholder = st.empty()
 
     if st.session_state.salario_mínimo_automático:
@@ -451,7 +447,6 @@ with st.sidebar:
 def panel():
 
     if st.session_state.auto_avance:
-        # Registrar el tiempo antes de comenzar los pasos de simulación
         t_inicio = time.perf_counter()
         
         snapshots = []
@@ -464,11 +459,9 @@ def panel():
                 break
         registrar_snapshots(snapshots)
         
-        # Registrar el tiempo transcurrido en procesar los pasos
         t_fin = time.perf_counter()
         t_transcurrido = t_fin - t_inicio
 
-        # Lógica de ajuste automático de velocidad
         if st.session_state.get("ajuste_velocidad_automatico", True) and t_transcurrido > 0:
             fuera_de_rango = t_transcurrido < 0.99 or t_transcurrido > 1.01
             
@@ -505,11 +498,9 @@ def panel():
     col_día.metric("Día", sim.estado.día)
 
     if hay_datos:
-        # Obtenemos los últimos N registros correspondientes a la velocidad actual
         n_dias = max(1, int(st.session_state.velocidad))
         historial_reciente = st.session_state.historial.tail(n_dias)
 
-        # Calculamos los promedios de este tramo
         val_salario = historial_reciente["Salario"].mean()
         val_salario_inf = historial_reciente["Salario informal"].mean()
         val_precio = historial_reciente["Precio"].mean()
@@ -517,7 +508,6 @@ def panel():
         val_emp_informal = historial_reciente["Empleo informal"].mean()
         val_desempleo = historial_reciente["Desempleo"].mean()
 
-        # Renderizamos las tarjetas con el promedio calculado
         col_salario.metric("Salario medio", f"{val_salario:.2f}")
         col_salario_inf.metric("Salario informal med.", f"{val_salario_inf:.2f}")
         col_precio.metric("Precio medio", f"{val_precio:.2f}")
@@ -536,20 +526,17 @@ def panel():
     # 2. LOS TRES GRÁFICOS APILADOS UNO DEBAJO DEL OTRO
     # ---------------------------------------------------------
     if hay_datos:
-        # Filtrar la ventana móvil de los últimos 365 días simulados
         último_día = st.session_state.historial.index.max()
         historial_filtrado = st.session_state.historial[
             st.session_state.historial.index > (último_día - 365)
         ].astype(float)
 
-        # Gráfico 1: Evolución de Salarios
         st.subheader("1. Evolución de Salarios")
         st.line_chart(
             historial_filtrado[["Salario", "Salario informal"]],
             height=300
         )
 
-        # Gráfico 2: Evolución de Tasas de Empleo y Desempleo (%)
         st.subheader("2. Evolución de Tasas de Empleo y Desempleo (%)")
         df_empleo_pct = historial_filtrado[["Empleo formal", "Empleo informal", "Desempleo"]] * 100
         st.line_chart(
@@ -557,7 +544,6 @@ def panel():
             height=300
         )
 
-        # Gráfico 3: Evolución de Precios
         st.subheader("3. Evolución del Precio Medio")
         st.line_chart(
             historial_filtrado[["Precio"]],
