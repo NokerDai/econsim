@@ -1,7 +1,6 @@
 # --- app.py ---
 import streamlit as st
 import pandas as pd
-import threading
 import time
 
 from config import Config
@@ -59,8 +58,8 @@ if "_velocidad_ui" not in st.session_state:
 if "auto_avance" not in st.session_state:
     st.session_state.auto_avance = False
 
-if "avance_thread" not in st.session_state:
-    st.session_state.avance_thread = None
+if "last_auto_step" not in st.session_state:
+    st.session_state.last_auto_step = time.time()
 
 if "historial" not in st.session_state:
     st.session_state.historial = pd.DataFrame(
@@ -260,33 +259,12 @@ def marcar_valor(nombre, valor, día=None):
 
 
 def iniciar_avance():
-    if getattr(sim, "corriendo", False):
-        return
-
-    def worker():
-        while getattr(sim, "corriendo", False):
-            if not sim.step():
-                break
-            registrar_snapshots([sim.obtener_snapshot()])
-            time.sleep(max(0.01, float(sim.config.velocidad)))
-
-        st.session_state.auto_avance = False
-        st.session_state.avance_thread = None
-        try:
-            st.rerun()
-        except Exception:
-            pass
-
-    sim.corriendo = True
-    thread = threading.Thread(target=worker, daemon=True)
-    st.session_state.avance_thread = thread
-    thread.start()
+    st.session_state.auto_avance = True
+    st.session_state.last_auto_step = time.time()
 
 
 def detener_avance():
-    sim.corriendo = False
     st.session_state.auto_avance = False
-    st.session_state.avance_thread = None
 
 
 def obtener_marcadores_activos():
@@ -394,6 +372,24 @@ def graficar_con_marca(df, columnas, titulo="", marcadores=None):
     st.vega_lite_chart(spec, width="stretch", height=300)
 
 
+@st.fragment(run_every=0.15)
+def auto_avance_fragment():
+    if st.session_state.auto_avance:
+        ahora = time.time()
+        if ahora - st.session_state.last_auto_step >= 0.15:
+            st.session_state.last_auto_step = ahora
+            snapshots = []
+            v_actual = max(1, int(st.session_state.velocidad))
+            for _ in range(v_actual):
+                if sim.step():
+                    snapshots.append(sim.obtener_snapshot())
+                else:
+                    st.session_state.auto_avance = False
+                    break
+            registrar_snapshots(snapshots)
+            st.rerun()
+
+
 def controles_velocidad():
 
     velocidad = max(1, int(st.session_state.velocidad))
@@ -435,12 +431,9 @@ with st.sidebar:
         if st.session_state.auto_avance:
             if st.button("⏸ Pausar", width="stretch"):
                 detener_avance()
-                st.rerun()
         else:
             if st.button("▶ Iniciar", width="stretch"):
-                st.session_state.auto_avance = True
                 iniciar_avance()
-                st.rerun()
 
     with col_btn2:
         if st.button("⏭ Día", disabled=st.session_state.auto_avance, width="stretch"):
