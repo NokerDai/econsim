@@ -354,7 +354,6 @@ def graficar_con_marca(df, columnas, titulo="", marcas=None):
     st.vega_lite_chart(spec, use_container_width=True, height=300)
 
 
-@st.fragment(run_every=run_every)
 def controles_velocidad():
 
     velocidad = max(1, int(st.session_state.velocidad))
