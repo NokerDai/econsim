@@ -4,7 +4,7 @@ def mercado_productos(estado):
     productos_disponibles = []
 
     for empresa in estado.empresas:
-        empresa.producción = int(empresa.presupuesto / (empresa.precio * 0.3))
+        empresa.producción = int(empresa.presupuesto / (empresa.precio * 0.4))
         empresa.inventario += empresa.producción
         empresa.unidades_vendidas = 0
 
