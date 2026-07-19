@@ -14,21 +14,19 @@ def mercado_productos(estado):
     cola_productos = deque(productos_disponibles)
     
     for trabajador in estado.trabajadores:
-        comprado = False
-        while cola_productos and not comprado:
+        if productos_disponibles:
             siguiente_producto_mas_barato = cola_productos[0]
-            
-            if trabajador.presupuesto >= siguiente_producto_mas_barato.precio:
-                empresa_vendedora = cola_productos.popleft()
+        else:
+            break
+        
+        if trabajador.presupuesto >= siguiente_producto_mas_barato.precio:
+            empresa_vendedora = cola_productos.popleft()
 
-                trabajador.presupuesto -= empresa_vendedora.precio
-                empresa_vendedora.presupuesto += empresa_vendedora.precio
+            trabajador.presupuesto -= empresa_vendedora.precio
+            empresa_vendedora.presupuesto += empresa_vendedora.precio
 
-                empresa.inventario -= 1
-                empresa_vendedora.unidades_vendidas += 1
-                comprado = True
-            else:
-                break
+            empresa.inventario -= 1
+            empresa_vendedora.unidades_vendidas += 1
 
     for empresa in estado.empresas:
         empresa.precio *= estado.config.aumento_precio ** empresa.unidades_vendidas
