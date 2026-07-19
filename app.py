@@ -395,115 +395,6 @@ def graficar_line_chart(df, columnas, titulo=""):
     st.altair_chart(chart, use_container_width=True)
 
 
-def graficar_precio_y_poder_compra(df):
-    if df is None or df.empty:
-        return
-
-    # Copia defensiva e indexado
-    df_reset = df.copy()
-    if df_reset.index.name is None:
-        df_reset.index.name = "Día"
-    df_reset = df_reset.reset_index()
-
-    # --- PARTE DEL PRECIO MEDIO (Eje Y Izquierdo) ---
-    min_price = df_reset["Precio"].min()
-    max_price = df_reset["Precio"].max()
-
-    if pd.notna(min_price) and pd.notna(max_price) and abs(max_price - min_price) < 1e-4:
-        margen = max(1.0, abs(min_price) * 0.1)
-        y_scale_price = alt.Scale(domain=[min_price - margen, max_price + margen], zero=False)
-    else:
-        y_scale_price = alt.Scale(zero=False)
-
-    # Línea del precio medio (Color gris/azul pizarra)
-    chart_price = alt.Chart(df_reset).mark_line(color="#4A5568").encode(
-        x=alt.X("Día:Q", title="Día"),
-        y=alt.Y("Precio:Q", title="Precio Medio", scale=y_scale_price, axis=alt.Axis(titleColor="#4A5568"))
-    )
-
-    # --- PARTE DEL PODER DE COMPRA (Eje Y Derecho) ---
-    df_melted_poder = df_reset.melt(
-        id_vars=["Día"],
-        value_vars=["Poder Compra Formal", "Poder Compra Informal"],
-        var_name="Métrica",
-        value_name="Valor"
-    )
-
-    # Estabilidad del eje Y derecho (Poder de compra)
-    min_poder = df_melted_poder["Valor"].min()
-    max_poder = df_melted_poder["Valor"].max()
-
-    if pd.notna(min_poder) and pd.notna(max_poder) and abs(max_poder - min_poder) < 1e-4:
-        margen_poder = max(0.1, abs(min_poder) * 0.1)
-        y_scale_poder = alt.Scale(domain=[min_poder - margen_poder, max_poder + margen_poder], zero=False)
-    else:
-        y_scale_poder = alt.Scale(zero=False)
-
-    # Líneas de los poderes de compra mapeadas al eje derecho
-    chart_poder = alt.Chart(df_melted_poder).mark_line().encode(
-        x=alt.X("Día:Q", title="Día"),
-        y=alt.Y("Valor:Q", title="Poder de Compra (Salario / Precio)", scale=y_scale_poder, axis=alt.Axis(orient="right")),
-        color=alt.Color("Métrica:N", legend=alt.Legend(orient="top", title=None))
-    )
-
-    # --- REGLAS VERTICALES DE MARCADORES ---
-    marcadores_activos = obtener_marcadores_activos()
-    min_dia = df_reset["Día"].min()
-    max_dia = df_reset["Día"].max()
-
-    marcadores_filtrados = [
-        m for m in marcadores_activos
-        if min_dia <= m["día"] <= max_dia
-    ]
-
-    if marcadores_filtrados:
-        df_rules = pd.DataFrame(marcadores_filtrados)
-        
-        # Regla vertical punteada roja
-        rules = alt.Chart(df_rules).mark_rule(
-            color="#FF4B4B",
-            strokeDash=[4, 4],
-            strokeWidth=1.5
-        ).encode(
-            x="día:Q",
-            tooltip=[
-                alt.Tooltip("nombre:N", title="Parámetro"),
-                alt.Tooltip("valor:Q", title="Valor Ajustado"),
-                alt.Tooltip("día:Q", title="Día del Ajuste")
-            ]
-        )
-
-        # Etiquetas de texto superiores
-        labels = alt.Chart(df_rules).mark_text(
-            align="left",
-            dx=5,
-            dy=12,
-            color="#FF4B4B",
-            fontSize=10,
-            fontWeight="bold"
-        ).encode(
-            x="día:Q",
-            y=alt.value(8),
-            text="nombre:N"
-        )
-
-        # Combinamos las capas resolviendo escalas sin activar .interactive()
-        chart = alt.layer(chart_price, chart_poder, rules, labels).resolve_scale(
-            y="independent"
-        ).properties(
-            height=320
-        )
-    else:
-        # Combinamos sin activar .interactive()
-        chart = alt.layer(chart_price, chart_poder).resolve_scale(
-            y="independent"
-        ).properties(
-            height=320
-        )
-
-    st.altair_chart(chart, use_container_width=True)
-
-
 @st.fragment(run_every=0.1)
 def auto_avance_fragment():
     if st.session_state.auto_avance:
@@ -620,7 +511,7 @@ with st.sidebar:
     salario_metric_placeholder = st.empty()
 
     if st.session_state.salario_mínimo_automático:
-        st.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
+        st.metric("Valor actual calculated", f"{sim.config.salario_mínimo:.2f}")
         col_tasa, col_btn_tasa = st.columns([5, 1])
         with col_tasa:
             st.slider(
@@ -804,7 +695,7 @@ def panel():
         col_desempleo.metric("Desempleo", "—")
 
     # ---------------------------------------------------------
-    # 2. LOS TRES GRÁFICOS APILADOS UNO DEBAJO DEL OTRO
+    # 2. LOS CUATRO GRÁFICOS APILADOS UNO DEBAJO DEL OTRO
     # ---------------------------------------------------------
     if hay_datos:
         # Tomamos los últimos 365 días del historial para los gráficos
@@ -825,8 +716,19 @@ def panel():
             "Tasas de Empleo y Desempleo (%)"
         )
 
-        st.subheader("3. Evolución del Precio Medio y Poder de Compra")
-        graficar_precio_y_poder_compra(historial_graficos)
+        st.subheader("3. Evolución del Poder de Compra")
+        graficar_line_chart(
+            historial_graficos,
+            ["Poder Compra Formal", "Poder Compra Informal"],
+            "Evolución del Poder de Compra"
+        )
+
+        st.subheader("4. Evolución del Precio Medio")
+        graficar_line_chart(
+            historial_graficos,
+            ["Precio"],
+            "Evolución del Precio Medio"
+        )
 
         # Mostrar de forma interactiva y limpia los marcadores que están activos
         marcadores_activos = obtener_marcadores_activos()
