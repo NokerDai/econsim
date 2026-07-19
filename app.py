@@ -618,9 +618,6 @@ def panel():
     if st.session_state.salario_mínimo_automático:
         st.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
 
-    if st.session_state.auto_avance:
-        st.autorefresh(interval=1000, limit=None)
-
     hay_datos = len(st.session_state.historial) > 0
 
     # ---------------------------------------------------------
