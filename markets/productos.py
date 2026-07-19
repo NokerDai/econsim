@@ -4,6 +4,7 @@ def mercado_productos(estado):
     for empresa in estado.empresas:
         empresa.producción = empresa.empleados_formales * estado.config.productividad_formal + empresa.empleados_informales * estado.config.productividad_informal
         empresa.inventario = empresa.producción
+        empresa.unidades_vendidas = 0
 
     for trabajador in estado.trabajadores:
         seleccionado = estado.aleatorio.choice(estado.empresas)
