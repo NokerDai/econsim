@@ -674,7 +674,7 @@ def panel():
     if hay_datos:
         último_día = st.session_state.historial.index.max()
         historial_filtrado = st.session_state.historial[
-            st.session_state.historial.index > (último_día - 365)
+            st.session_state.historial.index > (último_día - 100)
         ].astype(float)
 
         marcadores_activos = obtener_marcadores_activos()
