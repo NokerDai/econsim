@@ -376,7 +376,7 @@ def graficar_con_marca(df, columnas, titulo="", marcadores=None):
 def auto_avance_fragment():
     if st.session_state.auto_avance:
         ahora = time.time()
-        if ahora - st.session_state.last_auto_step >= 0.15:
+        if ahora - st.session_state.last_auto_step >= 1:
             st.session_state.last_auto_step = ahora
             snapshots = []
             v_actual = max(1, int(st.session_state.velocidad))
@@ -387,7 +387,7 @@ def auto_avance_fragment():
                     st.session_state.auto_avance = False
                     break
             registrar_snapshots(snapshots)
-            st.rerun()
+            st.rerun(scope="app")
 
 
 def controles_velocidad():
@@ -429,11 +429,9 @@ with st.sidebar:
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
         if st.session_state.auto_avance:
-            if st.button("⏸ Pausar", width="stretch"):
-                detener_avance()
+            st.button("⏸ Pausar", width="stretch", on_click=detener_avance)
         else:
-            if st.button("▶ Iniciar", width="stretch"):
-                iniciar_avance()
+            st.button("▶ Iniciar", width="stretch", on_click=iniciar_avance)
 
     with col_btn2:
         if st.button("⏭ Día", disabled=st.session_state.auto_avance, width="stretch"):
