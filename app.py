@@ -110,6 +110,18 @@ if "tasa_emisión_slider" not in st.session_state:
 if "tasa_emisión_input" not in st.session_state:
     st.session_state.tasa_emisión_input = float(sim.config.tasa_emisión)
 
+if "productividad_formal_slider" not in st.session_state:
+    st.session_state.productividad_formal_slider = float(sim.config.productividad_formal)
+
+if "productividad_formal_input" not in st.session_state:
+    st.session_state.productividad_formal_input = float(sim.config.productividad_formal)
+
+if "productividad_informal_slider" not in st.session_state:
+    st.session_state.productividad_informal_slider = float(sim.config.productividad_informal)
+
+if "productividad_informal_input" not in st.session_state:
+    st.session_state.productividad_informal_input = float(sim.config.productividad_informal)
+
 
 def sincronizar_salario_slider():
     st.session_state.salario_input = st.session_state.salario_slider
@@ -164,6 +176,26 @@ def sincronizar_tasa_emisión_slider():
 def sincronizar_tasa_emisión_input():
     st.session_state.tasa_emisión_slider = st.session_state.tasa_emisión_input
     sim.cambiar_tasa_emisión(st.session_state.tasa_emisión_input)
+
+
+def sincronizar_productividad_formal_slider():
+    st.session_state.productividad_formal_input = st.session_state.productividad_formal_slider
+    sim.cambiar_productividad_formal(st.session_state.productividad_formal_slider)
+
+
+def sincronizar_productividad_formal_input():
+    st.session_state.productividad_formal_slider = st.session_state.productividad_formal_input
+    sim.cambiar_productividad_formal(st.session_state.productividad_formal_input)
+
+
+def sincronizar_productividad_informal_slider():
+    st.session_state.productividad_informal_input = st.session_state.productividad_informal_slider
+    sim.cambiar_productividad_informal(st.session_state.productividad_informal_slider)
+
+
+def sincronizar_productividad_informal_input():
+    st.session_state.productividad_informal_slider = st.session_state.productividad_informal_input
+    sim.cambiar_productividad_informal(st.session_state.productividad_informal_input)
 
 
 def registrar_snapshots(snapshots):
@@ -342,6 +374,43 @@ with st.sidebar:
         on_change=sincronizar_informalidad_por_empresa_input,
     )
 
+    st.divider()
+
+    st.slider(
+        "Productividad formal",
+        min_value=0.00,
+        max_value=5.00,
+        step=0.01,
+        key="productividad_formal_slider",
+        on_change=sincronizar_productividad_formal_slider,
+    )
+
+    st.number_input(
+        "Valor exacto",
+        min_value=0.00,
+        max_value=5.00,
+        step=0.01,
+        key="productividad_formal_input",
+        on_change=sincronizar_productividad_formal_input,
+    )
+
+    st.slider(
+        "Productividad informal",
+        min_value=0.00,
+        max_value=5.00,
+        step=0.01,
+        key="productividad_informal_slider",
+        on_change=sincronizar_productividad_informal_slider,
+    )
+
+    st.number_input(
+        "Valor exacto",
+        min_value=0.00,
+        max_value=5.00,
+        step=0.01,
+        key="productividad_informal_input",
+        on_change=sincronizar_productividad_informal_input,
+    )
 
     st.divider()
 

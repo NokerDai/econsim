@@ -200,6 +200,20 @@ class Simulación:
             self.config.informalidad_por_empresa = valor
 
 
+    def cambiar_productividad_formal(self, valor):
+
+        with self.lock:
+
+            self.config.productividad_formal = float(valor)
+
+
+    def cambiar_productividad_informal(self, valor):
+
+        with self.lock:
+
+            self.config.productividad_informal = float(valor)
+
+
     def cambiar_velocidad(self, valor):
 
         with self.lock:
