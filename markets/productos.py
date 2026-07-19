@@ -23,8 +23,8 @@ def mercado_productos(estado):
             break
 
     for empresa in estado.empresas:
-        if empresa.inventario > empresa.invetnario_ayer:
+        if empresa.inventario > empresa.inventario_ayer:
             empresa.precio *= estado.config.reducción_precio
-        elif empresa.inventario < empresa.invettnario_ayer:
+        elif empresa.inventario < empresa.inventario_ayer:
             empresa.precio *= estado.config.aumento_precio
         empresa.inventario_ayer = empresa.inventario
