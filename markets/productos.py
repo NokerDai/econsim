@@ -10,8 +10,10 @@ def mercado_productos(estado):
         if trabajador.presupuesto >= seleccionado.precio and seleccionado.inventario >= 1:
             seleccionado.presupuesto += seleccionado.precio
             trabajador.presupuesto -= seleccionado.precio
+            empresa.unidades_vendidas += 1
             seleccionado.inventario -= 1
             
             seleccionado.precio *= estado.config.aumento_precio
-        elif seleccionado.inventario >= 1:
-            seleccionado.precio *= estado.config.reducción_precio
+    for empresa in estado.empresas:
+        empresa.precio *= estado.config.reducción_precio ** empresa.inventario * estado.config.aumento_precio * empresa.unidades_vendidas
+        empresa.unidades_vendidas = 0
