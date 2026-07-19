@@ -233,6 +233,9 @@ def registrar_snapshots(snapshots):
     if nuevos_datos:
         df_nuevos = pd.DataFrame(nuevos_datos).set_index("Día").astype(float)
         st.session_state.historial = pd.concat([st.session_state.historial, df_nuevos])
+        st.session_state.historial.index = st.session_state.historial.index.astype(int)
+        st.session_state.historial = st.session_state.historial[~st.session_state.historial.index.duplicated(keep="last")]
+        st.session_state.historial = st.session_state.historial.sort_index()
 
 
 def agregar_marca_politica(nombre, valor, dia=None):
@@ -419,6 +422,7 @@ with st.sidebar:
         ).astype(float)
         st.session_state.historial.index.name = "Día"
         st.session_state.auto_avance = False
+        st.session_state.marcas_politicas = []
         st.rerun()
 
     st.checkbox(
