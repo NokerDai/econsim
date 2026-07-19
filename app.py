@@ -236,6 +236,78 @@ def registrar_snapshots(snapshots):
 run_every = 1 if st.session_state.auto_avance else None
 
 
+def graficar_con_marca(df, columnas, titulo=""):
+    if df is None or df.empty:
+        return
+
+    chart_df = df.reset_index()
+    chart_df = chart_df.rename(columns={chart_df.columns[0]: "día"})
+    chart_df["día"] = pd.to_numeric(chart_df["día"], errors="coerce")
+    chart_df = chart_df.dropna(subset=["día"])
+
+    if chart_df.empty:
+        return
+
+    columnas_validas = [col for col in columnas if col in chart_df.columns]
+    if not columnas_validas:
+        return
+
+    long_df = chart_df[["día"] + columnas_validas].melt(
+        id_vars="día",
+        value_vars=columnas_validas,
+        var_name="serie",
+        value_name="valor",
+    )
+
+    ultimo_dia = int(long_df["día"].dropna().iloc[-1])
+
+    spec = {
+        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+        "data": {"values": long_df.to_dict(orient="records")},
+        "layer": [
+            {
+                "mark": {"type": "line"},
+                "encoding": {
+                    "x": {"field": "día", "type": "quantitative", "title": "Día"},
+                    "y": {"field": "valor", "type": "quantitative"},
+                    "color": {"field": "serie", "type": "nominal"},
+                },
+            },
+            {
+                "data": {"values": [{"día": ultimo_dia}]},
+                "mark": {
+                    "type": "rule",
+                    "color": "red",
+                    "strokeWidth": 2,
+                    "strokeDash": [6, 4],
+                },
+                "encoding": {
+                    "x": {"field": "día", "type": "quantitative"},
+                },
+            },
+            {
+                "data": {"values": [{"día": ultimo_dia, "label": "Hoy"}]},
+                "mark": {
+                    "type": "text",
+                    "color": "red",
+                    "fontWeight": "bold",
+                    "dx": 5,
+                    "dy": -10,
+                },
+                "encoding": {
+                    "x": {"field": "día", "type": "quantitative"},
+                    "text": {"field": "label", "type": "nominal"},
+                },
+            },
+        ],
+    }
+
+    if titulo:
+        spec["title"] = titulo
+
+    st.vega_lite_chart(spec, use_container_width=True, height=300)
+
+
 @st.fragment(run_every=run_every)
 def controles_velocidad():
 
@@ -532,22 +604,25 @@ def panel():
         ].astype(float)
 
         st.subheader("1. Evolución de Salarios")
-        st.line_chart(
+        graficar_con_marca(
             historial_filtrado[["Salario", "Salario informal"]],
-            height=300
+            ["Salario", "Salario informal"],
+            "Evolución de Salarios",
         )
 
         st.subheader("2. Evolución de Tasas de Empleo y Desempleo (%)")
         df_empleo_pct = historial_filtrado[["Empleo formal", "Empleo informal", "Desempleo"]] * 100
-        st.line_chart(
+        graficar_con_marca(
             df_empleo_pct,
-            height=300
+            list(df_empleo_pct.columns),
+            "Tasas de Empleo y Desempleo (%)",
         )
 
         st.subheader("3. Evolución del Precio Medio")
-        st.line_chart(
+        graficar_con_marca(
             historial_filtrado[["Precio"]],
-            height=300
+            ["Precio"],
+            "Evolución del Precio Medio",
         )
 
     else:
