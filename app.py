@@ -275,7 +275,7 @@ def obtener_marcadores_activos():
     ]
 
 
-def graficar_con_marca(df, columnas, titulo="", marcadores=None):
+def graficar_con_marca(df, columnas, titulo="", marcadores=None, key=None):
     if df is None or df.empty:
         return
 
@@ -369,7 +369,7 @@ def graficar_con_marca(df, columnas, titulo="", marcadores=None):
     if titulo:
         spec["title"] = titulo
 
-    st.vega_lite_chart(spec, width="stretch", height=300)
+    st.vega_lite_chart(spec, width="stretch", height=300, key=key)
 
 
 @st.fragment(run_every=1)
@@ -686,6 +686,7 @@ def panel():
             ["Salario", "Salario informal"],
             "Evolución de Salarios",
             marcadores=marcadores_activos,
+            key="grafico_salarios",
         )
 
         st.subheader("2. Evolución de Tasas de Empleo y Desempleo (%)")
@@ -695,6 +696,7 @@ def panel():
             list(df_empleo_pct.columns),
             "Tasas de Empleo y Desempleo (%)",
             marcadores=marcadores_activos,
+            key="grafico_empleo",
         )
 
         st.subheader("3. Evolución del Precio Medio")
@@ -703,6 +705,7 @@ def panel():
             ["Precio"],
             "Evolución del Precio Medio",
             marcadores=marcadores_activos,
+            key="grafico_precio",
         )
 
     else:
