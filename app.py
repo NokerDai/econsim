@@ -281,6 +281,11 @@ def graficar_con_marca(df, columnas, titulo="", marcas=None):
     )
 
     marcas_a_usar = marcas if marcas is not None else st.session_state.get("marcas_politicas", [])
+    marcas_a_usar = [
+        marca for marca in marcas_a_usar
+        if int(marca.get("día", -1)) >= int(chart_df["día"].min())
+        and int(marca.get("día", -1)) <= int(chart_df["día"].max())
+    ]
 
     layers = [
         {
@@ -664,10 +669,10 @@ def panel():
     # 2. LOS TRES GRÁFICOS APILADOS UNO DEBAJO DEL OTRO
     # ---------------------------------------------------------
     if hay_datos:
-        último_día = st.session_state.historial.index.max()
-        historial_filtrado = st.session_state.historial[
-            st.session_state.historial.index > (último_día - 365)
-        ].astype(float)
+        historial_ordenado = st.session_state.historial.sort_index()
+        if len(historial_ordenado) > 365:
+            historial_ordenado = historial_ordenado.iloc[-365:]
+        historial_filtrado = historial_ordenado.astype(float)
 
         st.subheader("1. Evolución de Salarios")
         graficar_con_marca(
