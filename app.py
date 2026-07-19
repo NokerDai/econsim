@@ -710,4 +710,6 @@ def panel():
         st.info("Todavía no hay datos. Iniciá la simulación o avanzá un día.")
 
 
+auto_avance_fragment()
+
 panel()
