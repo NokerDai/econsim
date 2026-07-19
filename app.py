@@ -387,7 +387,8 @@ def auto_avance_fragment():
                     st.session_state.auto_avance = False
                     break
             registrar_snapshots(snapshots)
-            st.rerun(scope="app")
+
+    panel()
 
 
 def controles_velocidad():
@@ -674,7 +675,7 @@ def panel():
     if hay_datos:
         último_día = st.session_state.historial.index.max()
         historial_filtrado = st.session_state.historial[
-            st.session_state.historial.index > (último_día - 100)
+            st.session_state.historial.index > (último_día - 365)
         ].astype(float)
 
         marcadores_activos = obtener_marcadores_activos()
@@ -709,5 +710,3 @@ def panel():
 
 
 auto_avance_fragment()
-
-panel()
