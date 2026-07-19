@@ -178,24 +178,38 @@ def sincronizar_tasa_emisión_input():
     sim.cambiar_tasa_emisión(st.session_state.tasa_emisión_input)
 
 
+def aplicar_productividad_formal(valor):
+    if hasattr(sim, "cambiar_productividad_formal"):
+        sim.cambiar_productividad_formal(valor)
+    else:
+        sim.config.productividad_formal = float(valor)
+
+
+def aplicar_productividad_informal(valor):
+    if hasattr(sim, "cambiar_productividad_informal"):
+        sim.cambiar_productividad_informal(valor)
+    else:
+        sim.config.productividad_informal = float(valor)
+
+
 def sincronizar_productividad_formal_slider():
     st.session_state.productividad_formal_input = st.session_state.productividad_formal_slider
-    sim.cambiar_productividad_formal(st.session_state.productividad_formal_slider)
+    aplicar_productividad_formal(st.session_state.productividad_formal_slider)
 
 
 def sincronizar_productividad_formal_input():
     st.session_state.productividad_formal_slider = st.session_state.productividad_formal_input
-    sim.cambiar_productividad_formal(st.session_state.productividad_formal_input)
+    aplicar_productividad_formal(st.session_state.productividad_formal_input)
 
 
 def sincronizar_productividad_informal_slider():
     st.session_state.productividad_informal_input = st.session_state.productividad_informal_slider
-    sim.cambiar_productividad_informal(st.session_state.productividad_informal_slider)
+    aplicar_productividad_informal(st.session_state.productividad_informal_slider)
 
 
 def sincronizar_productividad_informal_input():
     st.session_state.productividad_informal_slider = st.session_state.productividad_informal_input
-    sim.cambiar_productividad_informal(st.session_state.productividad_informal_input)
+    aplicar_productividad_informal(st.session_state.productividad_informal_input)
 
 
 def registrar_snapshots(snapshots):
