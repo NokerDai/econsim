@@ -2,7 +2,7 @@
 
 def mercado_productos(estado):
     for empresa in estado.empresas:
-        empresa.inventario += empresa.unidades_vendidas
+        empresa.inventario += 10
 
     for trabajador in estado.trabajadores:
         seleccionado = estado.aleatorio.choice(estado.empresas)
