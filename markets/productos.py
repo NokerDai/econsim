@@ -14,7 +14,7 @@ def mercado_productos(estado):
     cola_productos = deque(productos_disponibles)
     
     for trabajador in estado.trabajadores:
-        
+        comprado = False
         while cola_productos and not comprado:
             siguiente_producto_mas_barato = cola_productos[0]
             
@@ -26,6 +26,7 @@ def mercado_productos(estado):
 
                 empresa.inventario -= 1
                 empresa_vendedora.unidades_vendidas += 1
+                comprado = True
             else:
                 break
 
