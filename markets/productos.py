@@ -2,11 +2,9 @@ from collections import deque
 
 def mercado_productos(estado):
     productos_disponibles = []
-    p_formal = estado.config.productividad_formal
-    p_informal = estado.config.productividad_informal
 
     for empresa in estado.empresas:
-        empresa.inventario += empresa.empleados_formales * p_formal + empresa.empleados_informales * p_informal
+        empresa.inventario += (empresa.empleados_formales + empresa.empleados_informales) * empresa.productividad
         productos_disponibles.extend([empresa] * int(empresa.inventario))
 
     productos_disponibles.sort(key=lambda e: e.precio)
@@ -24,7 +22,15 @@ def mercado_productos(estado):
 
     for empresa in estado.empresas:
         if empresa.inventario > empresa.inventario_ayer:
+            empresa.racha_reducido += 1
+            empresa.racha_aumentado = 0
             empresa.precio *= estado.config.reducción_precio
         elif empresa.inventario < empresa.inventario_ayer:
+            empresa.racha_aumentado += 1
+            empresa.racha_reducido = 0
             empresa.precio *= estado.config.aumento_precio
+        if empresa.racha_reducido > 30:
+            empresa.productividad *= 0.99
+        elif empresa.racha_aumentado > 30:
+            empresa.productividad *= 1.01
         empresa.inventario_ayer = empresa.inventario

@@ -19,8 +19,12 @@ class Empresa:
 
     empleados_informales: int = 0
 
-    producción: float = 0.0
+    productividad: float = 0.7
 
     inventario: float = 0
 
     inventario_ayer: float = 0
+
+    racha_reducido: int = 0
+
+    racha_aumentado: int = 0
