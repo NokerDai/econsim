@@ -114,6 +114,8 @@ class Simulación:
             self.estado.día += 1
 
             emisión_monetaria(self.estado)
+             
+            self.estado.aleatorio.shuffle(self.estado.trabajadores)
 
             mercado_laboral(self.estado)
 

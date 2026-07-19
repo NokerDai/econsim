@@ -5,7 +5,7 @@ def mercado_laboral(estado):
 
     # Generar vacantes formales
     for empresa in estado.empresas:
-        empresa.vacantes_formales = int(empresa.presupuesto / empresa.salario)
+        empresa.vacantes_formales = int(empresa.presupuesto * 0.7 / empresa.salario)
         empresa.vacantes_informales = 0
         empresa.empleados_formales = 0
         empresa.empleados_informales = 0
@@ -51,7 +51,7 @@ def mercado_laboral(estado):
             vacantes = []
 
             for empresa in estado.empresas:
-                empresa.vacantes_informales = int(empresa.presupuesto / empresa.salario_informal)
+                empresa.vacantes_informales = int(empresa.presupuesto * 0.7 / empresa.salario_informal)
                 vacantes.extend([empresa] * empresa.vacantes_informales)
 
             vacantes.sort(
