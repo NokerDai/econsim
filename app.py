@@ -669,10 +669,10 @@ def panel():
     # 2. LOS TRES GRÁFICOS APILADOS UNO DEBAJO DEL OTRO
     # ---------------------------------------------------------
     if hay_datos:
-        historial_ordenado = st.session_state.historial.sort_index()
-        if len(historial_ordenado) > 365:
-            historial_ordenado = historial_ordenado.iloc[-365:]
-        historial_filtrado = historial_ordenado.astype(float)
+        último_día = st.session_state.historial.index.max()
+        historial_filtrado = st.session_state.historial[
+            st.session_state.historial.index > (último_día - 365)
+        ].astype(float)
 
         st.subheader("1. Evolución de Salarios")
         graficar_con_marca(
