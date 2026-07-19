@@ -33,5 +33,7 @@ class Config:
     informalidad_por_empresa: float = 1.0
 
     # Parámetros del mercado
+    productividad_formal: float = 1.5
+    productividad_informal: float = 1.0
     aumento_precio: float = 1.01
     reducción_precio: float = 0.99

@@ -18,3 +18,5 @@ class Empresa:
     empleados_formales: int = 0
 
     empleados_informales: int = 0
+
+    inventario: float = 0.0

@@ -364,9 +364,6 @@ with st.sidebar:
     )
 
 
-st.title("📈 Simulación económica")
-
-
 @st.fragment(run_every=run_every)
 def panel():
 
