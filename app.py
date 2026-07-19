@@ -270,7 +270,7 @@ def graficar_con_marca(df, columnas, titulo=""):
                 "encoding": {
                     "x": {"field": "día", "type": "quantitative", "title": "Día"},
                     "y": {"field": "valor", "type": "quantitative"},
-                    "color": {"field": "serie", "type": "nominal"},
+                    "color": {"field": "serie", "type": "nominal", "legend": None},
                 },
             },
             {
