@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 import time
+import altair as alt
 
 from config import Config
 from simulation import Simulación
@@ -287,12 +288,77 @@ def graficar_line_chart(df, columnas, titulo=""):
     if not columnas_validas:
         return
 
-    # Usamos st.line_chart nativo de Streamlit que es rápido, fluido y libre de bloqueos
-    st.line_chart(
-        data=df[columnas_validas],
-        y=columnas_validas,
-        use_container_width=True,
+    # Creamos una copia defensiva asegurando que el índice tiene el nombre 'Día'
+    df_reset = df.copy()
+    if df_reset.index.name is None:
+        df_reset.index.name = "Día"
+    df_reset = df_reset.reset_index()
+
+    # Formateamos el dataframe a una estructura vertical (melted) para que Altair grafique múltiples líneas
+    df_melted = df_reset.melt(
+        id_vars=["Día"],
+        value_vars=columnas_validas,
+        var_name="Métrica",
+        value_name="Valor"
     )
+
+    # Gráfico base con las líneas de datos
+    chart_line = alt.Chart(df_melted).mark_line().encode(
+        x=alt.X("Día:Q", title="Día"),
+        y=alt.Y("Valor:Q", title=None, scale=alt.Scale(zero=False)),
+        color=alt.Color("Métrica:N", legend=alt.Legend(orient="top", title=None))
+    )
+
+    # Extraemos las marcas activas que entren dentro del intervalo temporal del gráfico actual
+    marcadores_activos = obtener_marcadores_activos()
+    min_dia = df_reset["Día"].min()
+    max_dia = df_reset["Día"].max()
+
+    marcadores_filtrados = [
+        m for m in marcadores_activos
+        if min_dia <= m["día"] <= max_dia
+    ]
+
+    if marcadores_filtrados:
+        df_rules = pd.DataFrame(marcadores_filtrados)
+        
+        # 1. Regla vertical punteada roja
+        rules = alt.Chart(df_rules).mark_rule(
+            color="#FF4B4B",
+            strokeDash=[4, 4],
+            strokeWidth=1.5
+        ).encode(
+            x="día:Q",
+            tooltip=[
+                alt.Tooltip("nombre:N", title="Parámetro"),
+                alt.Tooltip("valor:Q", title="Valor Ajustado"),
+                alt.Tooltip("día:Q", title="Día del Ajuste")
+            ]
+        )
+
+        # 2. Etiquetas de texto en la parte superior para identificar de qué parámetro se trata
+        labels = alt.Chart(df_rules).mark_text(
+            align="left",
+            dx=5,
+            dy=12,
+            color="#FF4B4B",
+            fontSize=10,
+            fontWeight="bold"
+        ).encode(
+            x="día:Q",
+            y=alt.value(8),  # Ubicación estática en píxeles desde el borde superior
+            text="nombre:N"
+        )
+
+        chart = alt.layer(chart_line, rules, labels).properties(
+            height=320
+        ).interactive()
+    else:
+        chart = chart_line.properties(
+            height=320
+        ).interactive()
+
+    st.altair_chart(chart, use_container_width=True)
 
 
 @st.fragment(run_every=1)
