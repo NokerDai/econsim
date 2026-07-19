@@ -15,5 +15,5 @@ def mercado_productos(estado):
             
             seleccionado.precio *= estado.config.aumento_precio
     for empresa in estado.empresas:
-        empresa.precio *= estado.config.reducción_precio ** empresa.inventario * estado.config.aumento_precio * empresa.unidades_vendidas
+        empresa.precio *= estado.config.reducción_precio ** empresa.inventario * estado.config.aumento_precio ** empresa.unidades_vendidas
         empresa.unidades_vendidas = 0
