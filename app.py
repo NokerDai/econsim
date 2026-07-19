@@ -235,6 +235,10 @@ def registrar_snapshots(snapshots):
     if nuevos_datos:
         df_nuevos = pd.DataFrame(nuevos_datos).set_index("Día").astype(float)
         st.session_state.historial = pd.concat([st.session_state.historial, df_nuevos])
+        
+        # Mantener un historial máximo de 1000 días para optimizar memoria
+        if len(st.session_state.historial) > 1000:
+            st.session_state.historial = st.session_state.historial.tail(1000)
 
 
 def marcar_valor(nombre, valor, día=None):
@@ -275,105 +279,20 @@ def obtener_marcadores_activos():
     ]
 
 
-def graficar_con_marca(df, columnas, titulo="", marcadores=None, key=None):
+def graficar_line_chart(df, columnas, titulo=""):
     if df is None or df.empty:
         return
 
-    chart_df = df.reset_index()
-    chart_df = chart_df.rename(columns={chart_df.columns[0]: "día"})
-    chart_df["día"] = pd.to_numeric(chart_df["día"], errors="coerce")
-    chart_df = chart_df.dropna(subset=["día"])
-
-    if chart_df.empty:
-        return
-
-    if key:
-        max_dia = int(chart_df["día"].max())
-        key = f"{key}_{max_dia}"
-
-    columnas_validas = [col for col in columnas if col in chart_df.columns]
+    columnas_validas = [col for col in columnas if col in df.columns]
     if not columnas_validas:
         return
 
-    long_df = chart_df[["día"] + columnas_validas].melt(
-        id_vars="día",
-        value_vars=columnas_validas,
-        var_name="serie",
-        value_name="valor",
+    # Usamos st.line_chart nativo de Streamlit que es rápido, fluido y libre de bloqueos
+    st.line_chart(
+        data=df[columnas_validas],
+        y=columnas_validas,
+        use_container_width=True,
     )
-
-    layers = [
-        {
-            "mark": {"type": "line"},
-            "encoding": {
-                "x": {"field": "día", "type": "quantitative", "title": "Día"},
-                "y": {"field": "valor", "type": "quantitative"},
-                "color": {
-                    "field": "serie",
-                    "type": "nominal",
-                    "legend": {
-                        "orient": "bottom",
-                        "title": None,
-                        "labelFontSize": 11,
-                    },
-                },
-            },
-        }
-    ]
-
-    dia_actual = int(getattr(sim.estado, "día", 0))
-    colores = ["#ff4b4b", "#2E86DE", "#4CAF50", "#FFA726", "#A64DFF"]
-
-    if marcadores:
-        for index, marcador in enumerate(marcadores):
-            dia_marcado = marcador.get("día")
-            texto = marcador.get("label")
-            if dia_marcado is None or not texto:
-                continue
-            if not esta_activa(int(dia_marcado), dia_actual):
-                continue
-            color = colores[index % len(colores)]
-            layers.append(
-                {
-                    "data": {"values": [{"día": int(dia_marcado)}]},
-                    "mark": {
-                        "type": "rule",
-                        "color": color,
-                        "strokeWidth": 2,
-                        "strokeDash": [6, 4],
-                    },
-                    "encoding": {
-                        "x": {"field": "día", "type": "quantitative"},
-                    },
-                }
-            )
-            layers.append(
-                {
-                    "data": {"values": [{"día": int(dia_marcado), "label": texto}]},
-                    "mark": {
-                        "type": "text",
-                        "color": color,
-                        "fontWeight": "bold",
-                        "dx": 5,
-                        "dy": -10 - (index * 12),
-                    },
-                    "encoding": {
-                        "x": {"field": "día", "type": "quantitative"},
-                        "text": {"field": "label", "type": "nominal"},
-                    },
-                }
-            )
-
-    spec = {
-        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-        "data": {"values": long_df.to_dict(orient="records")},
-        "layer": layers,
-    }
-
-    if titulo:
-        spec["title"] = titulo
-
-    st.vega_lite_chart(spec, width="stretch", height=300, key=key)
 
 
 @st.fragment(run_every=1)
@@ -677,40 +596,38 @@ def panel():
     # 2. LOS TRES GRÁFICOS APILADOS UNO DEBAJO DEL OTRO
     # ---------------------------------------------------------
     if hay_datos:
-        último_día = st.session_state.historial.index.max()
-        historial_filtrado = st.session_state.historial[
-            st.session_state.historial.index > (último_día - 365)
-        ].astype(float)
-
-        marcadores_activos = obtener_marcadores_activos()
+        # Tomamos los últimos 365 días del historial para los gráficos
+        historial_graficos = st.session_state.historial.tail(365)
 
         st.subheader("1. Evolución de Salarios")
-        graficar_con_marca(
-            historial_filtrado[["Salario", "Salario informal"]],
+        graficar_line_chart(
+            historial_graficos,
             ["Salario", "Salario informal"],
-            "Evolución de Salarios",
-            marcadores=marcadores_activos,
-            key="grafico_salarios",
+            "Evolución de Salarios"
         )
 
         st.subheader("2. Evolución de Tasas de Empleo y Desempleo (%)")
-        df_empleo_pct = historial_filtrado[["Empleo formal", "Empleo informal", "Desempleo"]] * 100
-        graficar_con_marca(
+        df_empleo_pct = historial_graficos[["Empleo formal", "Empleo informal", "Desempleo"]] * 100
+        graficar_line_chart(
             df_empleo_pct,
-            list(df_empleo_pct.columns),
-            "Tasas de Empleo y Desempleo (%)",
-            marcadores=marcadores_activos,
-            key="grafico_empleo",
+            ["Empleo formal", "Empleo informal", "Desempleo"],
+            "Tasas de Empleo y Desempleo (%)"
         )
 
         st.subheader("3. Evolución del Precio Medio")
-        graficar_con_marca(
-            historial_filtrado[["Precio"]],
+        graficar_line_chart(
+            historial_graficos,
             ["Precio"],
-            "Evolución del Precio Medio",
-            marcadores=marcadores_activos,
-            key="grafico_precio",
+            "Evolución del Precio Medio"
         )
+
+        # Mostrar de forma interactiva y limpia los marcadores que están activos
+        marcadores_activos = obtener_marcadores_activos()
+        if marcadores_activos:
+            st.write("---")
+            with st.expander("📍 Ajustes de Parámetros Activos (Últimos 365 días)", expanded=True):
+                for marcador in marcadores_activos:
+                    st.markdown(f"**Día {marcador['día']}:** {marcador['label']}")
 
     else:
         st.info("Todavía no hay datos. Iniciá la simulación o avanzá un día.")
