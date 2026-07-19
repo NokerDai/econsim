@@ -287,6 +287,10 @@ def graficar_con_marca(df, columnas, titulo="", marcadores=None, key=None):
     if chart_df.empty:
         return
 
+    if key:
+        max_dia = int(chart_df["día"].max())
+        key = f"{key}_{max_dia}"
+
     columnas_validas = [col for col in columnas if col in chart_df.columns]
     if not columnas_validas:
         return
