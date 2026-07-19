@@ -14,9 +14,9 @@ def mercado_productos(estado):
     productos_disponibles = deque(productos_disponibles)
 
     for trabajador in estado.trabajadores:
-        seleccionado = productos_disponibles.popleft()
         if productos_disponibles:
-            if trabajador.presupuesto >= seleccionado.precio:
+            if trabajador.presupuesto >= productos_disponibles[0].precio:
+                seleccionado = productos_disponibles.popleft()
                 seleccionado.presupuesto += seleccionado.precio
                 trabajador.presupuesto -= seleccionado.precio
                 seleccionado.unidades_vendidas += 1
