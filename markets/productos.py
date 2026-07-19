@@ -1,33 +1,17 @@
 # --- productos.py ---
-from collections import deque
 
 def mercado_productos(estado):
-    productos_disponibles = []
-    
     for empresa in estado.empresas:
-        empresa.inventario += empresa.empleados_formales * estado.config.productividad_formal + empresa.empleados_informales * estado.config.productividad_informal
-        empresa.unidades_vendidas = 0
-        
-        productos_disponibles.extend([empresa] * int(empresa.inventario))
-        
-    productos_disponibles.sort(key=lambda e: e.precio)
-    cola_productos = deque(productos_disponibles)
-    
+        empresa.inventario = (empresa.empleados_formales * estado.config.productividad_formal) + (empresa.empleados_informales * estado.config.productividad_informal)
+
     for trabajador in estado.trabajadores:
-        if productos_disponibles:
-            siguiente_producto_mas_barato = cola_productos[0]
-        else:
-            break
+        seleccionado = estado.aleatorio.choice(estado.empresas)
         
-        if trabajador.presupuesto >= siguiente_producto_mas_barato.precio:
-            empresa_vendedora = cola_productos.popleft()
-
-            trabajador.presupuesto -= empresa_vendedora.precio
-            empresa_vendedora.presupuesto += empresa_vendedora.precio
-
-            empresa.inventario -= 1
-            empresa_vendedora.unidades_vendidas += 1
-
-    for empresa in estado.empresas:
-        empresa.precio *= estado.config.aumento_precio ** empresa.unidades_vendidas
-        empresa.precio *= estado.config.reducción_precio ** empresa.inventario
+        if trabajador.presupuesto >= seleccionado.precio and seleccionado.inventario >= 1:
+            seleccionado.presupuesto += seleccionado.precio
+            trabajador.presupuesto -= seleccionado.precio
+            seleccionado.inventario -= 1
+            
+            seleccionado.precio *= estado.config.aumento_precio
+        elif seleccionado.inventario >= 1:
+            seleccionado.precio *= estado.config.reducción_precio
