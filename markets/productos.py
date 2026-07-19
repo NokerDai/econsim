@@ -4,11 +4,10 @@ def mercado_productos(estado):
     productos_disponibles = []
 
     for empresa in estado.empresas:
-        empresa.producción = int(empresa.presupuesto / (empresa.precio * 0.4))
+        empresa.producción = empresa.presupuesto / (empresa.precio * 0.4)
         empresa.inventario += empresa.producción
-        empresa.unidades_vendidas = 0
 
-        productos_disponibles.extend([empresa] * empresa.inventario)
+        productos_disponibles.extend([empresa] * int(empresa.inventario))
 
     productos_disponibles.sort(key=lambda e: e.precio)
     productos_disponibles = deque(productos_disponibles)
@@ -19,13 +18,13 @@ def mercado_productos(estado):
                 seleccionado = productos_disponibles.popleft()
                 seleccionado.presupuesto += seleccionado.precio
                 trabajador.presupuesto -= seleccionado.precio
-                seleccionado.unidades_vendidas += 1
                 seleccionado.inventario -= 1
         else:
             break
 
     for empresa in estado.empresas:
-        if empresa.producción > empresa.unidades_vendidas:
+        if empresa.inventario > empresa.invenario_ayer:
             empresa.precio *= estado.config.reducción_precio
-        elif empresa.producción < empresa.unidades_vendidas:
+        elif empresa.inventario < empresa.invenario_ayer:
             empresa.precio *= estado.config.aumento_precio
+        empresa.invenario_ayer = empresa.inventario

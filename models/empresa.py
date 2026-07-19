@@ -23,4 +23,4 @@ class Empresa:
 
     inventario: float = 0
 
-    unidades_vendidas: float = 0.0
+    inventario_ayer: float = 0
