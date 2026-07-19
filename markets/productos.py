@@ -12,8 +12,7 @@ def mercado_productos(estado):
             trabajador.presupuesto -= seleccionado.precio
             empresa.unidades_vendidas += 1
             seleccionado.inventario -= 1
-            
-            seleccionado.precio *= estado.config.aumento_precio
+
     for empresa in estado.empresas:
         empresa.precio *= estado.config.reducción_precio ** empresa.inventario * estado.config.aumento_precio ** empresa.unidades_vendidas
         empresa.unidades_vendidas = 0
