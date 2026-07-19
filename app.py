@@ -72,6 +72,9 @@ if "historial" not in st.session_state:
     ).astype(float)
     st.session_state.historial.index.name = "Día"
 
+if "marcas_politicas" not in st.session_state:
+    st.session_state.marcas_politicas = []
+
 # Estado de controles
 if "salario_mínimo_automático" not in st.session_state:
     st.session_state.salario_mínimo_automático = sim.config.salario_mínimo_automático
@@ -232,11 +235,29 @@ def registrar_snapshots(snapshots):
         st.session_state.historial = pd.concat([st.session_state.historial, df_nuevos])
 
 
+def agregar_marca_politica(nombre, valor, dia=None):
+    dia_actual = int(sim.estado.día) if dia is None else int(dia)
+    etiqueta = f"{nombre}: {valor}"
+    if not any(
+        marca.get("día") == dia_actual and marca.get("label") == etiqueta
+        for marca in st.session_state.marcas_politicas
+    ):
+        st.session_state.marcas_politicas.append({"día": dia_actual, "label": etiqueta})
+
+
+def render_boton_marca(nombre, valor, key_suffix):
+    if st.button(
+        "📍",
+        key=f"marca_{key_suffix}",
+        help=f"Marcar el día actual con {nombre} = {valor}",
+    ):
+        agregar_marca_politica(nombre, valor)
+
 
 run_every = 1 if st.session_state.auto_avance else None
 
 
-def graficar_con_marca(df, columnas, titulo=""):
+def graficar_con_marca(df, columnas, titulo="", marcas=None):
     if df is None or df.empty:
         return
 
@@ -259,55 +280,64 @@ def graficar_con_marca(df, columnas, titulo=""):
         value_name="valor",
     )
 
-    ultimo_dia = int(long_df["día"].dropna().iloc[-1])
+    marcas_a_usar = marcas if marcas is not None else st.session_state.get("marcas_politicas", [])
 
-    spec = {
-        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-        "data": {"values": long_df.to_dict(orient="records")},
-        "layer": [
-            {
-                "mark": {"type": "line"},
-                "encoding": {
-                    "x": {"field": "día", "type": "quantitative", "title": "Día"},
-                    "y": {"field": "valor", "type": "quantitative"},
-                    "color": {
-                        "field": "serie",
-                        "type": "nominal",
-                        "legend": {
-                            "orient": "bottom",
-                            "title": None,
-                            "labelFontSize": 11,
-                        },
+    layers = [
+        {
+            "mark": {"type": "line"},
+            "encoding": {
+                "x": {"field": "día", "type": "quantitative", "title": "Día"},
+                "y": {"field": "valor", "type": "quantitative"},
+                "color": {
+                    "field": "serie",
+                    "type": "nominal",
+                    "legend": {
+                        "orient": "bottom",
+                        "title": None,
+                        "labelFontSize": 11,
                     },
                 },
             },
+        }
+    ]
+
+    for marca in marcas_a_usar:
+        layers.append(
             {
-                "data": {"values": [{"día": ultimo_dia}]},
+                "data": {"values": [{"día": marca["día"]}]},
                 "mark": {
                     "type": "rule",
-                    "color": "red",
+                    "color": "#2563eb",
                     "strokeWidth": 2,
                     "strokeDash": [6, 4],
                 },
                 "encoding": {
                     "x": {"field": "día", "type": "quantitative"},
                 },
-            },
+            }
+        )
+        layers.append(
             {
-                "data": {"values": [{"día": ultimo_dia, "label": "Hoy"}]},
+                "data": {"values": [{"día": marca["día"], "label": marca["label"]}]},
                 "mark": {
                     "type": "text",
-                    "color": "red",
+                    "color": "#2563eb",
                     "fontWeight": "bold",
-                    "dx": 5,
-                    "dy": -10,
+                    "fontSize": 11,
+                    "dx": 4,
+                    "dy": 12,
                 },
                 "encoding": {
                     "x": {"field": "día", "type": "quantitative"},
                     "text": {"field": "label", "type": "nominal"},
                 },
-            },
-        ],
+            }
+        )
+
+    spec = {
+        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+        "data": {"values": long_df.to_dict(orient="records")},
+        "layer": layers,
     }
 
     if titulo:
@@ -335,15 +365,19 @@ def controles_velocidad():
         disabled=st.session_state.ajuste_velocidad_automatico,
     )
 
-    st.number_input(
-        "Valor exacto",
-        min_value=1,
-        max_value=1000,
-        step=1,
-        key="velocidad_input",
-        on_change=sincronizar_velocidad_input,
-        disabled=st.session_state.ajuste_velocidad_automatico,
-    )
+    col_velocidad_input, col_velocidad_btn = st.columns([4, 1])
+    with col_velocidad_input:
+        st.number_input(
+            "Valor exacto",
+            min_value=1,
+            max_value=1000,
+            step=1,
+            key="velocidad_input",
+            on_change=sincronizar_velocidad_input,
+            disabled=st.session_state.ajuste_velocidad_automatico,
+        )
+    with col_velocidad_btn:
+        render_boton_marca("Velocidad", st.session_state.velocidad_input, "velocidad")
 
 
 with st.sidebar:
@@ -417,15 +451,19 @@ with st.sidebar:
 
     if st.session_state.salario_mínimo_automático:
         salario_metric_placeholder.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
-        st.slider(
-            "Tasa de salario mínimo",
-            min_value=0.0,
-            max_value=2.0,
-            step=0.01,
-            key="tasa_slider",
-            value=st.session_state.tasa_slider,
-            on_change=sincronizar_tasa,
-        )
+        col_tasa_slider, col_tasa_btn = st.columns([4, 1])
+        with col_tasa_slider:
+            st.slider(
+                "Tasa de salario mínimo",
+                min_value=0.0,
+                max_value=2.0,
+                step=0.01,
+                key="tasa_slider",
+                value=st.session_state.tasa_slider,
+                on_change=sincronizar_tasa,
+            )
+        with col_tasa_btn:
+            render_boton_marca("Tasa salario mínimo", st.session_state.tasa_slider, "tasa_salario")
     else:
         salario_metric_placeholder.empty()
         st.slider(
@@ -436,14 +474,18 @@ with st.sidebar:
             on_change=sincronizar_salario_slider,
         )
 
-        st.number_input(
-            "Valor exacto",
-            min_value=0,
-            max_value=10000,
-            step=1,
-            key="salario_input",
-            on_change=sincronizar_salario_input,
-        )
+        col_salario_input, col_salario_btn = st.columns([4, 1])
+        with col_salario_input:
+            st.number_input(
+                "Valor exacto",
+                min_value=0,
+                max_value=10000,
+                step=1,
+                key="salario_input",
+                on_change=sincronizar_salario_input,
+            )
+        with col_salario_btn:
+            render_boton_marca("Salario mínimo", st.session_state.salario_input, "salario")
 
 
     st.slider(
@@ -455,14 +497,18 @@ with st.sidebar:
         on_change=sincronizar_informalidad_por_empresa_slider,
     )
 
-    st.number_input(
-        "Valor exacto",
-        min_value=0.00,
-        max_value=1.00,
-        step=0.01,
-        key="informalidad_por_empresa_input",
-        on_change=sincronizar_informalidad_por_empresa_input,
-    )
+    col_informalidad_input, col_informalidad_btn = st.columns([4, 1])
+    with col_informalidad_input:
+        st.number_input(
+            "Valor exacto",
+            min_value=0.00,
+            max_value=1.00,
+            step=0.01,
+            key="informalidad_por_empresa_input",
+            on_change=sincronizar_informalidad_por_empresa_input,
+        )
+    with col_informalidad_btn:
+        render_boton_marca("Informalidad por empresa", st.session_state.informalidad_por_empresa_input, "informalidad")
 
     st.divider()
 
@@ -475,14 +521,18 @@ with st.sidebar:
         on_change=sincronizar_productividad_formal_slider,
     )
 
-    st.number_input(
-        "Valor exacto",
-        min_value=0.00,
-        max_value=5.00,
-        step=0.01,
-        key="productividad_formal_input",
-        on_change=sincronizar_productividad_formal_input,
-    )
+    col_prod_formal_input, col_prod_formal_btn = st.columns([4, 1])
+    with col_prod_formal_input:
+        st.number_input(
+            "Valor exacto",
+            min_value=0.00,
+            max_value=5.00,
+            step=0.01,
+            key="productividad_formal_input",
+            on_change=sincronizar_productividad_formal_input,
+        )
+    with col_prod_formal_btn:
+        render_boton_marca("Productividad formal", st.session_state.productividad_formal_input, "productividad_formal")
 
     st.slider(
         "Productividad informal",
@@ -493,14 +543,18 @@ with st.sidebar:
         on_change=sincronizar_productividad_informal_slider,
     )
 
-    st.number_input(
-        "Valor exacto",
-        min_value=0.00,
-        max_value=5.00,
-        step=0.01,
-        key="productividad_informal_input",
-        on_change=sincronizar_productividad_informal_input,
-    )
+    col_prod_informal_input, col_prod_informal_btn = st.columns([4, 1])
+    with col_prod_informal_input:
+        st.number_input(
+            "Valor exacto",
+            min_value=0.00,
+            max_value=5.00,
+            step=0.01,
+            key="productividad_informal_input",
+            on_change=sincronizar_productividad_informal_input,
+        )
+    with col_prod_informal_btn:
+        render_boton_marca("Productividad informal", st.session_state.productividad_informal_input, "productividad_informal")
 
     st.divider()
 
@@ -513,14 +567,18 @@ with st.sidebar:
         on_change=sincronizar_tasa_emisión_slider,
     )
 
-    st.number_input(
-        "Valor exacto",
-        min_value=-1.00,
-        max_value=1.00,
-        step=0.001,
-        key="tasa_emisión_input",
-        on_change=sincronizar_tasa_emisión_input,
-    )
+    col_tasa_emision_input, col_tasa_emision_btn = st.columns([4, 1])
+    with col_tasa_emision_input:
+        st.number_input(
+            "Valor exacto",
+            min_value=-1.00,
+            max_value=1.00,
+            step=0.001,
+            key="tasa_emisión_input",
+            on_change=sincronizar_tasa_emisión_input,
+        )
+    with col_tasa_emision_btn:
+        render_boton_marca("Tasa emisión", st.session_state.tasa_emisión_input, "tasa_emision")
 
 
 @st.fragment(run_every=run_every)
@@ -616,6 +674,7 @@ def panel():
             historial_filtrado[["Salario", "Salario informal"]],
             ["Salario", "Salario informal"],
             "Evolución de Salarios",
+            marcas=st.session_state.marcas_politicas,
         )
 
         st.subheader("2. Evolución de Tasas de Empleo y Desempleo (%)")
@@ -624,6 +683,7 @@ def panel():
             df_empleo_pct,
             list(df_empleo_pct.columns),
             "Tasas de Empleo y Desempleo (%)",
+            marcas=st.session_state.marcas_politicas,
         )
 
         st.subheader("3. Evolución del Precio Medio")
@@ -631,6 +691,7 @@ def panel():
             historial_filtrado[["Precio"]],
             ["Precio"],
             "Evolución del Precio Medio",
+            marcas=st.session_state.marcas_politicas,
         )
 
     else:
