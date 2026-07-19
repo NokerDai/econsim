@@ -1,15 +1,34 @@
-def mercado_productos(estado):
-    for empresa in estado.empresas:
-        produccion_nueva = empresa.empleados_formales * estado.config.productividad_formal + empresa.empleados_informales * estado.config.productividad_informal
-        empresa.inventario = produccion_nueva
+# --- productos.py ---
+from collections import deque
 
-    for trabajador in estado.trabajadores:
-        seleccionado = estado.aleatorio.choice(estado.empresas)
+def mercado_productos(estado):
+    productos_disponibles = []
+    
+    for empresa in estado.empresas:
+        empresa.inventario = empresa.empleados_formales * estado.config.productividad_formal + empresa.empleados_informales * estado.config.productividad_informal
+        empresa.unidades_vendidas = 0
         
-        if trabajador.presupuesto >= seleccionado.precio and seleccionado.inventario >= 1:
-            seleccionado.presupuesto += seleccionado.precio
-            trabajador.presupuesto -= seleccionado.precio
-            seleccionado.inventario -= 1
-            seleccionado.precio *= estado.config.aumento_precio
-        elif seleccionado.inventario >= 1:
-            seleccionado.precio *= estado.config.reducción_precio
+        productos_disponibles.extend([empresa] * int(unidades_producidas))
+        
+    productos_disponibles.sort(key=lambda e: e.precio)
+    cola_productos = deque(productos_disponibles)
+    
+    for trabajador in estado.trabajadores:
+        
+        while cola_productos and not comprado:
+            siguiente_producto_mas_barato = cola_productos[0]
+            
+            if trabajador.presupuesto >= siguiente_producto_mas_barato.precio:
+                empresa_vendedora = cola_productos.popleft()
+
+                trabajador.presupuesto -= empresa_vendedora.precio
+                empresa_vendedora.presupuesto += empresa_vendedora.precio
+
+                empresa.inventario -= 1
+                empresa_vendedora.unidades_vendidas += 1
+            else:
+                break
+
+    for empresa in estado.empresas:
+        empresa.precio *= estado.config.aumento_precio ** empresa.unidades_vendidas
+        empresa.precio *= estado.config.reducción_precio ** empresa.inventario
