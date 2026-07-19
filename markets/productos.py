@@ -15,12 +15,14 @@ def mercado_productos(estado):
 
     for trabajador in estado.trabajadores:
         seleccionado = productos_disponibles.popleft()
-        
-        if trabajador.presupuesto >= seleccionado.precio:
-            seleccionado.presupuesto += seleccionado.precio
-            trabajador.presupuesto -= seleccionado.precio
-            seleccionado.unidades_vendidas += 1
-            seleccionado.inventario -= 1
+        if productos_disponibles:
+            if trabajador.presupuesto >= seleccionado.precio:
+                seleccionado.presupuesto += seleccionado.precio
+                trabajador.presupuesto -= seleccionado.precio
+                seleccionado.unidades_vendidas += 1
+                seleccionado.inventario -= 1
+        else:
+            break
 
     for empresa in estado.empresas:
         if empresa.producción > empresa.unidades_vendidas:
