@@ -601,7 +601,7 @@ def panel():
             st.session_state.ultimo_tick = time.time()
 
         ahora = time.time()
-        if ahora - st.session_state.ultimo_tick >= 0.1:
+        if ahora - st.session_state.ultimo_tick >= 0.15:
             st.session_state.ultimo_tick = ahora
             snapshots = []
             v_actual = max(1, int(st.session_state.velocidad))
@@ -612,6 +612,9 @@ def panel():
                     st.session_state.auto_avance = False
                     break
             registrar_snapshots(snapshots)
+
+            if st.session_state.auto_avance:
+                st.rerun()
 
     if st.session_state.salario_mínimo_automático:
         st.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
