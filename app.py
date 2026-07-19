@@ -263,9 +263,6 @@ def obtener_marcadores_activos():
     ]
 
 
-run_every = 1 if st.session_state.auto_avance else None
-
-
 def graficar_con_marca(df, columnas, titulo="", marcadores=None):
     if df is None or df.empty:
         return
@@ -363,7 +360,6 @@ def graficar_con_marca(df, columnas, titulo="", marcadores=None):
     st.vega_lite_chart(spec, width="stretch", height=300)
 
 
-@st.fragment(run_every=run_every)
 def controles_velocidad():
 
     velocidad = max(1, int(st.session_state.velocidad))
@@ -598,7 +594,6 @@ with st.sidebar:
             marcar_valor("Tasa emisión", st.session_state.tasa_emisión_slider)
 
 
-@st.fragment(run_every=run_every)
 def panel():
 
     if st.session_state.auto_avance:
@@ -621,7 +616,10 @@ def panel():
             st.rerun()
 
     if st.session_state.salario_mínimo_automático:
-        salario_metric_placeholder.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
+        st.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
+
+    if st.session_state.auto_avance:
+        st.autorefresh(interval=1000, limit=None)
 
     hay_datos = len(st.session_state.historial) > 0
 
