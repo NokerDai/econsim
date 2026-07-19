@@ -6,6 +6,7 @@ import time
 from config import Config
 from simulation import Simulación
 from salario_utils import resolver_valor_salario
+from marcador import construir_texto_marcado, esta_activa, obtener_valores_marcado
 
 
 st.set_page_config(
@@ -109,6 +110,9 @@ if "tasa_emisión_slider" not in st.session_state:
 
 if "tasa_emisión_input" not in st.session_state:
     st.session_state.tasa_emisión_input = float(sim.config.tasa_emisión)
+
+if "marcador_dia" not in st.session_state:
+    st.session_state.marcador_dia = max(0, int(getattr(sim.estado, "día", 0)))
 
 if "productividad_formal_slider" not in st.session_state:
     st.session_state.productividad_formal_slider = float(sim.config.productividad_formal)
@@ -236,7 +240,7 @@ def registrar_snapshots(snapshots):
 run_every = 1 if st.session_state.auto_avance else None
 
 
-def graficar_con_marca(df, columnas, titulo=""):
+def graficar_con_marca(df, columnas, titulo="", marcador_dia=None, marcador_texto=None):
     if df is None or df.empty:
         return
 
@@ -259,55 +263,63 @@ def graficar_con_marca(df, columnas, titulo=""):
         value_name="valor",
     )
 
-    ultimo_dia = int(long_df["día"].dropna().iloc[-1])
+    layers = [
+        {
+            "mark": {"type": "line"},
+            "encoding": {
+                "x": {"field": "día", "type": "quantitative", "title": "Día"},
+                "y": {"field": "valor", "type": "quantitative"},
+                "color": {
+                    "field": "serie",
+                    "type": "nominal",
+                    "legend": {
+                        "orient": "bottom",
+                        "title": None,
+                        "labelFontSize": 11,
+                    },
+                },
+            },
+        }
+    ]
+
+    if marcador_dia is not None and marcador_texto:
+        dia_actual = int(getattr(sim.estado, "día", 0))
+        if esta_activa(int(marcador_dia), dia_actual):
+            layers.append(
+                {
+                    "data": {"values": [{"día": int(marcador_dia)}]},
+                    "mark": {
+                        "type": "rule",
+                        "color": "red",
+                        "strokeWidth": 2,
+                        "strokeDash": [6, 4],
+                    },
+                    "encoding": {
+                        "x": {"field": "día", "type": "quantitative"},
+                    },
+                }
+            )
+            layers.append(
+                {
+                    "data": {"values": [{"día": int(marcador_dia), "label": marcador_texto}]},
+                    "mark": {
+                        "type": "text",
+                        "color": "red",
+                        "fontWeight": "bold",
+                        "dx": 5,
+                        "dy": -10,
+                    },
+                    "encoding": {
+                        "x": {"field": "día", "type": "quantitative"},
+                        "text": {"field": "label", "type": "nominal"},
+                    },
+                }
+            )
 
     spec = {
         "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
         "data": {"values": long_df.to_dict(orient="records")},
-        "layer": [
-            {
-                "mark": {"type": "line"},
-                "encoding": {
-                    "x": {"field": "día", "type": "quantitative", "title": "Día"},
-                    "y": {"field": "valor", "type": "quantitative"},
-                    "color": {
-                        "field": "serie",
-                        "type": "nominal",
-                        "legend": {
-                            "orient": "bottom",
-                            "title": None,
-                            "labelFontSize": 11,
-                        },
-                    },
-                },
-            },
-            {
-                "data": {"values": [{"día": ultimo_dia}]},
-                "mark": {
-                    "type": "rule",
-                    "color": "red",
-                    "strokeWidth": 2,
-                    "strokeDash": [6, 4],
-                },
-                "encoding": {
-                    "x": {"field": "día", "type": "quantitative"},
-                },
-            },
-            {
-                "data": {"values": [{"día": ultimo_dia, "label": "Hoy"}]},
-                "mark": {
-                    "type": "text",
-                    "color": "red",
-                    "fontWeight": "bold",
-                    "dx": 5,
-                    "dy": -10,
-                },
-                "encoding": {
-                    "x": {"field": "día", "type": "quantitative"},
-                    "text": {"field": "label", "type": "nominal"},
-                },
-            },
-        ],
+        "layer": layers,
     }
 
     if titulo:
@@ -388,6 +400,17 @@ with st.sidebar:
     )
 
     controles_velocidad()
+
+    st.divider()
+
+    st.number_input(
+        "Día a marcar",
+        min_value=0,
+        max_value=1000000,
+        step=1,
+        key="marcador_dia",
+    )
+    st.caption("El marcador se muestra solo si el día elegido está a menos de 365 días del día actual.")
 
     st.divider()
 
@@ -611,11 +634,16 @@ def panel():
             st.session_state.historial.index > (último_día - 365)
         ].astype(float)
 
+        valores_marcado = obtener_valores_marcado(sim, st.session_state)
+        texto_marcado = construir_texto_marcado(valores_marcado)
+
         st.subheader("1. Evolución de Salarios")
         graficar_con_marca(
             historial_filtrado[["Salario", "Salario informal"]],
             ["Salario", "Salario informal"],
             "Evolución de Salarios",
+            marcador_dia=st.session_state.get("marcador_dia"),
+            marcador_texto=texto_marcado,
         )
 
         st.subheader("2. Evolución de Tasas de Empleo y Desempleo (%)")
@@ -624,6 +652,8 @@ def panel():
             df_empleo_pct,
             list(df_empleo_pct.columns),
             "Tasas de Empleo y Desempleo (%)",
+            marcador_dia=st.session_state.get("marcador_dia"),
+            marcador_texto=texto_marcado,
         )
 
         st.subheader("3. Evolución del Precio Medio")
@@ -631,6 +661,8 @@ def panel():
             historial_filtrado[["Precio"]],
             ["Precio"],
             "Evolución del Precio Medio",
+            marcador_dia=st.session_state.get("marcador_dia"),
+            marcador_texto=texto_marcado,
         )
 
     else:
