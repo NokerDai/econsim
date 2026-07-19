@@ -151,24 +151,35 @@ def sincronizar_tasa():
     sim.config.tasa_salario_mínimo = st.session_state.tasa_slider
 
 
-def sincronizar_velocidad_slider():
-    valor = max(1, int(st.session_state.velocidad_slider))
+def cambiar_velocidad_desde_widget():
+    slider_valor = max(1, int(st.session_state.velocidad_slider))
+    input_valor = max(1, int(st.session_state.velocidad_input))
+    valor_actual = st.session_state.velocidad
 
-    st.session_state.velocidad = valor
-    st.session_state.velocidad_input = valor
-    st.session_state._velocidad_ui = valor
+    if slider_valor != valor_actual:
+        valor_final = slider_valor
+    elif input_valor != valor_actual:
+        valor_final = input_valor
+    else:
+        valor_final = valor_actual
 
-    sim.cambiar_velocidad(valor)
+    valor_final = max(1, int(valor_final))
+
+    if valor_final != valor_actual:
+        st.session_state.velocidad = valor_final
+        st.session_state.velocidad_slider = valor_final
+        st.session_state.velocidad_input = valor_final
+        sim.cambiar_velocidad(valor_final)
 
 
-def sincronizar_velocidad_input():
-    valor = max(1, int(st.session_state.velocidad_input))
+def sincronizar_velocidad_ui():
+    valor_actual = int(st.session_state.velocidad)
 
-    st.session_state.velocidad = valor
-    st.session_state.velocidad_slider = valor
-    st.session_state._velocidad_ui = valor
+    if st.session_state.velocidad_slider != valor_actual:
+        st.session_state.velocidad_slider = valor_actual
 
-    sim.cambiar_velocidad(valor)
+    if st.session_state.velocidad_input != valor_actual:
+        st.session_state.velocidad_input = valor_actual
 
 
 def sincronizar_tasa_emisión_slider():
@@ -218,8 +229,30 @@ def sincronizar_productividad_informal_input():
 def registrar_snapshots(snapshots):
     if not snapshots:
         return
+
+    if st.session_state.historial.empty:
+        df_nuevos = pd.DataFrame([
+            {
+                "Día": int(snap.día),
+                "Salario": float(snap.salario_medio),
+                "Salario informal": float(snap.salario_informal_medio),
+                "Precio": float(snap.precio_medio),
+                "Empleo formal": float(snap.empleo_formal),
+                "Empleo informal": float(snap.empleo_informal),
+                "Desempleo": float(snap.desempleo),
+            }
+            for snap in snapshots
+        ]).set_index("Día").astype(float)
+        st.session_state.historial = df_nuevos
+        return
+
+    ultimo_dia = int(st.session_state.historial.index.max())
     nuevos_datos = []
+    orden_ascendente = True
+
     for snap in snapshots:
+        if snap.día <= ultimo_dia:
+            orden_ascendente = False
         if snap.día not in st.session_state.historial.index:
             nuevos_datos.append({
                 "Día": int(snap.día),
@@ -230,12 +263,20 @@ def registrar_snapshots(snapshots):
                 "Empleo informal": float(snap.empleo_informal),
                 "Desempleo": float(snap.desempleo),
             })
-    if nuevos_datos:
-        df_nuevos = pd.DataFrame(nuevos_datos).set_index("Día").astype(float)
+
+    if not nuevos_datos:
+        return
+
+    df_nuevos = pd.DataFrame(nuevos_datos).set_index("Día").astype(float)
+
+    if orden_ascendente and df_nuevos.index.min() > ultimo_dia:
         st.session_state.historial = pd.concat([st.session_state.historial, df_nuevos])
-        st.session_state.historial.index = st.session_state.historial.index.astype(int)
-        st.session_state.historial = st.session_state.historial[~st.session_state.historial.index.duplicated(keep="last")]
-        st.session_state.historial = st.session_state.historial.sort_index()
+        return
+
+    st.session_state.historial = pd.concat([st.session_state.historial, df_nuevos])
+    st.session_state.historial.index = st.session_state.historial.index.astype(int)
+    st.session_state.historial = st.session_state.historial[~st.session_state.historial.index.duplicated(keep="last")]
+    st.session_state.historial = st.session_state.historial.sort_index()
 
 
 def agregar_marca_politica(nombre, valor, dia=None):
@@ -356,19 +397,12 @@ def graficar_con_marca(df, columnas, titulo="", marcas=None):
 
 def controles_velocidad():
 
-    velocidad = max(1, int(st.session_state.velocidad))
-
-    if st.session_state.get("_velocidad_ui") != velocidad:
-        st.session_state._velocidad_ui = velocidad
-        st.session_state.velocidad_slider = velocidad
-        st.session_state.velocidad_input = velocidad
-
     st.slider(
         "Velocidad (días por paso)",
         min_value=1,
         max_value=1000,
         key="velocidad_slider",
-        on_change=sincronizar_velocidad_slider,
+        on_change=cambiar_velocidad_desde_widget,
         disabled=st.session_state.ajuste_velocidad_automatico,
     )
 
@@ -380,7 +414,7 @@ def controles_velocidad():
             max_value=1000,
             step=1,
             key="velocidad_input",
-            on_change=sincronizar_velocidad_input,
+            on_change=cambiar_velocidad_desde_widget,
             disabled=st.session_state.ajuste_velocidad_automatico,
         )
     with col_velocidad_btn:
@@ -614,10 +648,13 @@ def panel():
             if fuera_de_rango:
                 v_nueva = v_actual * (1.0 / t_transcurrido)
                 
-                v_nueva_entera = max(1, min(10000, int(round(v_nueva))))
+                v_nueva_entera = max(1, min(1000, int(round(v_nueva))))
                 
                 if v_nueva_entera != v_actual:
                     st.session_state.velocidad = v_nueva_entera
+                    st.session_state.velocidad_slider = v_nueva_entera
+                    st.session_state.velocidad_input = v_nueva_entera
+                    st.session_state._velocidad_ui = v_nueva_entera
                     sim.cambiar_velocidad(v_nueva_entera)
 
         if not st.session_state.auto_avance:
