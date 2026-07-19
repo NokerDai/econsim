@@ -9,7 +9,6 @@ from salario_utils import resolver_valor_salario
 
 
 st.set_page_config(
-    page_title="Simulación económica",
     page_icon="📈",
     layout="wide",
 )
