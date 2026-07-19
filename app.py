@@ -6,11 +6,12 @@ import time
 from config import Config
 from simulation import Simulación
 from salario_utils import resolver_valor_salario
-from marcador import construir_texto_marcado, esta_activa, obtener_valores_marcado
+from marcador import construir_texto_marcado, esta_activa
 
 
 st.set_page_config(
     page_icon="📈",
+    page_title="econsim",
     layout="wide",
 )
 
@@ -56,9 +57,6 @@ if "_velocidad_ui" not in st.session_state:
 
 if "auto_avance" not in st.session_state:
     st.session_state.auto_avance = False
-
-if "ajuste_velocidad_automatico" not in st.session_state:
-    st.session_state.ajuste_velocidad_automatico = False
 
 if "historial" not in st.session_state:
     st.session_state.historial = pd.DataFrame(
@@ -111,8 +109,8 @@ if "tasa_emisión_slider" not in st.session_state:
 if "tasa_emisión_input" not in st.session_state:
     st.session_state.tasa_emisión_input = float(sim.config.tasa_emisión)
 
-if "marcador_dia" not in st.session_state:
-    st.session_state.marcador_dia = max(0, int(getattr(sim.estado, "día", 0)))
+if "marcadores" not in st.session_state:
+    st.session_state.marcadores = []
 
 if "productividad_formal_slider" not in st.session_state:
     st.session_state.productividad_formal_slider = float(sim.config.productividad_formal)
@@ -236,11 +234,39 @@ def registrar_snapshots(snapshots):
         st.session_state.historial = pd.concat([st.session_state.historial, df_nuevos])
 
 
+def marcar_valor(nombre, valor, día=None):
+    if nombre is None:
+        return
+
+    día = int(día if día is not None else getattr(sim.estado, "día", 0))
+    etiqueta = construir_texto_marcado({nombre: valor})
+
+    marcadores = [
+        marcador for marcador in st.session_state.get("marcadores", [])
+        if marcador.get("nombre") != nombre
+    ]
+
+    marcadores.append({
+        "nombre": nombre,
+        "label": etiqueta,
+        "valor": valor,
+        "día": día,
+    })
+    st.session_state.marcadores = marcadores
+
+
+def obtener_marcadores_activos():
+    dia_actual = int(getattr(sim.estado, "día", 0))
+    return [
+        marcador for marcador in st.session_state.get("marcadores", [])
+        if esta_activa(int(marcador.get("día", -1)), dia_actual)
+    ]
+
 
 run_every = 1 if st.session_state.auto_avance else None
 
 
-def graficar_con_marca(df, columnas, titulo="", marcador_dia=None, marcador_texto=None):
+def graficar_con_marca(df, columnas, titulo="", marcadores=None):
     if df is None or df.empty:
         return
 
@@ -282,15 +308,24 @@ def graficar_con_marca(df, columnas, titulo="", marcador_dia=None, marcador_text
         }
     ]
 
-    if marcador_dia is not None and marcador_texto:
-        dia_actual = int(getattr(sim.estado, "día", 0))
-        if esta_activa(int(marcador_dia), dia_actual):
+    dia_actual = int(getattr(sim.estado, "día", 0))
+    colores = ["#ff4b4b", "#2E86DE", "#4CAF50", "#FFA726", "#A64DFF"]
+
+    if marcadores:
+        for index, marcador in enumerate(marcadores):
+            dia_marcado = marcador.get("día")
+            texto = marcador.get("label")
+            if dia_marcado is None or not texto:
+                continue
+            if not esta_activa(int(dia_marcado), dia_actual):
+                continue
+            color = colores[index % len(colores)]
             layers.append(
                 {
-                    "data": {"values": [{"día": int(marcador_dia)}]},
+                    "data": {"values": [{"día": int(dia_marcado)}]},
                     "mark": {
                         "type": "rule",
-                        "color": "red",
+                        "color": color,
                         "strokeWidth": 2,
                         "strokeDash": [6, 4],
                     },
@@ -301,13 +336,13 @@ def graficar_con_marca(df, columnas, titulo="", marcador_dia=None, marcador_text
             )
             layers.append(
                 {
-                    "data": {"values": [{"día": int(marcador_dia), "label": marcador_texto}]},
+                    "data": {"values": [{"día": int(dia_marcado), "label": texto}]},
                     "mark": {
                         "type": "text",
-                        "color": "red",
+                        "color": color,
                         "fontWeight": "bold",
                         "dx": 5,
-                        "dy": -10,
+                        "dy": -10 - (index * 12),
                     },
                     "encoding": {
                         "x": {"field": "día", "type": "quantitative"},
@@ -338,24 +373,28 @@ def controles_velocidad():
         st.session_state.velocidad_slider = velocidad
         st.session_state.velocidad_input = velocidad
 
-    st.slider(
-        "Velocidad (días por paso)",
-        min_value=1,
-        max_value=1000,
-        key="velocidad_slider",
-        on_change=sincronizar_velocidad_slider,
-        disabled=st.session_state.ajuste_velocidad_automatico,
-    )
+    col_velocidad, col_btn_velocidad = st.columns([5, 1])
+    with col_velocidad:
+        st.slider(
+            "Velocidad (días por paso)",
+            min_value=1,
+            max_value=1000,
+            key="velocidad_slider",
+            on_change=sincronizar_velocidad_slider,
+        )
 
-    st.number_input(
-        "Valor exacto",
-        min_value=1,
-        max_value=1000,
-        step=1,
-        key="velocidad_input",
-        on_change=sincronizar_velocidad_input,
-        disabled=st.session_state.ajuste_velocidad_automatico,
-    )
+        st.number_input(
+            "Valor exacto",
+            min_value=1,
+            max_value=1000,
+            step=1,
+            key="velocidad_input",
+            on_change=sincronizar_velocidad_input,
+        )
+
+    with col_btn_velocidad:
+        if st.button("📍", key="marcar_velocidad", help="Marcar el valor actual de la velocidad en el día actual"):
+            marcar_valor("Velocidad", st.session_state.velocidad)
 
 
 with st.sidebar:
@@ -394,23 +433,7 @@ with st.sidebar:
         st.session_state.auto_avance = False
         st.rerun()
 
-    st.checkbox(
-        "Ajuste automático de velocidad",
-        key="ajuste_velocidad_automatico",
-    )
-
     controles_velocidad()
-
-    st.divider()
-
-    st.number_input(
-        "Día a marcar",
-        min_value=0,
-        max_value=1000000,
-        step=1,
-        key="marcador_dia",
-    )
-    st.caption("El marcador se muestra solo si el día elegido está a menos de 365 días del día actual.")
 
     st.divider()
 
@@ -439,111 +462,140 @@ with st.sidebar:
     salario_metric_placeholder = st.empty()
 
     if st.session_state.salario_mínimo_automático:
-        salario_metric_placeholder.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
-        st.slider(
-            "Tasa de salario mínimo",
-            min_value=0.0,
-            max_value=2.0,
-            step=0.01,
-            key="tasa_slider",
-            value=st.session_state.tasa_slider,
-            on_change=sincronizar_tasa,
-        )
+        st.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
+        col_tasa, col_btn_tasa = st.columns([5, 1])
+        with col_tasa:
+            st.slider(
+                "Tasa de salario mínimo",
+                min_value=0.0,
+                max_value=2.0,
+                step=0.01,
+                key="tasa_slider",
+                value=st.session_state.tasa_slider,
+                on_change=sincronizar_tasa,
+            )
+        with col_btn_tasa:
+            if st.button("📍", key="marcar_tasa_salario", help="Marcar el valor actual de la tasa de salario mínimo en el día actual"):
+                marcar_valor("Tasa de salario mínimo", st.session_state.tasa_slider)
     else:
-        salario_metric_placeholder.empty()
+        col_salario, col_btn_salario = st.columns([5, 1])
+        with col_salario:
+            st.slider(
+                "Salario mínimo",
+                min_value=0,
+                max_value=10000,
+                key="salario_slider",
+                on_change=sincronizar_salario_slider,
+            )
+
+            st.number_input(
+                "Valor exacto",
+                min_value=0,
+                max_value=10000,
+                step=1,
+                key="salario_input",
+                on_change=sincronizar_salario_input,
+            )
+        with col_btn_salario:
+            if st.button("📍", key="marcar_salario", help="Marcar el valor actual del salario mínimo en el día actual"):
+                marcar_valor("Salario mínimo", st.session_state.salario_slider)
+
+
+    col_informalidad, col_btn_informalidad = st.columns([5, 1])
+    with col_informalidad:
         st.slider(
-            "Salario mínimo",
-            min_value=0,
-            max_value=10000,
-            key="salario_slider",
-            on_change=sincronizar_salario_slider,
+            "Informalidad por empresa",
+            min_value=0.00,
+            max_value=1.00,
+            step=0.01,
+            key="informalidad_por_empresa_slider",
+            on_change=sincronizar_informalidad_por_empresa_slider,
         )
 
         st.number_input(
             "Valor exacto",
-            min_value=0,
-            max_value=10000,
-            step=1,
-            key="salario_input",
-            on_change=sincronizar_salario_input,
+            min_value=0.00,
+            max_value=1.00,
+            step=0.01,
+            key="informalidad_por_empresa_input",
+            on_change=sincronizar_informalidad_por_empresa_input,
+        )
+    with col_btn_informalidad:
+        if st.button("📍", key="marcar_informalidad", help="Marcar el valor actual de la informalidad por empresa"):
+            marcar_valor("Informalidad por empresa", st.session_state.informalidad_por_empresa_slider)
+
+    st.divider()
+
+    col_formal, col_btn_formal = st.columns([5, 1])
+    with col_formal:
+        st.slider(
+            "Productividad formal",
+            min_value=0.00,
+            max_value=5.00,
+            step=0.01,
+            key="productividad_formal_slider",
+            on_change=sincronizar_productividad_formal_slider,
         )
 
+        st.number_input(
+            "Valor exacto",
+            min_value=0.00,
+            max_value=5.00,
+            step=0.01,
+            key="productividad_formal_input",
+            on_change=sincronizar_productividad_formal_input,
+        )
+    with col_btn_formal:
+        if st.button("📍", key="marcar_productividad_formal", help="Marcar el valor actual de la productividad formal"):
+            marcar_valor("Productividad formal", st.session_state.productividad_formal_slider)
 
-    st.slider(
-        "Informalidad por empresa",
-        min_value=0.00,
-        max_value=1.00,
-        step=0.01,
-        key="informalidad_por_empresa_slider",
-        on_change=sincronizar_informalidad_por_empresa_slider,
-    )
+    col_informal, col_btn_informal = st.columns([5, 1])
+    with col_informal:
+        st.slider(
+            "Productividad informal",
+            min_value=0.00,
+            max_value=5.00,
+            step=0.01,
+            key="productividad_informal_slider",
+            on_change=sincronizar_productividad_informal_slider,
+        )
 
-    st.number_input(
-        "Valor exacto",
-        min_value=0.00,
-        max_value=1.00,
-        step=0.01,
-        key="informalidad_por_empresa_input",
-        on_change=sincronizar_informalidad_por_empresa_input,
-    )
-
-    st.divider()
-
-    st.slider(
-        "Productividad formal",
-        min_value=0.00,
-        max_value=5.00,
-        step=0.01,
-        key="productividad_formal_slider",
-        on_change=sincronizar_productividad_formal_slider,
-    )
-
-    st.number_input(
-        "Valor exacto",
-        min_value=0.00,
-        max_value=5.00,
-        step=0.01,
-        key="productividad_formal_input",
-        on_change=sincronizar_productividad_formal_input,
-    )
-
-    st.slider(
-        "Productividad informal",
-        min_value=0.00,
-        max_value=5.00,
-        step=0.01,
-        key="productividad_informal_slider",
-        on_change=sincronizar_productividad_informal_slider,
-    )
-
-    st.number_input(
-        "Valor exacto",
-        min_value=0.00,
-        max_value=5.00,
-        step=0.01,
-        key="productividad_informal_input",
-        on_change=sincronizar_productividad_informal_input,
-    )
+        st.number_input(
+            "Valor exacto",
+            min_value=0.00,
+            max_value=5.00,
+            step=0.01,
+            key="productividad_informal_input",
+            on_change=sincronizar_productividad_informal_input,
+        )
+    with col_btn_informal:
+        if st.button("📍", key="marcar_productividad_informal", help="Marcar el valor actual de la productividad informal"):
+            marcar_valor("Productividad informal", st.session_state.productividad_informal_slider)
 
     st.divider()
 
-    st.slider(
-        "Tasa emisión",
-        min_value=-1.00,
-        max_value=1.00,
-        step=0.001,
-        key="tasa_emisión_slider",
-        on_change=sincronizar_tasa_emisión_slider,
-    )
+    col_emision, col_btn_emision = st.columns([5, 1])
+    with col_emision:
+        st.slider(
+            "Tasa emisión",
+            min_value=-1.00,
+            max_value=1.00,
+            step=0.001,
+            key="tasa_emisión_slider",
+            on_change=sincronizar_tasa_emisión_slider,
+        )
 
-    st.number_input(
-        "Valor exacto",
-        min_value=-1.00,
-        max_value=1.00,
-        step=0.001,
-        key="tasa_emisión_input",
-        on_change=sincronizar_tasa_emisión_input,
-    )
+        st.number_input(
+            "Valor exacto",
+            min_value=-1.00,
+            max_value=1.00,
+            step=0.001,
+            key="tasa_emisión_input",
+            on_change=sincronizar_tasa_emisión_input,
+        )
+    with col_btn_emision:
+        if st.button("📍", key="marcar_tasa_emision", help="Marcar el valor actual de la tasa de emisión"):
+            marcar_valor("Tasa emisión", st.session_state.tasa_emisión_slider)
 
 
 @st.fragment(run_every=run_every)
@@ -564,18 +616,6 @@ def panel():
         
         t_fin = time.perf_counter()
         t_transcurrido = t_fin - t_inicio
-
-        if st.session_state.get("ajuste_velocidad_automatico", True) and t_transcurrido > 0:
-            fuera_de_rango = t_transcurrido < 0.99 or t_transcurrido > 1.01
-            
-            if fuera_de_rango:
-                v_nueva = v_actual * (1.0 / t_transcurrido)
-                
-                v_nueva_entera = max(1, min(10000, int(round(v_nueva))))
-                
-                if v_nueva_entera != v_actual:
-                    st.session_state.velocidad = v_nueva_entera
-                    sim.cambiar_velocidad(v_nueva_entera)
 
         if not st.session_state.auto_avance:
             st.rerun()
@@ -634,16 +674,14 @@ def panel():
             st.session_state.historial.index > (último_día - 365)
         ].astype(float)
 
-        valores_marcado = obtener_valores_marcado(sim, st.session_state)
-        texto_marcado = construir_texto_marcado(valores_marcado)
+        marcadores_activos = obtener_marcadores_activos()
 
         st.subheader("1. Evolución de Salarios")
         graficar_con_marca(
             historial_filtrado[["Salario", "Salario informal"]],
             ["Salario", "Salario informal"],
             "Evolución de Salarios",
-            marcador_dia=st.session_state.get("marcador_dia"),
-            marcador_texto=texto_marcado,
+            marcadores=marcadores_activos,
         )
 
         st.subheader("2. Evolución de Tasas de Empleo y Desempleo (%)")
@@ -652,8 +690,7 @@ def panel():
             df_empleo_pct,
             list(df_empleo_pct.columns),
             "Tasas de Empleo y Desempleo (%)",
-            marcador_dia=st.session_state.get("marcador_dia"),
-            marcador_texto=texto_marcado,
+            marcadores=marcadores_activos,
         )
 
         st.subheader("3. Evolución del Precio Medio")
@@ -661,8 +698,7 @@ def panel():
             historial_filtrado[["Precio"]],
             ["Precio"],
             "Evolución del Precio Medio",
-            marcador_dia=st.session_state.get("marcador_dia"),
-            marcador_texto=texto_marcado,
+            marcadores=marcadores_activos,
         )
 
     else:
