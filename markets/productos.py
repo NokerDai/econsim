@@ -5,7 +5,7 @@ def mercado_productos(estado):
     productos_disponibles = []
     
     for empresa in estado.empresas:
-        empresa.inventario = empresa.empleados_formales * estado.config.productividad_formal + empresa.empleados_informales * estado.config.productividad_informal
+        empresa.inventario += empresa.empleados_formales * estado.config.productividad_formal + empresa.empleados_informales * estado.config.productividad_informal
         empresa.unidades_vendidas = 0
         
         productos_disponibles.extend([empresa] * int(empresa.inventario))
