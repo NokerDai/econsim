@@ -67,13 +67,16 @@ if "historial" not in st.session_state:
         columns=[
             "Salario",
             "Salario informal",
-            "Precio Lista",           # <--- Reemplaza "Precio"
-            "Precio Transacción",     # <--- Nuevo
+            "Precio Lista",
+            "Precio Transacción",
             "Poder Compra Formal",
             "Poder Compra Informal",
             "Empleo formal",
             "Empleo informal",
-            "Desempleo"
+            "Desempleo",
+            "Bienes Vendidos",
+            "Empresas Ingreso",
+            "Empresas Gasto"
         ]
     ).astype(float)
     st.session_state.historial.index.name = "Día"
@@ -246,6 +249,9 @@ def registrar_snapshots(snapshots):
                 "Empleo formal": float(snap.empleo_formal),
                 "Empleo informal": float(snap.empleo_informal),
                 "Desempleo": float(snap.desempleo),
+                "Bienes Vendidos": float(snap.bienes_vendidos),
+                "Empresas Ingreso": float(snap.empresas_ingreso),
+                "Empresas Gasto": float(snap.empresas_gasto),
             })
     if nuevos_datos:
         df_nuevos = pd.DataFrame(nuevos_datos).set_index("Día").astype(float)

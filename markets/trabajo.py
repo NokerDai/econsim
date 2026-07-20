@@ -93,6 +93,8 @@ def mercado_laboral(estado):
     vacantes_informales_proyectadas = (num_empleados_informales_proyectados * estado.config.informalidad_por_empresa) / estado.config.num_empresas
 
     for empresa in estado.empresas:
+        empresa.salario_pago_real = empresa.salario
+        empresa.salario_informal_pago_real = empresa.salario_informal
 
         ratio = empresa.vacantes_formales - int(vacantes_formales_proyectadas)
         empresa.salario *= 1 + ratio / 100

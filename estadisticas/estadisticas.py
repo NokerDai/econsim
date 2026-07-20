@@ -18,3 +18,9 @@ class Estadisticas:
     empleo_informal: list = field(default_factory=list)
 
     desempleo: list = field(default_factory=list)
+
+    bienes_vendidos: list = field(default_factory=list)
+
+    empresas_ingreso: list = field(default_factory=list)
+
+    empresas_gasto: list = field(default_factory=list)

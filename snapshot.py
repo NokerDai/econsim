@@ -1,17 +1,14 @@
 # --- snapshot.py ---
 from dataclasses import dataclass
 
-
 @dataclass
 class Snapshot:
-
     día: int
 
     salario_medio: float
 
     salario_informal_medio: float
 
-    # Reemplazamos 'precio_medio' por estas dos variables
     precio_lista_medio: float
 
     precio_transaccion_medio: float
@@ -29,3 +26,9 @@ class Snapshot:
     salario_mínimo_automático: bool
 
     informalidad_por_empresa: int
+
+    bienes_vendidos: float
+
+    empresas_ingreso: float
+
+    empresas_gasto: float

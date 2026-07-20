@@ -25,6 +25,7 @@ def mercado_productos(estado):
             break
 
     for empresa in estado.empresas:
+        empresa.precio_venta_real = empresa.precio
         if empresa.inventario > empresa.inventario_ayer:
             empresa.racha_reducido += 1
             empresa.racha_aumentado = 0

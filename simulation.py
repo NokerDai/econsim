@@ -50,7 +50,6 @@ class Simulación:
                     if estadísticas.salario_informal_medio
                     else 0
                 ),
-                # Reemplazo de precio_medio por los nuevos atributos:
                 precio_lista_medio=(
                     estadísticas.precio_lista_medio[-1]
                     if estadísticas.precio_lista_medio
@@ -80,6 +79,22 @@ class Simulación:
                 salario_mínimo=self.config.salario_mínimo,
                 salario_mínimo_automático=self.config.salario_mínimo_automático,
                 informalidad_por_empresa=self.config.informalidad_por_empresa,
+                
+                bienes_vendidos=(
+                    estadísticas.bienes_vendidos[-1]
+                    if estadísticas.bienes_vendidos
+                    else 0.0
+                ),
+                empresas_ingreso=(
+                    estadísticas.empresas_ingreso[-1]
+                    if estadísticas.empresas_ingreso
+                    else 0.0
+                ),
+                empresas_gasto=(
+                    estadísticas.empresas_gasto[-1]
+                    if estadísticas.empresas_gasto
+                    else 0.0
+                ),
             )
 
 
