@@ -217,6 +217,10 @@ if "productividad_informal_input" not in st.session_state:
     st.session_state.productividad_informal_input = float(sim.config.productividad_informal)
 
 
+if "pestana_activa" not in st.session_state:
+    st.session_state.pestana_activa = "📈 Gráficos de Evolución"
+
+
 def sincronizar_salario_slider():
     st.session_state.salario_input = st.session_state.salario_slider
     sim.cambiar_salario_mínimo(st.session_state.salario_slider)
@@ -488,11 +492,24 @@ def graficar_line_chart(df, columnas, titulo=""):
 def auto_avance_fragment():
     if st.session_state.auto_avance:
         ahora = time.time()
-        if ahora - st.session_state.last_auto_step >= 0.1:
+        
+        pestana_actual = st.session_state.get("pestana_activa", "📈 Gráficos de Evolución")
+        
+        if pestana_actual == "🔄 Flujo Circular de la Economía":
+            intervalo = 1.0
+            multiplicador = 1
+        else:
+            intervalo = 0.1
+            multiplicador = 1
+            
+        if ahora - st.session_state.last_auto_step >= intervalo:
             st.session_state.last_auto_step = ahora
             snapshots = []
+            
             v_actual = max(1, int(st.session_state.velocidad))
-            for _ in range(v_actual):
+            pasos_por_ciclo = v_actual * multiplicador
+            
+            for _ in range(pasos_por_ciclo):
                 if sim.step():
                     snapshots.append(sim.obtener_snapshot())
                 else:
@@ -747,6 +764,12 @@ def panel():
     fila3 = st.columns(5)
 
     if hay_datos:
+        tab_graficos, tab_flujo = st.tabs(
+            ["📈 Gráficos de Evolución", "🔄 Flujo Circular de la Economía"],
+            key="pestana_activa",
+            on_change="rerun"
+        )
+
         n_dias = max(1, int(st.session_state.velocidad))
         historial_reciente = st.session_state.historial.tail(n_dias)
 
