@@ -36,57 +36,49 @@ class Simulación:
 
 
     def obtener_snapshot(self):
-
         with self.lock:
-
             estadísticas = self.estado.estadisticas
-
             return snapshot.Snapshot(
-
                 día=self.estado.día,
-
                 salario_medio=(
                     estadísticas.salario_medio[-1]
                     if estadísticas.salario_medio
                     else 0
                 ),
-
                 salario_informal_medio=(
                     estadísticas.salario_informal_medio[-1]
                     if estadísticas.salario_informal_medio
                     else 0
                 ),
-
-                precio_medio=(
-                    estadísticas.precio_medio[-1]
-                    if estadísticas.precio_medio
+                # Reemplazo de precio_medio por los nuevos atributos:
+                precio_lista_medio=(
+                    estadísticas.precio_lista_medio[-1]
+                    if estadísticas.precio_lista_medio
                     else 0
                 ),
-
+                precio_transaccion_medio=(
+                    estadísticas.precio_transaccion_medio[-1]
+                    if estadísticas.precio_transaccion_medio
+                    else 0
+                ),
                 empleo_formal=(
                     estadísticas.empleo_formal[-1]
                     if estadísticas.empleo_formal
                     else 0
                 ),
-
                 empleo_informal=(
                     estadísticas.empleo_informal[-1]
                     if estadísticas.empleo_informal
                     else 0
                 ),
-
                 desempleo=(
                     estadísticas.desempleo[-1]
                     if estadísticas.desempleo
                     else 0
                 ),
-
                 tasa_emisión=self.config.tasa_emisión,
-
                 salario_mínimo=self.config.salario_mínimo,
-
                 salario_mínimo_automático=self.config.salario_mínimo_automático,
-
                 informalidad_por_empresa=self.config.informalidad_por_empresa,
             )
 

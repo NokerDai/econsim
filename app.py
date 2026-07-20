@@ -67,7 +67,8 @@ if "historial" not in st.session_state:
         columns=[
             "Salario",
             "Salario informal",
-            "Precio",
+            "Precio Lista",           # <--- Reemplaza "Precio"
+            "Precio Transacción",     # <--- Nuevo
             "Poder Compra Formal",
             "Poder Compra Informal",
             "Empleo formal",
@@ -228,17 +229,18 @@ def registrar_snapshots(snapshots):
         if snap.día not in st.session_state.historial.index:
             salario_f = float(snap.salario_medio)
             salario_i = float(snap.salario_informal_medio)
-            precio = float(snap.precio_medio)
+            precio_lista = float(snap.precio_lista_medio)
+            precio_transaccion = float(snap.precio_transaccion_medio)
 
-            # Cálculo de los poderes de compra (defensivo ante división por cero)
-            poder_f = salario_f / precio if precio > 0 else 0.0
-            poder_i = salario_i / precio if precio > 0 else 0.0
+            poder_f = salario_f / precio_transaccion if precio_transaccion > 0 else 0.0
+            poder_i = salario_i / precio_transaccion if precio_transaccion > 0 else 0.0
 
             nuevos_datos.append({
                 "Día": int(snap.día),
                 "Salario": salario_f,
                 "Salario informal": salario_i,
-                "Precio": precio,
+                "Precio Lista": precio_lista,
+                "Precio Transacción": precio_transaccion,
                 "Poder Compra Formal": poder_f,
                 "Poder Compra Informal": poder_i,
                 "Empleo formal": float(snap.empleo_formal),
@@ -249,9 +251,8 @@ def registrar_snapshots(snapshots):
         df_nuevos = pd.DataFrame(nuevos_datos).set_index("Día").astype(float)
         st.session_state.historial = pd.concat([st.session_state.historial, df_nuevos])
         
-        # Mantener un historial máximo de 1000 días para optimizar memoria
-        if len(st.session_state.historial) > 1000:
-            st.session_state.historial = st.session_state.historial.tail(1000)
+        if len(st.session_state.historial) > 400:
+            st.session_state.historial = st.session_state.historial.tail(400)
 
 
 def marcar_valor(nombre, valor, día=None):
@@ -675,21 +676,21 @@ def panel():
 
         val_salario = historial_reciente["Salario"].mean()
         val_salario_inf = historial_reciente["Salario informal"].mean()
-        val_precio = historial_reciente["Precio"].mean()
+        val_precio = historial_reciente["Precio Transacción"].mean()
         val_emp_formal = historial_reciente["Empleo formal"].mean()
         val_emp_informal = historial_reciente["Empleo informal"].mean()
         val_desempleo = historial_reciente["Desempleo"].mean()
 
         col_salario.metric("Salario medio", f"{val_salario:.2f}")
         col_salario_inf.metric("Salario informal med.", f"{val_salario_inf:.2f}")
-        col_precio.metric("Precio medio", f"{val_precio:.2f}")
+        col_precio.metric("Precio transac. med.", f"{val_precio:.2f}")
         col_emp_formal.metric("Empleo formal", f"{val_emp_formal * 100:.1f}%")
         col_emp_informal.metric("Empleo informal", f"{val_emp_informal * 100:.1f}%")
         col_desempleo.metric("Desempleo", f"{val_desempleo * 100:.1f}%")
     else:
         col_salario.metric("Salario medio", "—")
         col_salario_inf.metric("Salario informal med.", "—")
-        col_precio.metric("Precio medio", "—")
+        col_precio.metric("Precio transac. med.", "—")
         col_emp_formal.metric("Empleo formal", "—")
         col_emp_informal.metric("Empleo informal", "—")
         col_desempleo.metric("Desempleo", "—")
@@ -723,11 +724,11 @@ def panel():
             "Evolución del Poder de Compra"
         )
 
-        st.subheader("4. Brecha de Precios: Lista vs. Transacción")
+        st.subheader("4. Evolución de los Precios (Lista vs. Transacción)")
         graficar_line_chart(
             historial_graficos,
             ["Precio Lista", "Precio Transacción"],
-            "Brecha de Precios"
+            "Evolución de los Precios"
         )
 
         # Mostrar de forma interactiva y limpia los marcadores que están activos
