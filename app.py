@@ -491,7 +491,7 @@ if st.session_state.auto_avance:
     if pestana_actual == "🔄 Flujo Circular de la Economía":
         run_every_val = 1.0
     else:
-        run_every_val = 0.1
+        run_every_val = 1.0
 else:
     run_every_val = None
 
