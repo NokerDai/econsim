@@ -941,7 +941,7 @@ def panel():
             svg_html = f'<div style="text-align: center;">{svg_renderizado}</div>'
             st.markdown(svg_html, unsafe_allow_html=True)
 
-        # PESTAÑA 3: Comparación con Captura (Controlando de forma segura la división por cero)
+        # PESTAÑA 3: Comparación con Captura (Con deltas porcentuales y absolutos)
         with tab_comparacion:
             st.subheader("Análisis de Variación con Captura de Caché")
             if not st.session_state.valores_guardados:
@@ -964,19 +964,23 @@ def panel():
                 idx_seleccionado = opciones.index(seleccion)
                 captura = st.session_state.valores_guardados[idx_seleccionado]
                 
-                # Obtener de forma segura los textos delta
+                # Fila 1: Obtener textos de variación porcentual (Salarios y Precios)
                 delta_sal_min = obtener_delta_texto(sim.config.salario_mínimo, captura["Salario Mínimo"])
                 delta_sal_med = obtener_delta_texto(val_salario, captura["Salario Medio"])
                 delta_sal_inf = obtener_delta_texto(val_salario_inf, captura["Salario Informal"])
                 delta_prec_list = obtener_delta_texto(val_precio_lista, captura["Precio Lista"])
                 delta_prec_trans = obtener_delta_texto(val_precio, captura["Precio Transac."])
                 
-                delta_poder_f = obtener_delta_texto(val_poder_f, captura["Poder Compra Form."])
-                delta_poder_i = obtener_delta_texto(val_poder_i, captura["Poder Compra Inf."])
-                delta_emp_formal = obtener_delta_texto(val_emp_formal, captura["Emp. Formal"])
-                delta_emp_informal = obtener_delta_texto(val_emp_informal, captura["Emp. Informal"])
-                delta_desempleo = obtener_delta_texto(val_desempleo, captura["Desempleo"])
+                # Fila 2: Calcular variaciones netamente absolutas (como lo solicitó el usuario)
+                delta_poder_f_abs = f"{(val_poder_f - captura['Poder Compra Form.']):+.2f}"
+                delta_poder_i_abs = f"{(val_poder_i - captura['Poder Compra Inf.']):+.2f}"
                 
+                # Para empleo y desempleo la variación absoluta se reporta como la diferencia de tasas en puntos porcentuales (p.p.)
+                delta_emp_formal_abs = f"{(val_emp_formal - captura['Emp. Formal']) * 100:+.1f} p.p."
+                delta_emp_informal_abs = f"{(val_emp_informal - captura['Emp. Informal']) * 100:+.1f} p.p."
+                delta_desempleo_abs = f"{(val_desempleo - captura['Desempleo']) * 100:+.1f} p.p."
+                
+                # Variaciones generales
                 delta_bienes = obtener_delta_texto(val_bienes, captura["Bienes Vendidos"])
                 delta_ingresos_empresas = obtener_delta_texto(val_ingresos_empresas, captura["Flujo Empresas (Ing)"])
                 delta_gasto_empresas = obtener_delta_texto(val_gasto_empresas, captura["Flujo Empresas (Gast)"])
@@ -987,8 +991,8 @@ def panel():
                 delta_num_formales = obtener_delta_texto(num_formales, captura["Trabajadores Form."])
                 delta_num_informales = obtener_delta_texto(num_informales, captura["Trabajadores Inf."])
 
-                # Renderizar las tarjetas con su delta porcentual (que ahora puede mostrar +∞% o -∞%)
-                st.markdown("#### Métricas actuales y variación porcentual")
+                # Renderizar las tarjetas con su delta porcentual
+                st.markdown("#### Métricas actuales y variación respecto a la captura")
                 col_c1, col_c2, col_c3, col_c4, col_c5 = st.columns(5)
                 col_c1.metric("Salario Mínimo", f"{sim.config.salario_mínimo:.2f}", delta_sal_min)
                 col_c2.metric("Salario Medio", f"{val_salario:.2f}", delta_sal_med)
@@ -997,11 +1001,11 @@ def panel():
                 col_c5.metric("Precio Transac. Med.", f"{val_precio:.2f}", delta_prec_trans)
 
                 col_c2_1, col_c2_2, col_c2_3, col_c2_4, col_c2_5 = st.columns(5)
-                col_c2_1.metric("Poder Compra Formal", f"{val_poder_f:.2f}", delta_poder_f)
-                col_c2_2.metric("Poder Compra Informal", f"{val_poder_i:.2f}", delta_poder_i)
-                col_c2_3.metric("Empleo Formal", f"{val_emp_formal * 100:.1f}%", delta_emp_formal)
-                col_c2_4.metric("Empleo Informal", f"{val_emp_informal * 100:.1f}%", delta_emp_informal)
-                col_c2_5.metric("Desempleo", f"{val_desempleo * 100:.1f}%", delta_desempleo)
+                col_c2_1.metric("Poder Compra Formal", f"{val_poder_f:.2f}", delta_poder_f_abs)
+                col_c2_2.metric("Poder Compra Informal", f"{val_poder_i:.2f}", delta_poder_i_abs)
+                col_c2_3.metric("Empleo Formal", f"{val_emp_formal * 100:.1f}%", delta_emp_formal_abs)
+                col_c2_4.metric("Empleo Informal", f"{val_emp_informal * 100:.1f}%", delta_emp_informal_abs)
+                col_c2_5.metric("Desempleo", f"{val_desempleo * 100:.1f}%", delta_desempleo_abs)
 
                 st.write("---")
 
