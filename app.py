@@ -46,80 +46,80 @@ SVG_TEMPLATE = """
 <svg viewBox="0 0 950 700" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
   <defs>
     <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
-      <path d="M0,0 L8,3 L0,6 Z" fill="#c0392b" />
+      <path d="M0,0 L8,3 L0,6 Z" fill="#c0392b"/>
     </marker>
     <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
-      <path d="M0,0 L8,3 L0,6 Z" fill="#2c3e50" />
+      <path d="M0,0 L8,3 L0,6 Z" fill="#2c3e50"/>
     </marker>
   </defs>
- 
-  <!-- Titulo -->
+
+  <!-- Título -->
   <text x="475" y="40" text-anchor="middle" font-size="30" font-weight="bold" fill="#7a1f3d">
     Diagrama de Flujo Circular de la Economía
   </text>
- 
-  <!-- Caja: Mercado de Bienes y Servicios -->
+
+  <!-- Mercado Bienes -->
   <rect x="330" y="80" width="290" height="130" fill="white" stroke="black" stroke-width="2"/>
-  <text x="475" y="130" text-anchor="middle" font-size="20" font-weight="bold">Mercado de</text>
-  <text x="475" y="160" text-anchor="middle" font-size="20" font-weight="bold">Bienes y Servicios</text>
- 
-  <!-- Caja: Mercado de Factores de Produccion -->
+  <text x="475" y="130" text-anchor="middle" font-size="18" font-weight="bold" fill="white">Mercado de</text>
+  <text x="475" y="160" text-anchor="middle" font-size="18" font-weight="bold" fill="white">Bienes y Servicios</text>
+
+  <!-- Mercado Factores -->
   <rect x="330" y="500" width="290" height="130" fill="white" stroke="black" stroke-width="2"/>
-  <text x="475" y="550" text-anchor="middle" font-size="20" font-weight="bold">Mercado de</text>
-  <text x="475" y="580" text-anchor="middle" font-size="20" font-weight="bold">Factores de</text>
-  <text x="475" y="610" text-anchor="middle" font-size="20" font-weight="bold">Produccion</text>
- 
-  <!-- Ovalo: Empresas -->
+  <text x="475" y="550" text-anchor="middle" font-size="18" font-weight="bold" fill="white">Mercado de</text>
+  <text x="475" y="580" text-anchor="middle" font-size="18" font-weight="bold" fill="white">Factores de</text>
+  <text x="475" y="610" text-anchor="middle" font-size="18" font-weight="bold" fill="white">Producción</text>
+
+  <!-- Empresas -->
   <ellipse cx="120" cy="360" rx="115" ry="70" fill="#f0ad1f" stroke="#333" stroke-width="1"/>
-  <text x="120" y="368" text-anchor="middle" font-size="22" font-weight="bold" fill="#1a2b6d">Empresas</text>
- 
-  <!-- Ovalo: Familias -->
+  <text x="120" y="368" text-anchor="middle" font-size="19" font-weight="bold" fill="white">Empresas</text>
+
+  <!-- Familias -->
   <ellipse cx="830" cy="360" rx="115" ry="70" fill="#f0ad1f" stroke="#333" stroke-width="1"/>
-  <text x="830" y="368" text-anchor="middle" font-size="22" font-weight="bold" fill="#1a2b6d">Familias</text>
- 
-  <!-- ===== Empresas -> Mercado B&S: Bienes y Servicios vendidos ===== -->
+  <text x="830" y="368" text-anchor="middle" font-size="19" font-weight="bold" fill="white">Familias</text>
+
+  <!-- Empresas -> Mercado -->
   <path d="M150,300 L330,150" stroke="#c0392b" stroke-width="4" fill="none" marker-end="url(#arrowRed)"/>
-  <text x="150" y="220" font-size="16" font-weight="bold">Bienes y Servicios</text>
-  <text x="150" y="240" font-size="16" font-weight="bold">vendidos (Q)</text>
+  <text x="150" y="220" font-size="16" font-weight="bold" fill="white">Bienes y Servicios</text>
+  <text x="150" y="240" font-size="16" font-weight="bold" fill="white">vendidos (Q)</text>
   <text x="150" y="262" font-size="16" fill="#1a5d1a" font-weight="bold">{bys_vendidos}</text>
- 
-  <!-- ===== Ingresos: Mercado B&S -> Empresas ===== -->
+
+  <!-- Ingresos Empresas -->
   <path d="M330,110 L90,110 L90,300" stroke="#2c3e50" stroke-width="4" fill="none" marker-end="url(#arrowBlue)"/>
-  <text x="150" y="100" font-size="20" font-weight="bold">Ingresos ($)</text>
+  <text x="150" y="100" font-size="20" font-weight="bold" fill="white">Ingresos ($)</text>
   <text x="90" y="200" font-size="16" fill="#1a5d1a" font-weight="bold">{ingresos_empresas}</text>
- 
-  <!-- ===== Gastos: Familias -> Mercado B&S ===== -->
+
+  <!-- Gastos -->
   <path d="M620,110 L860,110 L860,300" stroke="#2c3e50" stroke-width="4" fill="none" marker-end="url(#arrowBlue)"/>
-  <text x="700" y="100" font-size="20" font-weight="bold">Gastos ($)</text>
+  <text x="700" y="100" font-size="20" font-weight="bold" fill="white">Gastos ($)</text>
   <text x="800" y="200" font-size="16" fill="#1a5d1a" font-weight="bold">{gastos}</text>
- 
-  <!-- ===== Bienes y servicios comprados: Mercado B&S -> Familias ===== -->
+
+  <!-- Mercado -> Familias -->
   <path d="M620,150 L800,300" stroke="#c0392b" stroke-width="4" fill="none" marker-end="url(#arrowRed)"/>
-  <text x="640" y="220" font-size="16" font-weight="bold">Bienes y</text>
-  <text x="640" y="240" font-size="16" font-weight="bold">servicios comprados (Q)</text>
+  <text x="640" y="220" font-size="16" font-weight="bold" fill="white">Bienes y</text>
+  <text x="640" y="240" font-size="16" font-weight="bold" fill="white">servicios comprados (Q)</text>
   <text x="640" y="262" font-size="16" fill="#1a5d1a" font-weight="bold">{bys_comprados}</text>
- 
-  <!-- ===== Factores de produccion: Mercado Factores -> Empresas ===== -->
+
+  <!-- Factores -> Empresas -->
   <path d="M330,570 L150,420" stroke="#c0392b" stroke-width="4" fill="none" marker-end="url(#arrowRed)"/>
-  <text x="150" y="475" font-size="16" font-weight="bold">Factores de</text>
-  <text x="150" y="495" font-size="16" font-weight="bold">producción</text>
+  <text x="150" y="475" font-size="16" font-weight="bold" fill="white">Factores de</text>
+  <text x="150" y="495" font-size="16" font-weight="bold" fill="white">producción</text>
   <text x="150" y="517" font-size="16" fill="#1a5d1a" font-weight="bold">{factores_produccion}</text>
- 
-  <!-- ===== Salarios, rentas y beneficios: Empresas -> Mercado Factores ===== -->
+
+  <!-- Empresas -> Mercado Factores -->
   <path d="M90,420 L90,610 L330,610" stroke="#2c3e50" stroke-width="4" fill="none" marker-end="url(#arrowBlue)"/>
-  <text x="100" y="650" font-size="16" font-weight="bold">Salarios y</text>
-  <text x="100" y="670" font-size="16" font-weight="bold">beneficios ($)</text>
+  <text x="100" y="650" font-size="16" font-weight="bold" fill="white">Salarios y</text>
+  <text x="100" y="670" font-size="16" font-weight="bold" fill="white">beneficios ($)</text>
   <text x="100" y="500" font-size="16" fill="#1a5d1a" font-weight="bold">{salarios_rentas}</text>
- 
-  <!-- ===== Trabajo, tierra y capital: Familias -> Mercado Factores ===== -->
+
+  <!-- Familias -> Mercado Factores -->
   <path d="M800,420 L620,570" stroke="#c0392b" stroke-width="4" fill="none" marker-end="url(#arrowRed)"/>
-  <text x="640" y="475" font-size="16" font-weight="bold">Trabajo y</text>
-  <text x="640" y="495" font-size="16" font-weight="bold">factores ofrecidos</text>
+  <text x="640" y="475" font-size="16" font-weight="bold" fill="white">Trabajo y</text>
+  <text x="640" y="495" font-size="16" font-weight="bold" fill="white">factores ofrecidos</text>
   <text x="640" y="517" font-size="16" fill="#1a5d1a" font-weight="bold">{trabajo_tierra_capital}</text>
- 
-  <!-- ===== Ingresos: Mercado Factores -> Familias ===== -->
+
+  <!-- Ingresos Familias -->
   <path d="M860,420 L860,610 L620,610" stroke="#2c3e50" stroke-width="4" fill="none" marker-end="url(#arrowBlue)"/>
-  <text x="700" y="650" font-size="20" font-weight="bold">Ingresos ($)</text>
+  <text x="700" y="650" font-size="20" font-weight="bold" fill="white">Ingresos ($)</text>
   <text x="800" y="500" font-size="16" fill="#1a5d1a" font-weight="bold">{ingresos_familias}</text>
 </svg>
 """
@@ -559,12 +559,16 @@ with st.sidebar:
             columns=[
                 "Salario",
                 "Salario informal",
-                "Precio",
+                "Precio Lista",
+                "Precio Transacción",
                 "Poder Compra Formal",
                 "Poder Compra Informal",
                 "Empleo formal",
                 "Empleo informal",
-                "Desempleo"
+                "Desempleo",
+                "Bienes Vendidos",
+                "Empresas Ingreso",
+                "Empresas Gasto"
             ]
         ).astype(float)
         st.session_state.historial.index.name = "Día"
@@ -823,7 +827,8 @@ def panel():
             }
 
             svg_renderizado = SVG_TEMPLATE.format(**valores_svg)
-            st.image(svg_renderizado, use_container_width=True)
+            svg_html = f'<div style="text-align: center;">{svg_renderizado}</div>'
+            st.markdown(svg_html, unsafe_allow_html=True)
 
     else:
         st.info("Todavía no hay datos. Iniciá la simulación o avanzá un día.")
