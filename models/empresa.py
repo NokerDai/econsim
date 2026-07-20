@@ -28,3 +28,5 @@ class Empresa:
     racha_reducido: int = 0
 
     racha_aumentado: int = 0
+
+    ventas_hoy: int = 0

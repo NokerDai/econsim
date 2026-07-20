@@ -6,6 +6,7 @@ def mercado_productos(estado):
     pi = estado.config.productividad_informal
 
     for empresa in estado.empresas:
+        empresa.ventas_hoy = 0
         empresa.inventario += (empresa.empleados_formales * pf + empresa.empleados_informales * pi) * empresa.productividad
         productos_disponibles.extend([empresa] * int(empresa.inventario))
 
@@ -19,6 +20,7 @@ def mercado_productos(estado):
                 seleccionado.presupuesto += seleccionado.precio
                 trabajador.presupuesto -= seleccionado.precio
                 seleccionado.inventario -= 1
+                seleccionado.ventas_hoy += 1
         else:
             break
 

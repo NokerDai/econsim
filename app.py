@@ -723,11 +723,11 @@ def panel():
             "Evolución del Poder de Compra"
         )
 
-        st.subheader("4. Evolución del Precio Medio")
+        st.subheader("4. Brecha de Precios: Lista vs. Transacción")
         graficar_line_chart(
             historial_graficos,
-            ["Precio"],
-            "Evolución del Precio Medio"
+            ["Precio Lista", "Precio Transacción"],
+            "Brecha de Precios"
         )
 
         # Mostrar de forma interactiva y limpia los marcadores que están activos
