@@ -483,7 +483,7 @@ def graficar_line_chart(df, columnas, titulo=""):
             height=320
         ).interactive()
 
-    st.altair_chart(chart, use_container_width=True)
+    st.altair_chart(chart, width='stretch')
 
 
 if st.session_state.auto_avance:
