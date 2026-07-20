@@ -487,9 +487,10 @@ def graficar_line_chart(df, columnas, titulo=""):
 
     st.altair_chart(chart, use_container_width=True)
 
-
-@st.fragment(run_every=0.1)
+intervalo = 0.1
+@st.fragment(run_every=intervalo)
 def auto_avance_fragment():
+    global intervalo
     if st.session_state.auto_avance:
         ahora = time.time()
         
@@ -766,8 +767,7 @@ def panel():
     if hay_datos:
         tab_graficos, tab_flujo = st.tabs(
             ["📈 Gráficos de Evolución", "🔄 Flujo Circular de la Economía"],
-            key="pestana_activa",
-            on_change="rerun"
+            key="pestana_activa"
         )
 
         n_dias = max(1, int(st.session_state.velocidad))
