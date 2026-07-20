@@ -490,10 +490,22 @@ def graficar_line_chart(df, columnas, titulo=""):
     st.altair_chart(chart, width='stretch')
 
 
-def calcular_diferencia_porcentaje(actual, capturado):
-    if capturado is None or capturado == 0:
-        return 0.0
-    return ((actual - capturado) / capturado) * 100
+def obtener_delta_texto(actual, capturado, decimales=1):
+    """
+    Calcula de forma segura el incremento porcentual.
+    Evita la división por cero y devuelve indicadores de infinito de manera matemáticamente correcta.
+    """
+    if capturado is None:
+        return "N/A"
+    if capturado == 0:
+        if actual == 0:
+            return "0.0%"
+        elif actual > 0:
+            return "+∞%"
+        else:
+            return "-∞%"
+    diff_pct = ((actual - capturado) / capturado) * 100
+    return f"{diff_pct:+.{decimales}f}%"
 
 
 if st.session_state.auto_avance:
@@ -929,7 +941,7 @@ def panel():
             svg_html = f'<div style="text-align: center;">{svg_renderizado}</div>'
             st.markdown(svg_html, unsafe_allow_html=True)
 
-        # PESTAÑA 3: Comparación con Captura
+        # PESTAÑA 3: Comparación con Captura (Controlando de forma segura la división por cero)
         with tab_comparacion:
             st.subheader("Análisis de Variación con Captura de Caché")
             if not st.session_state.valores_guardados:
@@ -952,67 +964,66 @@ def panel():
                 idx_seleccionado = opciones.index(seleccion)
                 captura = st.session_state.valores_guardados[idx_seleccionado]
                 
-                # Calcular las diferencias porcentuales entre el estado actual y el seleccionado
-                diff_sal_min = calcular_diferencia_porcentaje(sim.config.salario_mínimo, captura["Salario Mínimo"])
-                diff_sal_med = calcular_diferencia_porcentaje(val_salario, captura["Salario Medio"])
-                diff_sal_inf = calcular_diferencia_porcentaje(val_salario_inf, captura["Salario Informal"])
-                diff_prec_list = calcular_diferencia_porcentaje(val_precio_lista, captura["Precio Lista"])
-                diff_prec_trans = calcular_diferencia_porcentaje(val_precio, captura["Precio Transac."])
+                # Obtener de forma segura los textos delta
+                delta_sal_min = obtener_delta_texto(sim.config.salario_mínimo, captura["Salario Mínimo"])
+                delta_sal_med = obtener_delta_texto(val_salario, captura["Salario Medio"])
+                delta_sal_inf = obtener_delta_texto(val_salario_inf, captura["Salario Informal"])
+                delta_prec_list = obtener_delta_texto(val_precio_lista, captura["Precio Lista"])
+                delta_prec_trans = obtener_delta_texto(val_precio, captura["Precio Transac."])
                 
-                diff_poder_f = calcular_diferencia_porcentaje(val_poder_f, captura["Poder Compra Form."])
-                diff_poder_i = calcular_diferencia_porcentaje(val_poder_i, captura["Poder Compra Inf."])
-                diff_emp_formal = calcular_diferencia_porcentaje(val_emp_formal, captura["Emp. Formal"])
-                diff_emp_informal = calcular_diferencia_porcentaje(val_emp_informal, captura["Emp. Informal"])
-                diff_desempleo = calcular_diferencia_porcentaje(val_desempleo, captura["Desempleo"])
+                delta_poder_f = obtener_delta_texto(val_poder_f, captura["Poder Compra Form."])
+                delta_poder_i = obtener_delta_texto(val_poder_i, captura["Poder Compra Inf."])
+                delta_emp_formal = obtener_delta_texto(val_emp_formal, captura["Emp. Formal"])
+                delta_emp_informal = obtener_delta_texto(val_emp_informal, captura["Emp. Informal"])
+                delta_desempleo = obtener_delta_texto(val_desempleo, captura["Desempleo"])
                 
-                diff_bienes = calcular_diferencia_porcentaje(val_bienes, captura["Bienes Vendidos"])
-                diff_ingresos_empresas = calcular_diferencia_porcentaje(val_ingresos_empresas, captura["Flujo Empresas (Ing)"])
-                diff_gasto_empresas = calcular_diferencia_porcentaje(val_gasto_empresas, captura["Flujo Empresas (Gast)"])
+                delta_bienes = obtener_delta_texto(val_bienes, captura["Bienes Vendidos"])
+                delta_ingresos_empresas = obtener_delta_texto(val_ingresos_empresas, captura["Flujo Empresas (Ing)"])
+                delta_gasto_empresas = obtener_delta_texto(val_gasto_empresas, captura["Flujo Empresas (Gast)"])
 
                 total_trabajadores = sim.config.num_trabajadores
                 num_formales = val_emp_formal * total_trabajadores
                 num_informales = val_emp_informal * total_trabajadores
-                diff_num_formales = calcular_diferencia_porcentaje(num_formales, captura["Trabajadores Form."])
-                diff_num_informales = calcular_diferencia_porcentaje(num_informales, captura["Trabajadores Inf."])
+                delta_num_formales = obtener_delta_texto(num_formales, captura["Trabajadores Form."])
+                delta_num_informales = obtener_delta_texto(num_informales, captura["Trabajadores Inf."])
 
-                # Renderizar las tarjetas con su delta porcentual
+                # Renderizar las tarjetas con su delta porcentual (que ahora puede mostrar +∞% o -∞%)
                 st.markdown("#### Métricas actuales y variación porcentual")
                 col_c1, col_c2, col_c3, col_c4, col_c5 = st.columns(5)
-                col_c1.metric("Salario Mínimo", f"{sim.config.salario_mínimo:.2f}", f"{diff_sal_min:+.1f}%")
-                col_c2.metric("Salario Medio", f"{val_salario:.2f}", f"{diff_sal_med:+.1f}%")
-                col_c3.metric("Salario Informal Med.", f"{val_salario_inf:.2f}", f"{diff_sal_inf:+.1f}%")
-                col_c4.metric("Precio Lista Med.", f"{val_precio_lista:.2f}", f"{diff_prec_list:+.1f}%")
-                col_c5.metric("Precio Transac. Med.", f"{val_precio:.2f}", f"{diff_prec_trans:+.1f}%")
+                col_c1.metric("Salario Mínimo", f"{sim.config.salario_mínimo:.2f}", delta_sal_min)
+                col_c2.metric("Salario Medio", f"{val_salario:.2f}", delta_sal_med)
+                col_c3.metric("Salario Informal Med.", f"{val_salario_inf:.2f}", delta_sal_inf)
+                col_c4.metric("Precio Lista Med.", f"{val_precio_lista:.2f}", delta_prec_list)
+                col_c5.metric("Precio Transac. Med.", f"{val_precio:.2f}", delta_prec_trans)
 
                 col_c2_1, col_c2_2, col_c2_3, col_c2_4, col_c2_5 = st.columns(5)
-                col_c2_1.metric("Poder Compra Formal", f"{val_poder_f:.2f}", f"{diff_poder_f:+.1f}%")
-                col_c2_2.metric("Poder Compra Informal", f"{val_poder_i:.2f}", f"{diff_poder_i:+.1f}%")
-                col_c2_3.metric("Empleo Formal", f"{val_emp_formal * 100:.1f}%", f"{diff_emp_formal:+.1f}%")
-                col_c2_4.metric("Empleo Informal", f"{val_emp_informal * 100:.1f}%", f"{diff_emp_informal:+.1f}%")
-                col_c2_5.metric("Desempleo", f"{val_desempleo * 100:.1f}%", f"{diff_desempleo:+.1f}%")
+                col_c2_1.metric("Poder Compra Formal", f"{val_poder_f:.2f}", delta_poder_f)
+                col_c2_2.metric("Poder Compra Informal", f"{val_poder_i:.2f}", delta_poder_i)
+                col_c2_3.metric("Empleo Formal", f"{val_emp_formal * 100:.1f}%", delta_emp_formal)
+                col_c2_4.metric("Empleo Informal", f"{val_emp_informal * 100:.1f}%", delta_emp_informal)
+                col_c2_5.metric("Desempleo", f"{val_desempleo * 100:.1f}%", delta_desempleo)
 
                 st.write("---")
 
-                # Formateador de textos para inyectar la variación en el SVG del Flujo Circular
-                def formato_svg_comparativo(valor, variacion, unidad=""):
-                    signo = "+" if variacion > 0 else ""
-                    return f"{valor:.1f}{unidad} ({signo}{variacion:.1f}%)"
+                # Formateador de textos para inyectar los deltas formateados en el SVG
+                def formato_svg_comparativo(valor_actual, delta_texto, unidad=""):
+                    return f"{valor_actual:.1f}{unidad} ({delta_texto})"
 
                 valores_svg_comp = {
-                    "bys_vendidos": formato_svg_comparativo(val_bienes, diff_bienes, " u."),
-                    "bys_comprados": formato_svg_comparativo(val_bienes, diff_bienes, " u."),
-                    "ingresos_empresas": formato_svg_comparativo(val_ingresos_empresas, diff_ingresos_empresas, " $"),
-                    "gastos": formato_svg_comparativo(val_ingresos_empresas, diff_ingresos_empresas, " $"),
+                    "bys_vendidos": formato_svg_comparativo(val_bienes, delta_bienes, " u."),
+                    "bys_comprados": formato_svg_comparativo(val_bienes, delta_bienes, " u."),
+                    "ingresos_empresas": formato_svg_comparativo(val_ingresos_empresas, delta_ingresos_empresas, " $"),
+                    "gastos": formato_svg_comparativo(val_ingresos_empresas, delta_ingresos_empresas, " $"),
                     "factores_produccion": (
-                        f"F: {num_formales:.0f} ({diff_num_formales:+.1f}%) | "
-                        f"I: {num_informales:.0f} ({diff_num_informales:+.1f}%)"
+                        f"F: {num_formales:.0f} ({delta_num_formales}) | "
+                        f"I: {num_informales:.0f} ({delta_num_informales})"
                     ),
                     "trabajo_tierra_capital": (
-                        f"F: {num_formales:.0f} ({diff_num_formales:+.1f}%) | "
-                        f"I: {num_informales:.0f} ({diff_num_informales:+.1f}%)"
+                        f"F: {num_formales:.0f} ({delta_num_formales}) | "
+                        f"I: {num_informales:.0f} ({delta_num_informales})"
                     ),
-                    "salarios_rentas": formato_svg_comparativo(val_gasto_empresas, diff_gasto_empresas, " $"),
-                    "ingresos_familias": formato_svg_comparativo(val_gasto_empresas, diff_gasto_empresas, " $"),
+                    "salarios_rentas": formato_svg_comparativo(val_gasto_empresas, delta_gasto_empresas, " $"),
+                    "ingresos_familias": formato_svg_comparativo(val_gasto_empresas, delta_gasto_empresas, " $"),
                 }
 
                 # Renderizar gráfico SVG comparativo
