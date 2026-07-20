@@ -649,9 +649,6 @@ with st.sidebar:
 
 def panel():
 
-    if st.session_state.salario_mínimo_automático:
-        st.metric("Salario mínimo", f"{sim.config.salario_mínimo:.2f}")
-
     hay_datos = len(st.session_state.historial) > 0
 
     # ---------------------------------------------------------
@@ -659,8 +656,10 @@ def panel():
     # ---------------------------------------------------------
     fila1 = st.columns(5)
     fila2 = st.columns(5)
+    fila3 = st.columns(5)
 
     fila1[0].metric("Día", sim.estado.día)
+    fila1[1].metric("Salario mínimo", f"{sim.config.salario_mínimo:.2f}")
 
     if hay_datos:
         n_dias = max(1, int(st.session_state.velocidad))
@@ -676,27 +675,27 @@ def panel():
         val_poder_f = historial_reciente["Poder Compra Formal"].mean()
         val_poder_i = historial_reciente["Poder Compra Informal"].mean()
 
-        fila1[1].metric("Salario medio", f"{val_salario:.2f}")
-        fila1[2].metric("Salario informal med.", f"{val_salario_inf:.2f}")
-        fila1[3].metric("Precio lista med.", f"{val_precio_lista:.2f}")
-        fila1[4].metric("Precio transac. med.", f"{val_precio:.2f}")
+        fila1[2].metric("Salario medio", f"{val_salario:.2f}")
+        fila1[3].metric("Salario informal med.", f"{val_salario_inf:.2f}")
+        fila1[4].metric("Precio lista med.", f"{val_precio_lista:.2f}")
 
-        fila2[0].metric("Poder compra formal", f"{val_poder_f:.2f}")
-        fila2[1].metric("Poder compra informal", f"{val_poder_i:.2f}")
-        fila2[2].metric("Empleo formal", f"{val_emp_formal * 100:.1f}%")
-        fila2[3].metric("Empleo informal", f"{val_emp_informal * 100:.1f}%")
-        fila2[4].metric("Desempleo", f"{val_desempleo * 100:.1f}%")
+        fila2[0].metric("Precio transac. med.", f"{val_precio:.2f}")
+        fila2[1].metric("Poder compra formal", f"{val_poder_f:.2f}")
+        fila2[2].metric("Poder compra informal", f"{val_poder_i:.2f}")
+        fila2[3].metric("Empleo formal", f"{val_emp_formal * 100:.1f}%")
+        fila2[4].metric("Empleo informal", f"{val_emp_informal * 100:.1f}%")
+        fila3[0].metric("Desempleo", f"{val_desempleo * 100:.1f}%")
     else:
-        fila1[1].metric("Salario medio", "—")
-        fila1[2].metric("Salario informal med.", "—")
-        fila1[3].metric("Precio lista med.", "—")
-        fila1[4].metric("Precio transac. med.", "—")
+        fila1[2].metric("Salario medio", "—")
+        fila1[3].metric("Salario informal med.", "—")
+        fila1[4].metric("Precio lista med.", "—")
 
-        fila2[0].metric("Poder compra formal", "—")
-        fila2[1].metric("Poder compra informal", "—")
-        fila2[2].metric("Empleo formal", "—")
-        fila2[3].metric("Empleo informal", "—")
-        fila2[4].metric("Desempleo", "—")
+        fila2[0].metric("Precio transac. med.", "—")
+        fila2[1].metric("Poder compra formal", "—")
+        fila2[2].metric("Poder compra informal", "—")
+        fila2[3].metric("Empleo formal", "—")
+        fila2[4].metric("Empleo informal", "—")
+        fila3[0].metric("Desempleo", "—")
 
     # ---------------------------------------------------------
     # 2. LOS CUATRO GRÁFICOS APILADOS UNO DEBAJO DEL OTRO
