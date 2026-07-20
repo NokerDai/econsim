@@ -658,9 +658,6 @@ def panel():
     fila2 = st.columns(5)
     fila3 = st.columns(5)
 
-    fila1[0].metric("Día", sim.estado.día)
-    fila2[0].metric("Salario mínimo", f"{sim.config.salario_mínimo:.2f}")
-
     if hay_datos:
         n_dias = max(1, int(st.session_state.velocidad))
         historial_reciente = st.session_state.historial.tail(n_dias)
@@ -675,6 +672,9 @@ def panel():
         val_poder_f = historial_reciente["Poder Compra Formal"].mean()
         val_poder_i = historial_reciente["Poder Compra Informal"].mean()
 
+        fila1[0].metric("Día", sim.estado.día)
+
+        fila2[0].metric("Salario mínimo", f"{sim.config.salario_mínimo:.2f}")
         fila2[1].metric("Salario medio", f"{val_salario:.2f}")
         fila2[2].metric("Salario informal med.", f"{val_salario_inf:.2f}")
         fila2[3].metric("Precio lista med.", f"{val_precio_lista:.2f}")
@@ -686,6 +686,9 @@ def panel():
         fila3[3].metric("Empleo informal", f"{val_emp_informal * 100:.1f}%")
         fila3[4].metric("Desempleo", f"{val_desempleo * 100:.1f}%")
     else:
+        fila1[0].metric("Día", "—")
+
+        fila2[0].metric("Salario mínimo", "—")
         fila2[1].metric("Salario medio", "—")
         fila2[2].metric("Salario informal med.", "—")
         fila2[3].metric("Precio lista med.", "—")
