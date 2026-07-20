@@ -9,7 +9,9 @@ class Estadisticas:
 
     salario_informal_medio: list = field(default_factory=list)
 
-    precio_medio: list = field(default_factory=list)
+    precio_lista_medio: list = field(default_factory=list)
+
+    precio_transaccion_medio: list = field(default_factory=list)
 
     empleo_formal: list = field(default_factory=list)
 

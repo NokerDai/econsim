@@ -11,7 +11,10 @@ class Snapshot:
 
     salario_informal_medio: float
 
-    precio_medio: float
+    # Reemplazamos 'precio_medio' por estas dos variables
+    precio_lista_medio: float
+
+    precio_transaccion_medio: float
 
     empleo_formal: float
 
