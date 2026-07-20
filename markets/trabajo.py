@@ -94,13 +94,12 @@ def mercado_laboral(estado):
 
     for empresa in estado.empresas:
 
-        ratio = empresa.vacantes_formales - vacantes_formales_proyectadas
+        ratio = empresa.vacantes_formales - int(vacantes_formales_proyectadas)
         empresa.salario *= 1 + ratio / 100
         empresa.salario = max(
             empresa.salario,
             estado.config.salario_mínimo
         )
-	
-        if empresa.vacantes_informales > 0:
-            ratio = empresa.vacantes_informales - vacantes_informales_proyectadas
-            empresa.salario_informal *= 1 + ratio / 100
+
+        ratio = empresa.vacantes_informales - int(vacantes_informales_proyectadas)
+        empresa.salario_informal *= 1 + ratio / 100
