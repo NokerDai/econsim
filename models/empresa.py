@@ -1,18 +1,16 @@
+# --- empresa.py ---
 from dataclasses import dataclass
 
 @dataclass
 class Empresa:
-
     presupuesto: float
-
     precio: float
-    precio_venta_real: float
-
     salario: float
-    salario_pago_real: float = 0
-
     salario_informal: float
-    salario_informal_pago_real: float = 0
+
+    precio_venta_real: float = 0.0
+    salario_pago_real: float = 0.0
+    salario_informal_pago_real: float = 0.0
 
     vacantes_formales: int = 0
     vacantes_informales: int = 0
@@ -22,8 +20,8 @@ class Empresa:
 
     productividad: float = 0.7
 
-    inventario: float = 0
-    inventario_ayer: float = 0
+    inventario: float = 0.0
+    inventario_ayer: float = 0.0
 
     racha_reducido: int = 0
     racha_aumentado: int = 0
