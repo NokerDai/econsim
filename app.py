@@ -657,17 +657,10 @@ def panel():
     # ---------------------------------------------------------
     # 1. TARJETAS / MÉTRICAS SUPERIORES (PROMEDIO DEL TRAMO DE VELOCIDAD)
     # ---------------------------------------------------------
-    (
-        col_día, 
-        col_salario, 
-        col_salario_inf, 
-        col_precio, 
-        col_emp_formal, 
-        col_emp_informal, 
-        col_desempleo
-    ) = st.columns(7)
+    fila1 = st.columns(5)
+    fila2 = st.columns(5)
 
-    col_día.metric("Día", sim.estado.día)
+    fila1[0].metric("Día", sim.estado.día)
 
     if hay_datos:
         n_dias = max(1, int(st.session_state.velocidad))
@@ -675,24 +668,35 @@ def panel():
 
         val_salario = historial_reciente["Salario"].mean()
         val_salario_inf = historial_reciente["Salario informal"].mean()
+        val_precio_lista = historial_reciente["Precio Lista"].mean()
         val_precio = historial_reciente["Precio Transacción"].mean()
         val_emp_formal = historial_reciente["Empleo formal"].mean()
         val_emp_informal = historial_reciente["Empleo informal"].mean()
         val_desempleo = historial_reciente["Desempleo"].mean()
+        val_poder_f = historial_reciente["Poder Compra Formal"].mean()
+        val_poder_i = historial_reciente["Poder Compra Informal"].mean()
 
-        col_salario.metric("Salario medio", f"{val_salario:.2f}")
-        col_salario_inf.metric("Salario informal med.", f"{val_salario_inf:.2f}")
-        col_precio.metric("Precio transac. med.", f"{val_precio:.2f}")
-        col_emp_formal.metric("Empleo formal", f"{val_emp_formal * 100:.1f}%")
-        col_emp_informal.metric("Empleo informal", f"{val_emp_informal * 100:.1f}%")
-        col_desempleo.metric("Desempleo", f"{val_desempleo * 100:.1f}%")
+        fila1[1].metric("Salario medio", f"{val_salario:.2f}")
+        fila1[2].metric("Salario informal med.", f"{val_salario_inf:.2f}")
+        fila1[3].metric("Precio lista med.", f"{val_precio_lista:.2f}")
+        fila1[4].metric("Precio transac. med.", f"{val_precio:.2f}")
+
+        fila2[0].metric("Poder compra formal", f"{val_poder_f:.2f}")
+        fila2[1].metric("Poder compra informal", f"{val_poder_i:.2f}")
+        fila2[2].metric("Empleo formal", f"{val_emp_formal * 100:.1f}%")
+        fila2[3].metric("Empleo informal", f"{val_emp_informal * 100:.1f}%")
+        fila2[4].metric("Desempleo", f"{val_desempleo * 100:.1f}%")
     else:
-        col_salario.metric("Salario medio", "—")
-        col_salario_inf.metric("Salario informal med.", "—")
-        col_precio.metric("Precio transac. med.", "—")
-        col_emp_formal.metric("Empleo formal", "—")
-        col_emp_informal.metric("Empleo informal", "—")
-        col_desempleo.metric("Desempleo", "—")
+        fila1[1].metric("Salario medio", "—")
+        fila1[2].metric("Salario informal med.", "—")
+        fila1[3].metric("Precio lista med.", "—")
+        fila1[4].metric("Precio transac. med.", "—")
+
+        fila2[0].metric("Poder compra formal", "—")
+        fila2[1].metric("Poder compra informal", "—")
+        fila2[2].metric("Empleo formal", "—")
+        fila2[3].metric("Empleo informal", "—")
+        fila2[4].metric("Desempleo", "—")
 
     # ---------------------------------------------------------
     # 2. LOS CUATRO GRÁFICOS APILADOS UNO DEBAJO DEL OTRO
