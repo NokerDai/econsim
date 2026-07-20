@@ -490,6 +490,12 @@ def graficar_line_chart(df, columnas, titulo=""):
     st.altair_chart(chart, width='stretch')
 
 
+def calcular_diferencia_porcentaje(actual, capturado):
+    if capturado is None or capturado == 0:
+        return 0.0
+    return ((actual - capturado) / capturado) * 100
+
+
 if st.session_state.auto_avance:
     pestana_actual = st.session_state.get("pestana_activa", "📈 Gráficos de Evolución")
     if pestana_actual == "🔄 Flujo Circular de la Economía":
@@ -592,7 +598,7 @@ with st.sidebar:
         st.session_state.valores_guardados = []
         st.rerun()
 
-    # NUEVO BOTÓN PARA GUARDAR VALORES EN CACHÉ
+    # BOTÓN PARA GUARDAR VALORES EN CACHÉ (GUARDADO COMO FLOATS)
     hay_historial = len(st.session_state.historial) > 0
     if st.button(
         "💾 Guardar en Caché", 
@@ -623,18 +629,18 @@ with st.sidebar:
         nueva_captura = {
             "Día": int(sim.estado.día),
             "Salario Mínimo": float(sim.config.salario_mínimo),
-            "Salario Medio": round(val_salario, 2),
-            "Salario Informal": round(val_salario_inf, 2),
-            "Precio Lista": round(val_precio_lista, 2),
-            "Precio Transac.": round(val_precio, 2),
-            "Poder Compra Form.": round(val_poder_f, 2),
-            "Poder Compra Inf.": round(val_poder_i, 2),
-            "Emp. Formal": f"{val_emp_formal * 100:.1f}%",
-            "Emp. Informal": f"{val_emp_informal * 100:.1f}%",
-            "Desempleo": f"{val_desempleo * 100:.1f}%",
-            "Bienes Vendidos": round(val_bienes, 1),
-            "Flujo Empresas (Ing)": round(val_ingresos_empresas, 1),
-            "Flujo Empresas (Gast)": round(val_gasto_empresas, 1),
+            "Salario Medio": float(val_salario),
+            "Salario Informal": float(val_salario_inf),
+            "Precio Lista": float(val_precio_lista),
+            "Precio Transac.": float(val_precio),
+            "Poder Compra Form.": float(val_poder_f),
+            "Poder Compra Inf.": float(val_poder_i),
+            "Emp. Formal": float(val_emp_formal),
+            "Emp. Informal": float(val_emp_informal),
+            "Desempleo": float(val_desempleo),
+            "Bienes Vendidos": float(val_bienes),
+            "Flujo Empresas (Ing)": float(val_ingresos_empresas),
+            "Flujo Empresas (Gast)": float(val_gasto_empresas),
             "Trabajadores Form.": int(num_formales),
             "Trabajadores Inf.": int(num_informales),
             "Hora": time.strftime("%H:%M:%S")
@@ -642,11 +648,24 @@ with st.sidebar:
         st.session_state.valores_guardados.append(nueva_captura)
         st.toast("Captura de métricas guardada en la caché de sesión", icon="💾")
 
-    # MOSTRAR LECTURAS EN CACHÉ SI EXISTEN
+    # MOSTRAR LECTURAS EN CACHÉ SI EXISTEN (CON FORMATO SÓLO DE VISUALIZACIÓN)
     if st.session_state.valores_guardados:
         with st.expander("📂 Capturas en Caché", expanded=False):
-            df_cache = pd.DataFrame(st.session_state.valores_guardados)
-            st.dataframe(df_cache, use_container_width=True)
+            df_cache_visual = pd.DataFrame(st.session_state.valores_guardados).copy()
+            # Formatear porcentajes y decimales solo para la visualización de la tabla lateral
+            for col in ["Emp. Formal", "Emp. Informal", "Desempleo"]:
+                if col in df_cache_visual.columns:
+                    df_cache_visual[col] = df_cache_visual[col].map(lambda x: f"{x * 100:.1f}%")
+            float_cols = [
+                "Salario Mínimo", "Salario Medio", "Salario Informal", "Precio Lista", 
+                "Precio Transac.", "Poder Compra Form.", "Poder Compra Inf.", "Bienes Vendidos", 
+                "Flujo Empresas (Ing)", "Flujo Empresas (Gast)"
+            ]
+            for col in float_cols:
+                if col in df_cache_visual.columns:
+                    df_cache_visual[col] = df_cache_visual[col].map(lambda x: f"{x:.2f}")
+
+            st.dataframe(df_cache_visual, use_container_width=True)
             if st.button("🗑️ Limpiar Caché", key="btn_limpiar_cache", width="stretch"):
                 st.session_state.valores_guardados = []
                 st.rerun()
@@ -857,8 +876,8 @@ def panel():
         fila2[0].metric("Salario mínimo", "—")
 
     if hay_datos:
-        tab_graficos, tab_flujo = st.tabs(
-            ["📈 Gráficos de Evolución", "🔄 Flujo Circular de la Economía"],
+        tab_graficos, tab_flujo, tab_comparacion = st.tabs(
+            ["📈 Gráficos de Evolución", "🔄 Flujo Circular de la Economía", "⚖️ Comparación con Captura"],
             key="pestana_activa",
             on_change="rerun"
         )
@@ -909,6 +928,98 @@ def panel():
             svg_renderizado = SVG_TEMPLATE.format(**valores_svg)
             svg_html = f'<div style="text-align: center;">{svg_renderizado}</div>'
             st.markdown(svg_html, unsafe_allow_html=True)
+
+        # PESTAÑA 3: Comparación con Captura
+        with tab_comparacion:
+            st.subheader("Análisis de Variación con Captura de Caché")
+            if not st.session_state.valores_guardados:
+                st.info(
+                    "No se encontraron capturas guardadas en caché. "
+                    "Por favor, use el botón '💾 Guardar en Caché' del menú lateral "
+                    "en el escenario o día que desee registrar primero."
+                )
+            else:
+                # Construir las opciones del selector
+                opciones = [
+                    f"Día {cap['Día']} - (Registrado a las {cap['Hora']})" 
+                    for cap in st.session_state.valores_guardados
+                ]
+                seleccion = st.selectbox(
+                    "Seleccione la captura de referencia para comparar:", 
+                    opciones
+                )
+                
+                idx_seleccionado = opciones.index(seleccion)
+                captura = st.session_state.valores_guardados[idx_seleccionado]
+                
+                # Calcular las diferencias porcentuales entre el estado actual y el seleccionado
+                diff_sal_min = calcular_diferencia_porcentaje(sim.config.salario_mínimo, captura["Salario Mínimo"])
+                diff_sal_med = calcular_diferencia_porcentaje(val_salario, captura["Salario Medio"])
+                diff_sal_inf = calcular_diferencia_porcentaje(val_salario_inf, captura["Salario Informal"])
+                diff_prec_list = calcular_diferencia_porcentaje(val_precio_lista, captura["Precio Lista"])
+                diff_prec_trans = calcular_diferencia_porcentaje(val_precio, captura["Precio Transac."])
+                
+                diff_poder_f = calcular_diferencia_porcentaje(val_poder_f, captura["Poder Compra Form."])
+                diff_poder_i = calcular_diferencia_porcentaje(val_poder_i, captura["Poder Compra Inf."])
+                diff_emp_formal = calcular_diferencia_porcentaje(val_emp_formal, captura["Emp. Formal"])
+                diff_emp_informal = calcular_diferencia_porcentaje(val_emp_informal, captura["Emp. Informal"])
+                diff_desempleo = calcular_diferencia_porcentaje(val_desempleo, captura["Desempleo"])
+                
+                diff_bienes = calcular_diferencia_porcentaje(val_bienes, captura["Bienes Vendidos"])
+                diff_ingresos_empresas = calcular_diferencia_porcentaje(val_ingresos_empresas, captura["Flujo Empresas (Ing)"])
+                diff_gasto_empresas = calcular_diferencia_porcentaje(val_gasto_empresas, captura["Flujo Empresas (Gast)"])
+
+                total_trabajadores = sim.config.num_trabajadores
+                num_formales = val_emp_formal * total_trabajadores
+                num_informales = val_emp_informal * total_trabajadores
+                diff_num_formales = calcular_diferencia_porcentaje(num_formales, captura["Trabajadores Form."])
+                diff_num_informales = calcular_diferencia_porcentaje(num_informales, captura["Trabajadores Inf."])
+
+                # Renderizar las tarjetas con su delta porcentual
+                st.markdown("#### Métricas actuales y variación porcentual")
+                col_c1, col_c2, col_c3, col_c4, col_c5 = st.columns(5)
+                col_c1.metric("Salario Mínimo", f"{sim.config.salario_mínimo:.2f}", f"{diff_sal_min:+.1f}%")
+                col_c2.metric("Salario Medio", f"{val_salario:.2f}", f"{diff_sal_med:+.1f}%")
+                col_c3.metric("Salario Informal Med.", f"{val_salario_inf:.2f}", f"{diff_sal_inf:+.1f}%")
+                col_c4.metric("Precio Lista Med.", f"{val_precio_lista:.2f}", f"{diff_prec_list:+.1f}%")
+                col_c5.metric("Precio Transac. Med.", f"{val_precio:.2f}", f"{diff_prec_trans:+.1f}%")
+
+                col_c2_1, col_c2_2, col_c2_3, col_c2_4, col_c2_5 = st.columns(5)
+                col_c2_1.metric("Poder Compra Formal", f"{val_poder_f:.2f}", f"{diff_poder_f:+.1f}%")
+                col_c2_2.metric("Poder Compra Informal", f"{val_poder_i:.2f}", f"{diff_poder_i:+.1f}%")
+                col_c2_3.metric("Empleo Formal", f"{val_emp_formal * 100:.1f}%", f"{diff_emp_formal:+.1f}%")
+                col_c2_4.metric("Empleo Informal", f"{val_emp_informal * 100:.1f}%", f"{diff_emp_informal:+.1f}%")
+                col_c2_5.metric("Desempleo", f"{val_desempleo * 100:.1f}%", f"{diff_desempleo:+.1f}%")
+
+                st.write("---")
+
+                # Formateador de textos para inyectar la variación en el SVG del Flujo Circular
+                def formato_svg_comparativo(valor, variacion, unidad=""):
+                    signo = "+" if variacion > 0 else ""
+                    return f"{valor:.1f}{unidad} ({signo}{variacion:.1f}%)"
+
+                valores_svg_comp = {
+                    "bys_vendidos": formato_svg_comparativo(val_bienes, diff_bienes, " u."),
+                    "bys_comprados": formato_svg_comparativo(val_bienes, diff_bienes, " u."),
+                    "ingresos_empresas": formato_svg_comparativo(val_ingresos_empresas, diff_ingresos_empresas, " $"),
+                    "gastos": formato_svg_comparativo(val_ingresos_empresas, diff_ingresos_empresas, " $"),
+                    "factores_produccion": (
+                        f"F: {num_formales:.0f} ({diff_num_formales:+.1f}%) | "
+                        f"I: {num_informales:.0f} ({diff_num_informales:+.1f}%)"
+                    ),
+                    "trabajo_tierra_capital": (
+                        f"F: {num_formales:.0f} ({diff_num_formales:+.1f}%) | "
+                        f"I: {num_informales:.0f} ({diff_num_informales:+.1f}%)"
+                    ),
+                    "salarios_rentas": formato_svg_comparativo(val_gasto_empresas, diff_gasto_empresas, " $"),
+                    "ingresos_familias": formato_svg_comparativo(val_gasto_empresas, diff_gasto_empresas, " $"),
+                }
+
+                # Renderizar gráfico SVG comparativo
+                st.markdown("#### Diagrama Comparativo del Flujo Circular")
+                svg_renderizado_comp = SVG_TEMPLATE.format(**valores_svg_comp)
+                svg_html_comp = f'<div style="text-align: center;">{svg_renderizado_comp}</div>'
+                st.markdown(svg_html_comp, unsafe_allow_html=True)
 
     else:
         st.info("Todavía no hay datos. Iniciá la simulación o avanzá un día.")
