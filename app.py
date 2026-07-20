@@ -650,7 +650,7 @@ with st.sidebar:
 def panel():
 
     if st.session_state.salario_mínimo_automático:
-        st.metric("Valor actual calculado", f"{sim.config.salario_mínimo:.2f}")
+        st.metric("Salario mínimo", f"{sim.config.salario_mínimo:.2f}")
 
     hay_datos = len(st.session_state.historial) > 0
 
