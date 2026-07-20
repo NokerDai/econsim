@@ -101,6 +101,6 @@ def mercado_laboral(estado):
             estado.config.salario_mínimo
         )
 	
-	if empresa.vacantes_informales > 0:
+        if empresa.vacantes_informales > 0:
             ratio = empresa.vacantes_informales - vacantes_informales_proyectadas
             empresa.salario_informal *= 1 + ratio / 100
