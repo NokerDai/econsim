@@ -60,22 +60,22 @@ SVG_TEMPLATE = """
 
   <!-- Mercado Bienes -->
   <rect x="330" y="80" width="290" height="130" fill="white" stroke="black" stroke-width="2"/>
-  <text x="475" y="130" text-anchor="middle" font-size="18" font-weight="bold" fill="white">Mercado de</text>
-  <text x="475" y="160" text-anchor="middle" font-size="18" font-weight="bold" fill="white">Bienes y Servicios</text>
+  <text x="475" y="130" text-anchor="middle" font-size="18" font-weight="bold" fill="black">Mercado de</text>
+  <text x="475" y="160" text-anchor="middle" font-size="18" font-weight="bold" fill="black">Bienes y Servicios</text>
 
   <!-- Mercado Factores -->
   <rect x="330" y="500" width="290" height="130" fill="white" stroke="black" stroke-width="2"/>
-  <text x="475" y="550" text-anchor="middle" font-size="18" font-weight="bold" fill="white">Mercado de</text>
-  <text x="475" y="580" text-anchor="middle" font-size="18" font-weight="bold" fill="white">Factores de</text>
-  <text x="475" y="610" text-anchor="middle" font-size="18" font-weight="bold" fill="white">Producción</text>
+  <text x="475" y="550" text-anchor="middle" font-size="18" font-weight="bold" fill="black">Mercado de</text>
+  <text x="475" y="580" text-anchor="middle" font-size="18" font-weight="bold" fill="black">Factores de</text>
+  <text x="475" y="610" text-anchor="middle" font-size="18" font-weight="bold" fill="black">Producción</text>
 
   <!-- Empresas -->
   <ellipse cx="120" cy="360" rx="115" ry="70" fill="#f0ad1f" stroke="#333" stroke-width="1"/>
-  <text x="120" y="368" text-anchor="middle" font-size="19" font-weight="bold" fill="white">Empresas</text>
+  <text x="120" y="368" text-anchor="middle" font-size="19" font-weight="bold" fill="black">Empresas</text>
 
   <!-- Familias -->
   <ellipse cx="830" cy="360" rx="115" ry="70" fill="#f0ad1f" stroke="#333" stroke-width="1"/>
-  <text x="830" y="368" text-anchor="middle" font-size="19" font-weight="bold" fill="white">Familias</text>
+  <text x="830" y="368" text-anchor="middle" font-size="19" font-weight="bold" fill="black">Familias</text>
 
   <!-- Empresas -> Mercado -->
   <path d="M150,300 L330,150" stroke="#c0392b" stroke-width="4" fill="none" marker-end="url(#arrowRed)"/>
