@@ -393,13 +393,17 @@ def graficar_line_chart(df, columnas, titulo=""):
     if not columnas_validas:
         return
 
-    # Creamos una copia defensiva asegurando que el índice tiene el nombre 'Día'
     df_reset = df.copy()
     if df_reset.index.name is None:
         df_reset.index.name = "Día"
     df_reset = df_reset.reset_index()
 
-    # --- PROTECCIÓN PARA EVITAR EJE Y COLAPSADO (VARIANZA CERO) ---
+    for col in columnas_validas:
+        if "Precio" in col:
+            df_reset[col] = df_reset[col].replace(0.0, float('nan'))
+
+    df_reset[columnas_validas] = df_reset[columnas_validas].ffill().bfill().fillna(0.0)
+
     if len(columnas_validas) == 1:
         col = columnas_validas[0]
         min_val = df_reset[col].min()
@@ -414,16 +418,13 @@ def graficar_line_chart(df, columnas, titulo=""):
     else:
         y_scale = alt.Scale(zero=False)
 
-    # --- RENDERIZADO SEGÚN EL NÚMERO DE SERIES (EVITAR LEYENDA INDIVIDUAL) ---
     if len(columnas_validas) == 1:
-        # CASO 1: Serie única. Graficamos directamente sin aplicar melt ni alt.Color.
         col = columnas_validas[0]
         chart_line = alt.Chart(df_reset).mark_line().encode(
             x=alt.X("Día:Q", title="Día"),
             y=alt.Y(f"{col}:Q", title=None, scale=y_scale)
         )
     else:
-        # CASO 2: Múltiples series. Derretimos el dataframe y aplicamos color.
         df_melted = df_reset.melt(
             id_vars=["Día"],
             value_vars=columnas_validas,
@@ -436,7 +437,6 @@ def graficar_line_chart(df, columnas, titulo=""):
             color=alt.Color("Métrica:N", legend=alt.Legend(orient="top", title=None))
         )
 
-    # Extraemos las marcas activas que entren dentro del intervalo temporal del gráfico actual
     marcadores_activos = obtener_marcadores_activos()
     min_dia = df_reset["Día"].min()
     max_dia = df_reset["Día"].max()
@@ -449,7 +449,6 @@ def graficar_line_chart(df, columnas, titulo=""):
     if marcadores_filtrados:
         df_rules = pd.DataFrame(marcadores_filtrados)
         
-        # 1. Regla vertical punteada roja
         rules = alt.Chart(df_rules).mark_rule(
             color="#FF4B4B",
             strokeDash=[4, 4],
@@ -463,7 +462,6 @@ def graficar_line_chart(df, columnas, titulo=""):
             ]
         )
 
-        # 2. Etiquetas de texto en la parte superior para identificar de qué parámetro se trata
         labels = alt.Chart(df_rules).mark_text(
             align="left",
             dx=5,
@@ -473,7 +471,7 @@ def graficar_line_chart(df, columnas, titulo=""):
             fontWeight="bold"
         ).encode(
             x="día:Q",
-            y=alt.value(8),  # Ubicación estática en píxeles desde el tope superior del gráfico
+            y=alt.value(8),
             text="nombre:N"
         )
 
@@ -488,7 +486,6 @@ def graficar_line_chart(df, columnas, titulo=""):
     st.altair_chart(chart, use_container_width=True)
 
 
-# --- Determinación dinámica de run_every ---
 if st.session_state.auto_avance:
     pestana_actual = st.session_state.get("pestana_activa", "📈 Gráficos de Evolución")
     if pestana_actual == "🔄 Flujo Circular de la Economía":
