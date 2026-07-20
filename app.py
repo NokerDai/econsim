@@ -512,7 +512,6 @@ with st.sidebar:
     salario_metric_placeholder = st.empty()
 
     if st.session_state.salario_mínimo_automático:
-        st.metric("Valor actual calculated", f"{sim.config.salario_mínimo:.2f}")
         col_tasa, col_btn_tasa = st.columns([5, 1])
         with col_tasa:
             st.slider(
