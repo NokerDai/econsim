@@ -487,36 +487,33 @@ def graficar_line_chart(df, columnas, titulo=""):
 
     st.altair_chart(chart, use_container_width=True)
 
-intervalo = 0.1
-@st.fragment(run_every=intervalo)
+
+# --- Determinación dinámica de run_every ---
+if st.session_state.auto_avance:
+    pestana_actual = st.session_state.get("pestana_activa", "📈 Gráficos de Evolución")
+    if pestana_actual == "🔄 Flujo Circular de la Economía":
+        run_every_val = 1.0
+    else:
+        run_every_val = 0.1
+else:
+    run_every_val = None
+
+
+@st.fragment(run_every=run_every_val)
 def auto_avance_fragment():
-    global intervalo
     if st.session_state.auto_avance:
-        ahora = time.time()
+        st.session_state.last_auto_step = time.time()
+        snapshots = []
         
-        pestana_actual = st.session_state.get("pestana_activa", "📈 Gráficos de Evolución")
+        v_actual = max(1, int(st.session_state.velocidad))
         
-        if pestana_actual == "🔄 Flujo Circular de la Economía":
-            intervalo = 1.0
-            multiplicador = 1
-        else:
-            intervalo = 0.1
-            multiplicador = 1
-            
-        if ahora - st.session_state.last_auto_step >= intervalo:
-            st.session_state.last_auto_step = ahora
-            snapshots = []
-            
-            v_actual = max(1, int(st.session_state.velocidad))
-            pasos_por_ciclo = v_actual * multiplicador
-            
-            for _ in range(pasos_por_ciclo):
-                if sim.step():
-                    snapshots.append(sim.obtener_snapshot())
-                else:
-                    st.session_state.auto_avance = False
-                    break
-            registrar_snapshots(snapshots)
+        for _ in range(v_actual):
+            if sim.step():
+                snapshots.append(sim.obtener_snapshot())
+            else:
+                st.session_state.auto_avance = False
+                break
+        registrar_snapshots(snapshots)
 
     panel()
 
@@ -765,11 +762,6 @@ def panel():
     fila3 = st.columns(5)
 
     if hay_datos:
-        tab_graficos, tab_flujo = st.tabs(
-            ["📈 Gráficos de Evolución", "🔄 Flujo Circular de la Economía"],
-            key="pestana_activa"
-        )
-
         n_dias = max(1, int(st.session_state.velocidad))
         historial_reciente = st.session_state.historial.tail(n_dias)
 
@@ -804,7 +796,11 @@ def panel():
         fila2[0].metric("Salario mínimo", "—")
 
     if hay_datos:
-        tab_graficos, tab_flujo = st.tabs(["📈 Gráficos de Evolución", "🔄 Flujo Circular de la Economía"])
+        tab_graficos, tab_flujo = st.tabs(
+            ["📈 Gráficos de Evolución", "🔄 Flujo Circular de la Economía"],
+            key="pestana_activa",
+            on_change="rerun"
+        )
 
         # PESTAÑA 1: Gráficos de evolución temporal
         with tab_graficos:
