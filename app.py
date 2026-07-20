@@ -42,6 +42,88 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+SVG_TEMPLATE = """
+<svg viewBox="0 0 950 700" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+  <defs>
+    <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#c0392b" />
+    </marker>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#2c3e50" />
+    </marker>
+  </defs>
+ 
+  <!-- Titulo -->
+  <text x="475" y="40" text-anchor="middle" font-size="30" font-weight="bold" fill="#7a1f3d">
+    Diagrama de Flujo Circular de la Economía
+  </text>
+ 
+  <!-- Caja: Mercado de Bienes y Servicios -->
+  <rect x="330" y="80" width="290" height="130" fill="white" stroke="black" stroke-width="2"/>
+  <text x="475" y="130" text-anchor="middle" font-size="20" font-weight="bold">Mercado de</text>
+  <text x="475" y="160" text-anchor="middle" font-size="20" font-weight="bold">Bienes y Servicios</text>
+ 
+  <!-- Caja: Mercado de Factores de Produccion -->
+  <rect x="330" y="500" width="290" height="130" fill="white" stroke="black" stroke-width="2"/>
+  <text x="475" y="550" text-anchor="middle" font-size="20" font-weight="bold">Mercado de</text>
+  <text x="475" y="580" text-anchor="middle" font-size="20" font-weight="bold">Factores de</text>
+  <text x="475" y="610" text-anchor="middle" font-size="20" font-weight="bold">Produccion</text>
+ 
+  <!-- Ovalo: Empresas -->
+  <ellipse cx="120" cy="360" rx="115" ry="70" fill="#f0ad1f" stroke="#333" stroke-width="1"/>
+  <text x="120" y="368" text-anchor="middle" font-size="22" font-weight="bold" fill="#1a2b6d">Empresas</text>
+ 
+  <!-- Ovalo: Familias -->
+  <ellipse cx="830" cy="360" rx="115" ry="70" fill="#f0ad1f" stroke="#333" stroke-width="1"/>
+  <text x="830" y="368" text-anchor="middle" font-size="22" font-weight="bold" fill="#1a2b6d">Familias</text>
+ 
+  <!-- ===== Empresas -> Mercado B&S: Bienes y Servicios vendidos ===== -->
+  <path d="M150,300 L330,150" stroke="#c0392b" stroke-width="4" fill="none" marker-end="url(#arrowRed)"/>
+  <text x="150" y="220" font-size="16" font-weight="bold">Bienes y Servicios</text>
+  <text x="150" y="240" font-size="16" font-weight="bold">vendidos (Q)</text>
+  <text x="150" y="262" font-size="16" fill="#1a5d1a" font-weight="bold">{bys_vendidos}</text>
+ 
+  <!-- ===== Ingresos: Mercado B&S -> Empresas ===== -->
+  <path d="M330,110 L90,110 L90,300" stroke="#2c3e50" stroke-width="4" fill="none" marker-end="url(#arrowBlue)"/>
+  <text x="150" y="100" font-size="20" font-weight="bold">Ingresos ($)</text>
+  <text x="90" y="200" font-size="16" fill="#1a5d1a" font-weight="bold">{ingresos_empresas}</text>
+ 
+  <!-- ===== Gastos: Familias -> Mercado B&S ===== -->
+  <path d="M620,110 L860,110 L860,300" stroke="#2c3e50" stroke-width="4" fill="none" marker-end="url(#arrowBlue)"/>
+  <text x="700" y="100" font-size="20" font-weight="bold">Gastos ($)</text>
+  <text x="800" y="200" font-size="16" fill="#1a5d1a" font-weight="bold">{gastos}</text>
+ 
+  <!-- ===== Bienes y servicios comprados: Mercado B&S -> Familias ===== -->
+  <path d="M620,150 L800,300" stroke="#c0392b" stroke-width="4" fill="none" marker-end="url(#arrowRed)"/>
+  <text x="640" y="220" font-size="16" font-weight="bold">Bienes y</text>
+  <text x="640" y="240" font-size="16" font-weight="bold">servicios comprados (Q)</text>
+  <text x="640" y="262" font-size="16" fill="#1a5d1a" font-weight="bold">{bys_comprados}</text>
+ 
+  <!-- ===== Factores de produccion: Mercado Factores -> Empresas ===== -->
+  <path d="M330,570 L150,420" stroke="#c0392b" stroke-width="4" fill="none" marker-end="url(#arrowRed)"/>
+  <text x="150" y="475" font-size="16" font-weight="bold">Factores de</text>
+  <text x="150" y="495" font-size="16" font-weight="bold">producción</text>
+  <text x="150" y="517" font-size="16" fill="#1a5d1a" font-weight="bold">{factores_produccion}</text>
+ 
+  <!-- ===== Salarios, rentas y beneficios: Empresas -> Mercado Factores ===== -->
+  <path d="M90,420 L90,610 L330,610" stroke="#2c3e50" stroke-width="4" fill="none" marker-end="url(#arrowBlue)"/>
+  <text x="100" y="650" font-size="16" font-weight="bold">Salarios y</text>
+  <text x="100" y="670" font-size="16" font-weight="bold">beneficios ($)</text>
+  <text x="100" y="500" font-size="16" fill="#1a5d1a" font-weight="bold">{salarios_rentas}</text>
+ 
+  <!-- ===== Trabajo, tierra y capital: Familias -> Mercado Factores ===== -->
+  <path d="M800,420 L620,570" stroke="#c0392b" stroke-width="4" fill="none" marker-end="url(#arrowRed)"/>
+  <text x="640" y="475" font-size="16" font-weight="bold">Trabajo y</text>
+  <text x="640" y="495" font-size="16" font-weight="bold">factores ofrecidos</text>
+  <text x="640" y="517" font-size="16" fill="#1a5d1a" font-weight="bold">{trabajo_tierra_capital}</text>
+ 
+  <!-- ===== Ingresos: Mercado Factores -> Familias ===== -->
+  <path d="M860,420 L860,610 L620,610" stroke="#2c3e50" stroke-width="4" fill="none" marker-end="url(#arrowBlue)"/>
+  <text x="700" y="650" font-size="20" font-weight="bold">Ingresos ($)</text>
+  <text x="800" y="500" font-size="16" fill="#1a5d1a" font-weight="bold">{ingresos_familias}</text>
+</svg>
+"""
+
 if "simulación" not in st.session_state:
     st.session_state.simulación = Simulación(Config())
 
@@ -654,12 +736,8 @@ with st.sidebar:
 
 
 def panel():
-
     hay_datos = len(st.session_state.historial) > 0
 
-    # ---------------------------------------------------------
-    # 1. TARJETAS / MÉTRICAS SUPERIORES (PROMEDIO DEL TRAMO DE VELOCIDAD)
-    # ---------------------------------------------------------
     fila1 = st.columns(5)
     fila2 = st.columns(5)
     fila3 = st.columns(5)
@@ -677,6 +755,9 @@ def panel():
         val_desempleo = historial_reciente["Desempleo"].mean()
         val_poder_f = historial_reciente["Poder Compra Formal"].mean()
         val_poder_i = historial_reciente["Poder Compra Informal"].mean()
+        val_bienes = historial_reciente["Bienes Vendidos"].mean()
+        val_ingresos_empresas = historial_reciente["Empresas Ingreso"].mean()
+        val_gasto_empresas = historial_reciente["Empresas Gasto"].mean()
 
         fila1[0].metric("Día", sim.estado.día)
 
@@ -693,62 +774,56 @@ def panel():
         fila3[4].metric("Desempleo", f"{val_desempleo * 100:.1f}%")
     else:
         fila1[0].metric("Día", "—")
-
         fila2[0].metric("Salario mínimo", "—")
-        fila2[1].metric("Salario medio", "—")
-        fila2[2].metric("Salario informal med.", "—")
-        fila2[3].metric("Precio lista med.", "—")
-        fila2[4].metric("Precio transac. med.", "—")
 
-        fila3[0].metric("Poder compra formal", "—")
-        fila3[1].metric("Poder compra informal", "—")
-        fila3[2].metric("Empleo formal", "—")
-        fila3[3].metric("Empleo informal", "—")
-        fila3[4].metric("Desempleo", "—")
-
-    # ---------------------------------------------------------
-    # 2. LOS CUATRO GRÁFICOS APILADOS UNO DEBAJO DEL OTRO
-    # ---------------------------------------------------------
     if hay_datos:
-        # Tomamos los últimos 365 días del historial para los gráficos
-        historial_graficos = st.session_state.historial.tail(365)
+        tab_graficos, tab_flujo = st.tabs(["📈 Gráficos de Evolución", "🔄 Flujo Circular de la Economía"])
 
-        st.subheader("1. Evolución de Salarios")
-        graficar_line_chart(
-            historial_graficos,
-            ["Salario", "Salario informal"],
-            "Evolución de Salarios"
-        )
+        # PESTAÑA 1: Gráficos de evolución temporal
+        with tab_graficos:
+            historial_graficos = st.session_state.historial.tail(365)
 
-        st.subheader("2. Evolución de Tasas de Empleo y Desempleo (%)")
-        df_empleo_pct = historial_graficos[["Empleo formal", "Empleo informal", "Desempleo"]] * 100
-        graficar_line_chart(
-            df_empleo_pct,
-            ["Empleo formal", "Empleo informal", "Desempleo"],
-            "Tasas de Empleo y Desempleo (%)"
-        )
+            st.subheader("1. Evolución de Salarios")
+            graficar_line_chart(historial_graficos, ["Salario", "Salario informal"])
 
-        st.subheader("3. Evolución del Poder de Compra")
-        graficar_line_chart(
-            historial_graficos,
-            ["Poder Compra Formal", "Poder Compra Informal"],
-            "Evolución del Poder de Compra"
-        )
+            st.subheader("2. Evolución de Tasas de Empleo y Desempleo (%)")
+            df_empleo_pct = historial_graficos[["Empleo formal", "Empleo informal", "Desempleo"]] * 100
+            graficar_line_chart(df_empleo_pct, ["Empleo formal", "Empleo informal", "Desempleo"])
 
-        st.subheader("4. Evolución de los Precios (Lista vs. Transacción)")
-        graficar_line_chart(
-            historial_graficos,
-            ["Precio Lista", "Precio Transacción"],
-            "Evolución de los Precios"
-        )
+            st.subheader("3. Evolución del Poder de Compra")
+            graficar_line_chart(historial_graficos, ["Poder Compra Formal", "Poder Compra Informal"])
 
-        # Mostrar de forma interactiva y limpia los marcadores que están activos
-        marcadores_activos = obtener_marcadores_activos()
-        if marcadores_activos:
-            st.write("---")
-            with st.expander("📍 Ajustes de Parámetros Activos (Últimos 365 días)", expanded=True):
-                for marcador in marcadores_activos:
-                    st.markdown(f"**Día {marcador['día']}:** {marcador['label']}")
+            st.subheader("4. Evolución de los Precios")
+            graficar_line_chart(historial_graficos, ["Precio Lista", "Precio Transacción"])
+
+            marcadores_activos = obtener_marcadores_activos()
+            if marcadores_activos:
+                st.write("---")
+                with st.expander("📍 Ajustes de Parámetros Activos (Últimos 365 días)", expanded=True):
+                    for marcador in marcadores_activos:
+                        st.markdown(f"**Día {marcador['día']}:** {marcador['label']}")
+
+        # PESTAÑA 2: Diagrama de flujo circular dinámico
+        with tab_flujo:
+            st.markdown("### Flujos de Mercado de Bienes y Factores de Producción")
+            
+            total_trabajadores = sim.config.num_trabajadores
+            num_formales = val_emp_formal * total_trabajadores
+            num_informales = val_emp_informal * total_trabajadores
+
+            valores_svg = {
+                "bys_vendidos": f"{val_bienes:.1f} u.",
+                "bys_comprados": f"{val_bienes:.1f} u.",
+                "ingresos_empresas": f"$ {val_ingresos_empresas:,.2f}",
+                "gastos": f"$ {val_ingresos_empresas:,.2f}",
+                "factores_produccion": f"F: {num_formales:.0f} | I: {num_informales:.0f}",
+                "trabajo_tierra_capital": f"F: {num_formales:.0f} | I: {num_informales:.0f}",
+                "salarios_rentas": f"$ {val_gasto_empresas:,.2f}",
+                "ingresos_familias": f"$ {val_gasto_empresas:,.2f}",
+            }
+
+            svg_renderizado = SVG_TEMPLATE.format(**valores_svg)
+            st.image(svg_renderizado, use_container_width=True)
 
     else:
         st.info("Todavía no hay datos. Iniciá la simulación o avanzá un día.")
