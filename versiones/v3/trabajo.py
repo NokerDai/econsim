@@ -60,7 +60,9 @@ def mercado_laboral(estado):
 
             for idx in indices:
                 emp = vacantes_formales[idx]
-                score = emp.salario * peso_salario + emp.satisfacción * peso_satisfacción
+                u_empleado = emp.salario * peso_salario + emp.satisfacción * peso_satisfacción
+                u_empresa = trabajador.productividad * emp.exigencia / emp.salario
+                score = u_empleado + u_empresa
                 if score > best_score:
                     best_score = score
                     best_idx_in_list = idx
@@ -124,7 +126,9 @@ def mercado_laboral(estado):
 
             for idx in indices:
                 emp = vacantes_informales[idx]
-                score = emp.salario_informal * peso_salario + emp.satisfacción * peso_satisfacción
+                u_empleado = emp.salario_informal * peso_salario + emp.satisfacción * peso_satisfacción
+                u_empresa = trabajador.productividad * emp.exigencia / emp.salario_informal
+                score = u_empleado + u_empresa
                 if score > best_score:
                     best_score = score
                     best_idx_in_list = idx

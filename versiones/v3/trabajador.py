@@ -7,6 +7,7 @@ class Trabajador:
     sensibilidad_calidad: float
     sensibilidad_salario: float
     sensibilidad_satisfacción: float
+    productividad: float
     presupuesto: float = 0.0
 
     @classmethod
@@ -20,5 +21,6 @@ class Trabajador:
             sensibilidad_calidad=round(aleatorio.uniform(0.0, 2.0), 2),
             sensibilidad_salario=round(aleatorio.uniform(0.0, 2.0), 2),
             sensibilidad_satisfacción=round(aleatorio.uniform(0.0, 2.0), 2),
+            productividad=round(aleatorio.uniform(0.5, 1.5), 2),
             presupuesto=0.0
         )
