@@ -242,6 +242,30 @@ if "pestana_activa" not in st.session_state:
     st.session_state.pestana_activa = "📈 Gráficos de Evolución"
 
 
+# --- MECANISMO DE PROTECCIÓN DE ESTADO (SESSION STATE KEEPER) ---
+# Evita que Streamlit elimine las variables de sesión de los controles cuando no estén renderizados
+keys_to_protect = [
+    "salario_mínimo_automático",
+    "tasa_slider",
+    "salario_slider",
+    "salario_input",
+    "informalidad_por_empresa_slider",
+    "informalidad_por_empresa_input",
+    "productividad_formal_slider",
+    "productividad_formal_input",
+    "productividad_informal_slider",
+    "productividad_informal_input",
+    "tasa_emisión_slider",
+    "tasa_emisión_input",
+    "velocidad_slider",
+    "velocidad_input",
+    "velocidad"
+]
+for k in keys_to_protect:
+    if k in st.session_state:
+        st.session_state[k] = st.session_state[k]
+
+
 def sincronizar_salario_slider():
     st.session_state.salario_input = st.session_state.salario_slider
     sim.cambiar_salario_mínimo(st.session_state.salario_slider)
@@ -537,35 +561,6 @@ def obtener_delta_doble(actual, capturado, decimales_abs=2, decimales_rel=1):
     return f"{diff_abs:+.{decimales_abs}f}\n({rel_texto})"
 
 
-if st.session_state.auto_avance:
-    pestana_actual = st.session_state.get("pestana_activa", "📈 Gráficos de Evolución")
-    if pestana_actual == "🔄 Flujo Circular de la Economía":
-        run_every_val = 1.0
-    else:
-        run_every_val = 1.0
-else:
-    run_every_val = None
-
-
-@st.fragment(run_every=run_every_val)
-def auto_avance_fragment():
-    if st.session_state.auto_avance:
-        st.session_state.last_auto_step = time.time()
-        snapshots = []
-        
-        v_actual = max(1, int(st.session_state.velocidad))
-        
-        for _ in range(v_actual):
-            if sim.step():
-                snapshots.append(sim.obtener_snapshot())
-            else:
-                st.session_state.auto_avance = False
-                break
-        registrar_snapshots(snapshots)
-
-    panel()
-
-
 def controles_velocidad():
 
     velocidad = max(1, int(st.session_state.velocidad))
@@ -599,6 +594,7 @@ def controles_velocidad():
             marcar_valor("Velocidad", st.session_state.velocidad)
 
 
+# --- BARRA LATERAL (BARRA DE CONTROL Y CACHÉ ÚNICAMENTE) ---
 with st.sidebar:
     st.subheader("Control de ejecución")
 
@@ -714,167 +710,8 @@ with st.sidebar:
 
     controles_velocidad()
 
-    st.divider()
 
-    st.checkbox(
-        "Salario mínimo automático",
-        key="salario_mínimo_automático",
-    )
-
-    if st.session_state.salario_mínimo_automático != sim.config.salario_mínimo_automático:
-        sim.config.salario_mínimo_automático = st.session_state.salario_mínimo_automático
-
-    if st.session_state.salario_mínimo_automático:
-        st.session_state.salario_slider = int(sim.config.salario_mínimo or 0)
-        st.session_state.salario_input = int(sim.config.salario_mínimo or 0)
-    else:
-        valor_salario = resolver_valor_salario(
-            False,
-            st.session_state.salario_slider,
-            st.session_state.salario_input,
-            sim.config.salario_mínimo,
-        )
-        st.session_state.salario_slider = valor_salario
-        st.session_state.salario_input = valor_salario
-        sim.cambiar_salario_mínimo(valor_salario)
-
-    salario_metric_placeholder = st.empty()
-
-    if st.session_state.salario_mínimo_automático:
-        col_tasa, col_btn_tasa = st.columns([5, 1])
-        with col_tasa:
-            st.slider(
-                "Tasa de salario mínimo",
-                min_value=0.0,
-                max_value=2.0,
-                step=0.01,
-                key="tasa_slider",
-                on_change=sincronizar_tasa,
-            )
-        with col_btn_tasa:
-            if st.button("📍", key="marcar_tasa_salario", help="Marcar el valor actual de la tasa de salario mínimo en el día actual"):
-                marcar_valor("Tasa de salario mínimo", st.session_state.tasa_slider)
-    else:
-        col_salario, col_btn_salario = st.columns([5, 1])
-        with col_salario:
-            st.slider(
-                "Salario mínimo",
-                min_value=0,
-                max_value=10000,
-                key="salario_slider",
-                on_change=sincronizar_salario_slider,
-            )
-
-            st.number_input(
-                "Valor exacto",
-                min_value=0,
-                max_value=10000,
-                step=1,
-                key="salario_input",
-                on_change=sincronizar_salario_input,
-            )
-        with col_btn_salario:
-            if st.button("📍", key="marcar_salario", help="Marcar el valor actual del salario mínimo en el día actual"):
-                marcar_valor("Salario mínimo", st.session_state.salario_slider)
-
-
-    col_informalidad, col_btn_informalidad = st.columns([5, 1])
-    with col_informalidad:
-        st.slider(
-            "Informalidad por empresa",
-            min_value=0.00,
-            max_value=1.00,
-            step=0.01,
-            key="informalidad_por_empresa_slider",
-            on_change=sincronizar_informalidad_por_empresa_slider,
-        )
-
-        st.number_input(
-            "Valor exacto",
-            min_value=0.00,
-            max_value=1.00,
-            step=0.01,
-            key="informalidad_por_empresa_input",
-            on_change=sincronizar_informalidad_por_empresa_input,
-        )
-    with col_btn_informalidad:
-        if st.button("📍", key="marcar_informalidad", help="Marcar el valor actual de la informalidad por empresa"):
-            marcar_valor("Informalidad por empresa", st.session_state.informalidad_por_empresa_slider)
-
-    st.divider()
-
-    col_formal, col_btn_formal = st.columns([5, 1])
-    with col_formal:
-        st.slider(
-            "Productividad formal",
-            min_value=0.00,
-            max_value=5.00,
-            step=0.01,
-            key="productividad_formal_slider",
-            on_change=sincronizar_productividad_formal_slider,
-        )
-
-        st.number_input(
-            "Valor exacto",
-            min_value=0.00,
-            max_value=5.00,
-            step=0.01,
-            key="productividad_formal_input",
-            on_change=sincronizar_productividad_formal_input,
-        )
-    with col_btn_formal:
-        if st.button("📍", key="marcar_productividad_formal", help="Marcar el valor actual de la productividad formal"):
-            marcar_valor("Productividad formal", st.session_state.productividad_formal_slider)
-
-    col_informal, col_btn_informal = st.columns([5, 1])
-    with col_informal:
-        st.slider(
-            "Productividad informal",
-            min_value=0.00,
-            max_value=5.00,
-            step=0.01,
-            key="productividad_informal_slider",
-            on_change=sincronizar_productividad_informal_slider,
-        )
-
-        st.number_input(
-            "Valor exacto",
-            min_value=0.00,
-            max_value=5.00,
-            step=0.01,
-            key="productividad_informal_input",
-            on_change=sincronizar_productividad_informal_input,
-        )
-    with col_btn_informal:
-        if st.button("📍", key="marcar_productividad_informal", help="Marcar el valor actual de la productividad informal"):
-            marcar_valor("Productividad informal", st.session_state.productividad_informal_slider)
-
-    st.divider()
-
-    col_emision, col_btn_emision = st.columns([5, 1])
-    with col_emision:
-        st.slider(
-            "Tasa emisión",
-            min_value=-1.00,
-            max_value=1.00,
-            step=0.001,
-            key="tasa_emisión_slider",
-            on_change=sincronizar_tasa_emisión_slider,
-        )
-
-        st.number_input(
-            "Valor exacto",
-            min_value=-1.00,
-            max_value=1.00,
-            step=0.001,
-            key="tasa_emisión_input",
-            on_change=sincronizar_tasa_emisión_input,
-        )
-    with col_btn_emision:
-        if st.button("📍", key="marcar_tasa_emision", help="Marcar el valor actual de la tasa de emisión"):
-            marcar_valor("Tasa emisión", st.session_state.tasa_emisión_slider)
-
-
+# --- PANEL PRINCIPAL ---
 def panel():
     hay_datos = len(st.session_state.historial) > 0
 
@@ -917,15 +754,21 @@ def panel():
         fila1[0].metric("Día", "—")
         fila2[0].metric("Salario mínimo", "—")
 
-    if hay_datos:
-        tab_graficos, tab_flujo, tab_comparacion = st.tabs(
-            ["📈 Gráficos de Evolución", "🔄 Flujo Circular de la Economía", "⚖️ Comparación con Captura"],
-            key="pestana_activa",
-            on_change="rerun"
-        )
+    # Definición de pestañas incluyendo la de configuración
+    tab_graficos, tab_flujo, tab_comparacion, tab_config = st.tabs(
+        [
+            "📈 Gráficos de Evolución", 
+            "🔄 Flujo Circular de la Economía", 
+            "⚖️ Comparación con Captura",
+            "⚙️ Configuración"
+        ],
+        key="pestana_activa",
+        on_change="rerun"
+    )
 
-        # PESTAÑA 1: Gráficos de evolución temporal
-        with tab_graficos:
+    # PESTAÑA 1: Gráficos de evolución temporal
+    with tab_graficos:
+        if hay_datos:
             historial_graficos = st.session_state.historial.tail(365)
 
             st.subheader("1. Evolución de Salarios")
@@ -947,9 +790,12 @@ def panel():
                 with st.expander("📍 Ajustes de Parámetros Activos (Últimos 365 días)", expanded=True):
                     for marcador in marcadores_activos:
                         st.markdown(f"**Día {marcador['día']}:** {marcador['label']}")
+        else:
+            st.info("Todavía no hay datos de simulación. Iniciá la simulación o avanzá un día.")
 
-        # PESTAÑA 2: Diagrama de flujo circular dinámico
-        with tab_flujo:
+    # PESTAÑA 2: Diagrama de flujo circular dinámico
+    with tab_flujo:
+        if hay_datos:
             st.markdown("### Flujos de Mercado de Bienes y Factores de Producción")
             
             total_trabajadores = sim.config.num_trabajadores
@@ -970,9 +816,12 @@ def panel():
             svg_renderizado = SVG_TEMPLATE.format(**valores_svg)
             svg_html = f'<div style="text-align: center;">{svg_renderizado}</div>'
             st.markdown(svg_html, unsafe_allow_html=True)
+        else:
+            st.info("Todavía no hay datos de simulación. Iniciá la simulación o avanzá un día.")
 
-        # PESTAÑA 3: Comparación con Captura
-        with tab_comparacion:
+    # PESTAÑA 3: Comparación con Captura
+    with tab_comparacion:
+        if hay_datos:
             st.subheader("Análisis de Variación con Captura de Caché")
             if not st.session_state.valores_guardados:
                 st.info(
@@ -1073,9 +922,206 @@ def panel():
                 
                 svg_html_comp = f'<div style="text-align: center;">{svg_renderizado_comp}</div>'
                 st.markdown(svg_html_comp, unsafe_allow_html=True)
+        else:
+            st.info("Todavía no hay datos de simulación. Iniciá la simulación o avanzá un día.")
 
+    # PESTAÑA 4: Configuración de Parámetros del Modelo
+    with tab_config:
+        st.subheader("⚙️ Configuración de Parámetros del Modelo")
+        
+        if st.session_state.auto_avance:
+            st.info("⏸️ Ejecución en pausa temporalmente mientras editas los parámetros. Cambia de pestaña para reanudar.")
+
+        st.checkbox(
+            "Salario mínimo automático",
+            key="salario_mínimo_automático",
+        )
+
+        if st.session_state.salario_mínimo_automático != sim.config.salario_mínimo_automático:
+            sim.config.salario_mínimo_automático = st.session_state.salario_mínimo_automático
+
+        if st.session_state.salario_mínimo_automático:
+            st.session_state.salario_slider = int(sim.config.salario_mínimo or 0)
+            st.session_state.salario_input = int(sim.config.salario_mínimo or 0)
+        else:
+            valor_salario = resolver_valor_salario(
+                False,
+                st.session_state.salario_slider,
+                st.session_state.salario_input,
+                sim.config.salario_mínimo,
+            )
+            st.session_state.salario_slider = valor_salario
+            st.session_state.salario_input = valor_salario
+            sim.cambiar_salario_mínimo(valor_salario)
+
+        if st.session_state.salario_mínimo_automático:
+            col_tasa, col_btn_tasa = st.columns([5, 1])
+            with col_tasa:
+                st.slider(
+                    "Tasa de salario mínimo",
+                    min_value=0.0,
+                    max_value=2.0,
+                    step=0.01,
+                    key="tasa_slider",
+                    on_change=sincronizar_tasa,
+                )
+            with col_btn_tasa:
+                if st.button("📍", key="marcar_tasa_salario", help="Marcar el valor actual de la tasa de salario mínimo en el día actual"):
+                    marcar_valor("Tasa de salario mínimo", st.session_state.tasa_slider)
+        else:
+            col_salario, col_btn_salario = st.columns([5, 1])
+            with col_salario:
+                st.slider(
+                    "Salario mínimo",
+                    min_value=0,
+                    max_value=10000,
+                    key="salario_slider",
+                    on_change=sincronizar_salario_slider,
+                )
+
+                st.number_input(
+                    "Valor exacto",
+                    min_value=0,
+                    max_value=10000,
+                    step=1,
+                    key="salario_input",
+                    on_change=sincronizar_salario_input,
+                )
+            with col_btn_salario:
+                if st.button("📍", key="marcar_salario", help="Marcar el valor actual del salario mínimo en el día actual"):
+                    marcar_valor("Salario mínimo", st.session_state.salario_slider)
+
+        st.divider()
+
+        col_informalidad, col_btn_informalidad = st.columns([5, 1])
+        with col_informalidad:
+            st.slider(
+                "Informalidad por empresa",
+                min_value=0.00,
+                max_value=1.00,
+                step=0.01,
+                key="informalidad_por_empresa_slider",
+                on_change=sincronizar_informalidad_por_empresa_slider,
+            )
+
+            st.number_input(
+                "Valor exacto",
+                min_value=0.00,
+                max_value=1.00,
+                step=0.01,
+                key="informalidad_por_empresa_input",
+                on_change=sincronizar_informalidad_por_empresa_input,
+            )
+        with col_btn_informalidad:
+            if st.button("📍", key="marcar_informalidad", help="Marcar el valor actual de la informalidad por empresa"):
+                marcar_valor("Informalidad por empresa", st.session_state.informalidad_por_empresa_slider)
+
+        st.divider()
+
+        col_formal, col_btn_formal = st.columns([5, 1])
+        with col_formal:
+            st.slider(
+                "Productividad formal",
+                min_value=0.00,
+                max_value=5.00,
+                step=0.01,
+                key="productividad_formal_slider",
+                on_change=sincronizar_productividad_formal_slider,
+            )
+
+            st.number_input(
+                "Valor exacto",
+                min_value=0.00,
+                max_value=5.00,
+                step=0.01,
+                key="productividad_formal_input",
+                on_change=sincronizar_productividad_formal_input,
+            )
+        with col_btn_formal:
+            if st.button("📍", key="marcar_productividad_formal", help="Marcar el valor actual de la productividad formal"):
+                marcar_valor("Productividad formal", st.session_state.productividad_formal_slider)
+
+        col_informal, col_btn_informal = st.columns([5, 1])
+        with col_informal:
+            st.slider(
+                "Productividad informal",
+                min_value=0.00,
+                max_value=5.00,
+                step=0.01,
+                key="productividad_informal_slider",
+                on_change=sincronizar_productividad_informal_slider,
+            )
+
+            st.number_input(
+                "Valor exacto",
+                min_value=0.00,
+                max_value=5.00,
+                step=0.01,
+                key="productividad_informal_input",
+                on_change=sincronizar_productividad_informal_input,
+            )
+        with col_btn_informal:
+            if st.button("📍", key="marcar_productividad_informal", help="Marcar el valor actual de la productividad informal"):
+                marcar_valor("Productividad informal", st.session_state.productividad_informal_slider)
+
+        st.divider()
+
+        col_emision, col_btn_emision = st.columns([5, 1])
+        with col_emision:
+            st.slider(
+                "Tasa emisión",
+                min_value=-1.00,
+                max_value=1.00,
+                step=0.001,
+                key="tasa_emisión_slider",
+                on_change=sincronizar_tasa_emisión_slider,
+            )
+
+            st.number_input(
+                "Valor exacto",
+                min_value=-1.00,
+                max_value=1.00,
+                step=0.001,
+                key="tasa_emisión_input",
+                on_change=sincronizar_tasa_emisión_input,
+            )
+        with col_btn_emision:
+            if st.button("📍", key="marcar_tasa_emision", help="Marcar el valor actual de la tasa de emisión"):
+                marcar_valor("Tasa emisión", st.session_state.tasa_emisión_slider)
+
+
+# Determinación del intervalo de ejecución automática
+# Si el usuario está editando los parámetros, desactivamos temporalmente el run_every
+if st.session_state.auto_avance:
+    pestana_actual = st.session_state.get("pestana_activa", "📈 Gráficos de Evolución")
+    if pestana_actual == "⚙️ Configuración":
+        run_every_val = None
     else:
-        st.info("Todavía no hay datos. Iniciá la simulación o avanzá un día.")
+        run_every_val = 1.0
+else:
+    run_every_val = None
+
+
+@st.fragment(run_every=run_every_val)
+def auto_avance_fragment():
+    if st.session_state.auto_avance:
+        # Solo calculamos avances si no estamos en la pestaña de configuración
+        pestana_actual = st.session_state.get("pestana_activa", "📈 Gráficos de Evolución")
+        if pestana_actual != "⚙️ Configuración":
+            st.session_state.last_auto_step = time.time()
+            snapshots = []
+            
+            v_actual = max(1, int(st.session_state.velocidad))
+            
+            for _ in range(v_actual):
+                if sim.step():
+                    snapshots.append(sim.obtener_snapshot())
+                else:
+                    st.session_state.auto_avance = False
+                    break
+            registrar_snapshots(snapshots)
+
+    panel()
 
 
 auto_avance_fragment()
