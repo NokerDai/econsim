@@ -587,35 +587,6 @@ def controles_velocidad():
             marcar_valor("Velocidad", st.session_state.velocidad)
 
 
-if st.session_state.auto_avance:
-    pestana_actual = st.session_state.get("pestana_activa", "⚙️ Configuración")
-    if pestana_actual == "🔄 Flujo Circular de la Economía":
-        run_every_val = 1.0
-    else:
-        run_every_val = 1.0
-else:
-    run_every_val = None
-
-
-@st.fragment(run_every=run_every_val)
-def auto_avance_fragment():
-    if st.session_state.auto_avance:
-        st.session_state.last_auto_step = time.time()
-        snapshots = []
-        
-        v_actual = max(1, int(st.session_state.velocidad))
-        
-        for _ in range(v_actual):
-            if sim.step():
-                snapshots.append(sim.obtener_snapshot())
-            else:
-                st.session_state.auto_avance = False
-                break
-        registrar_snapshots(snapshots)
-
-    panel()
-
-
 def panel():
     hay_datos = len(st.session_state.historial) > 0
 
@@ -689,7 +660,7 @@ def panel():
                     for marcador in marcadores_activos:
                         st.markdown(f"**Día {marcador['día']}:** {marcador['label']}")
         else:
-            st.info("Todavía no hay datos. Dirigite a la pestaña ⚙️ Configuración para iniciar la simulación.")
+            st.info("Todavía no hay datos. Dirígete a la pestaña ⚙️ Configuración para iniciar la simulación.")
 
     # PESTAÑA 2: Diagrama de flujo circular dinámico
     with tab_flujo:
@@ -715,7 +686,7 @@ def panel():
             svg_html = f'<div style="text-align: center;">{svg_renderizado}</div>'
             st.markdown(svg_html, unsafe_allow_html=True)
         else:
-            st.info("Todavía no hay datos. Dirigite a la pestaña ⚙️ Configuración para iniciar la simulación.")
+            st.info("Todavía no hay datos. Dirígete a la pestaña ⚙️ Configuración para iniciar la simulación.")
 
     # PESTAÑA 3: Comparación con Captura
     with tab_comparacion:
@@ -724,7 +695,7 @@ def panel():
             if not st.session_state.valores_guardados:
                 st.info(
                     "No se encontraron capturas guardadas en caché. "
-                    "Por favor, use el botón '💾 Guardar en Caché' de la pestaña de Configuración "
+                    "Por favor, use el botón '💾 Guardar en Caché' en la pestaña ⚙️ Configuración "
                     "en el escenario o día que desee registrar primero."
                 )
             else:
@@ -823,24 +794,24 @@ def panel():
         else:
             st.info("Todavía no hay datos. Dirígete a la pestaña ⚙️ Configuración para iniciar la simulación.")
 
-    # PESTAÑA 4: Configuración (Controles que se encontraban anteriormente en el Sidebar)
+    # PESTAÑA 4: Configuración
     with tab_config:
         st.subheader("Control de ejecución")
 
         col_btn1, col_btn2 = st.columns(2)
         with col_btn1:
             if st.session_state.auto_avance:
-                st.button("⏸ Pausar", width="stretch", on_click=detener_avance, key="btn_pausar")
+                st.button("⏸ Pausar", width="stretch", on_click=detener_avance)
             else:
-                st.button("▶ Iniciar", width="stretch", on_click=iniciar_avance, key="btn_iniciar")
+                st.button("▶ Iniciar", width="stretch", on_click=iniciar_avance)
 
         with col_btn2:
-            if st.button("⏭ Día", disabled=st.session_state.auto_avance, width="stretch", key="btn_dia"):
+            if st.button("⏭ Día", disabled=st.session_state.auto_avance, width="stretch"):
                 if sim.step():
                     registrar_snapshots([sim.obtener_snapshot()])
                 st.rerun()
 
-        if st.button("🔄 Reiniciar", width="stretch", key="btn_reiniciar"):
+        if st.button("🔄 Reiniciar", width="stretch"):
             detener_avance()
             sim.reset()
             st.session_state.historial = pd.DataFrame(
@@ -869,8 +840,7 @@ def panel():
             "💾 Guardar en Caché", 
             width="stretch", 
             disabled=not hay_datos, 
-            help="Guarda las métricas actuales del panel y del flujo circular en una tabla de caché",
-            key="btn_guardar_cache"
+            help="Guarda las métricas actuales del panel y del flujo circular en una tabla de caché"
         ):
             n_dias = max(1, int(st.session_state.velocidad))
             historial_reciente = st.session_state.historial.tail(n_dias)
@@ -1098,4 +1068,36 @@ def panel():
                 marcar_valor("Tasa emisión", st.session_state.tasa_emisión_slider)
 
 
-auto_avance_fragment()
+def ejecutar_aplicacion():
+    # Determinar el intervalo de refresco de forma dinámica en cada ejecución del script
+    if st.session_state.auto_avance:
+        pestana_actual = st.session_state.get("pestana_activa", "⚙️ Configuración")
+        if pestana_actual == "🔄 Flujo Circular de la Economía":
+            run_every_val = 1.0
+        else:
+            run_every_val = 1.0
+    else:
+        run_every_val = None
+
+    @st.fragment(run_every=run_every_val)
+    def auto_avance_fragment():
+        if st.session_state.auto_avance:
+            st.session_state.last_auto_step = time.time()
+            snapshots = []
+            
+            v_actual = max(1, int(st.session_state.velocidad))
+            
+            for _ in range(v_actual):
+                if sim.step():
+                    snapshots.append(sim.obtener_snapshot())
+                else:
+                    st.session_state.auto_avance = False
+                    break
+            registrar_snapshots(snapshots)
+
+        panel()
+
+    auto_avance_fragment()
+
+
+ejecutar_aplicacion()
