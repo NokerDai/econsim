@@ -785,29 +785,8 @@ def panel():
                     registrar_snapshots([sim.obtener_snapshot()])
 
         if st.button("🔄 Reiniciar", width="stretch"):
-            sim.reset()
-            st.session_state.historial = pd.DataFrame(
-                columns=[
-                    "Salario",
-                    "Salario informal",
-                    "Precio Lista",
-                    "Precio Transacción",
-                    "Poder Compra Formal",
-                    "Poder Compra Informal",
-                    "Empleo formal",
-                    "Empleo informal",
-                    "Desempleo",
-                    "Bienes Vendidos",
-                    "Empresas Ingreso",
-                    "Empresas Gasto"
-                ]
-            ).astype(float)
-            st.session_state.historial.index.name = "Día"
-            st.session_state.auto_avance = False
-            st.session_state.valores_guardados = []
-            st.session_state.indice_comparacion = 0
-            st.session_state.captura_activa = None
-            st.session_state.necesita_rerun_completo = True
+            st.session_state.clear()
+            st.rerun()
 
         # BOTÓN PARA GUARDAR VALORES EN CACHÉ (GUARDADO COMO FLOATS)
         if st.button(
