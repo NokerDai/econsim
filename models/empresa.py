@@ -39,5 +39,6 @@ class Empresa:
             presupuesto=config.presupuesto_inicial,
             precio=config.precio_inicial,
             salario=config.salario_inicial,
-            salario_informal=config.salario_informal_inicial
+            salario_informal=config.salario_informal_inicial,
+            calidad=0.0
         )
