@@ -101,6 +101,6 @@ def mercado_laboral(estado):
         empresa.salario *= 1 + ratio / 100
         empresa.salario = max(empresa.salario, estado.config.salario_mínimo, 1.0)
 
-        ratio = (empresa.vacantes_informales - vacantes_informales_proyectadas) * 0.5
+        ratio = (empresa.vacantes_informales - vacantes_informales_proyectadas) * 1
 
         empresa.salario_informal = max(empresa.salario_informal, 1.0)
