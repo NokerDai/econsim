@@ -35,6 +35,9 @@ class Config:
     reducción_salario: float = 0.99
     aumento_salario: float = 1.01
     informalidad_por_empresa: float = 1.0
+    sensibilidad_salario: float = 1.0
+    sensibilidad_seguridad: float = 1.0
+    sensibilidad_estabilidad: float = 1.0
 
     # Parámetros del mercado
     productividad_formal: float = 1
