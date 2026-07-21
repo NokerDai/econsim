@@ -10,7 +10,7 @@ def mercado_productos(estado):
         produccion_formal = empresa.productividad_acumulada_formales * pf
         produccion_informal = empresa.productividad_acumulada_informales * pi
         empresa.inventario += (produccion_formal + produccion_informal) * empresa.productividad
-        productos_disponibles.extend([empresa] * int(min(estado.config.num_trabajadores, empresa.inventario)))
+        productos_disponibles.extend([empresa] * int(min(len(estado.trabajadores), empresa.inventario)))
 
     sp = estado.config.sensibilidad_precio
     sc = estado.config.sensibilidad_calidad

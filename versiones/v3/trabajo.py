@@ -8,7 +8,7 @@ def mercado_laboral(estado):
 
         empresa.vacantes_formales = min(
             int(empresa.presupuesto / salario_seguro),
-            estado.config.num_trabajadores
+            len(estado.trabajadores)
         )
         empresa.vacantes_informales = 0
         empresa.empleados_formales = 0
@@ -158,7 +158,7 @@ def mercado_laboral(estado):
 
                 empresa.vacantes_informales = min(
                     int(empresa.presupuesto / salario_inf_seguro),
-                    estado.config.num_trabajadores
+                    len(estado.trabajadores)
                 )
                 vacantes_informales.extend([empresa] * empresa.vacantes_informales)
 
@@ -272,17 +272,17 @@ def mercado_laboral(estado):
     # Ajustar salarios empresas
     # ===========================
 
-    vacantes_formales_proyectadas = estado.config.num_trabajadores / estado.config.num_empresas
+    vacantes_formales_proyectadas = len(estado.trabajadores) / len(estado.empresas)
     num_empleados_formales = sum([empresa.empleados_formales for empresa in estado.empresas])
-    num_empleados_informales_proyectados = estado.config.num_trabajadores - num_empleados_formales
-    vacantes_informales_proyectadas = (num_empleados_informales_proyectados * estado.config.informalidad_por_empresa) / estado.config.num_empresas
+    num_empleados_informales_proyectados = len(estado.trabajadores) - num_empleados_formales
+    vacantes_informales_proyectadas = (num_empleados_informales_proyectados * estado.config.informalidad_por_empresa) / len(estado.empresas)
 
     # ===========================
     # Actualizar salario mínimo
     # ===========================
 
     if estado.config.salario_mínimo_automático and estado.día % estado.config.salario_mínimo_automático_intervalo == 0:
-        tasa_empleo = num_empleados_formales / estado.config.num_trabajadores
+        tasa_empleo = num_empleados_formales / len(estado.trabajadores)
         tasa_límite = estado.config.salario_mínimo_automático_formalidad_límite
         reducción = estado.config.salario_mínimo_automático_reducción
         aumento = estado.config.salario_mínimo_automático_aumento
