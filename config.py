@@ -24,6 +24,7 @@ class Config:
     # Políticas
     salario_mínimo: float = 0
     salario_mínimo_automático: bool = False
+    salario_mínimo_automático_intervalo: int = 30
     tasa_salario_mínimo: float = 0.3
     tasa_emisión: float = 0
 

@@ -34,10 +34,7 @@ def mercado_laboral(estado):
             trabajador.presupuesto += seleccionada.salario
             seleccionada.presupuesto -= seleccionada.salario
 
-            salario_formal_máximo = max(
-                salario_formal_máximo,
-                seleccionada.salario
-            )
+            salario_formal_máximo = max(salario_formal_máximo, seleccionada.salario)
 
             continue
 
@@ -54,10 +51,7 @@ def mercado_laboral(estado):
                 empresa.vacantes_informales = int(empresa.presupuesto / empresa.salario_informal)
                 vacantes.extend([empresa] * empresa.vacantes_informales)
 
-            vacantes.sort(
-                key=lambda e: e.salario_informal,
-                reverse=True
-            )
+            vacantes.sort(key=lambda e: e.salario_informal, reverse=True)
 
             vacantes_informales = deque(vacantes)
 
@@ -77,11 +71,8 @@ def mercado_laboral(estado):
     # Actualizar salario mínimo
     # ===========================
 
-    if estado.config.salario_mínimo_automático:
-        estado.config.salario_mínimo = (
-            salario_formal_máximo *
-            estado.config.tasa_salario_mínimo
-        )
+    if estado.config.salario_mínimo_automático and estado.día % estado.config.salario_mínimo_automático_intervalo == 0:
+        estado.config.salario_mínimo = (salario_formal_máximo * estado.config.tasa_salario_mínimo)
 
     # ===========================
     # Ajustar salarios empresas
@@ -98,10 +89,7 @@ def mercado_laboral(estado):
 
         ratio = empresa.vacantes_formales - int(vacantes_formales_proyectadas)
         empresa.salario *= 1 + ratio / 100
-        empresa.salario = max(
-            empresa.salario,
-            estado.config.salario_mínimo
-        )
+        empresa.salario = max(empresa.salario, estado.config.salario_mínimo)
 
         ratio = empresa.vacantes_informales - int(vacantes_informales_proyectadas)
         empresa.salario_informal *= 1 + ratio / 100
