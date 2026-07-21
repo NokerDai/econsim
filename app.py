@@ -43,94 +43,84 @@ st.markdown(
 )
 
 SVG_TEMPLATE = """
-<svg viewBox="0 0 1000 750" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
-  <!-- Fondo oscuro para asegurar el contraste de la interfaz -->
-  <rect width="1000" height="750" fill="#121214" rx="15" />
-
+<svg viewBox="0 0 950 700" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
   <defs>
-    <!-- Marcadores de flecha optimizados con colores más luminosos -->
-    <marker id="arrowRed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#e74c3c"/>
+    <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#c0392b"/>
     </marker>
-    <marker id="arrowBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#3498db"/>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#2c3e50"/>
     </marker>
   </defs>
 
-  <!-- Título principal -->
-  <text x="500" y="50" text-anchor="middle" font-size="26" font-weight="bold" fill="#f8f9fa">
+  <!-- Título -->
+  <text x="475" y="40" text-anchor="middle" font-size="30" font-weight="bold" fill="#7a1f3d">
     Diagrama de Flujo Circular de la Economía
   </text>
 
-  <!-- Mercado de Bienes y Servicios (Superior) -->
-  <rect x="350" y="95" width="300" height="100" fill="#1e293b" stroke="#3b82f6" stroke-width="2" rx="10"/>
-  <text x="500" y="140" text-anchor="middle" font-size="18" font-weight="bold" fill="#f8f9fa">Mercado de</text>
-  <text x="500" y="165" text-anchor="middle" font-size="18" font-weight="bold" fill="#f8f9fa">Bienes y Servicios</text>
+  <!-- Mercado Bienes -->
+  <rect x="330" y="80" width="290" height="130" fill="white" stroke="black" stroke-width="2"/>
+  <text x="475" y="130" text-anchor="middle" font-size="18" font-weight="bold" fill="black">Mercado de</text>
+  <text x="475" y="160" text-anchor="middle" font-size="18" font-weight="bold" fill="black">Bienes y Servicios</text>
 
-  <!-- Mercado de Factores de Producción (Inferior) -->
-  <rect x="350" y="555" width="300" height="100" fill="#1e293b" stroke="#3b82f6" stroke-width="2" rx="10"/>
-  <text x="500" y="600" text-anchor="middle" font-size="18" font-weight="bold" fill="#f8f9fa">Mercado de</text>
-  <text x="500" y="625" text-anchor="middle" font-size="18" font-weight="bold" fill="#f8f9fa">Factores de Producción</text>
+  <!-- Mercado Factores -->
+  <rect x="330" y="500" width="290" height="130" fill="white" stroke="black" stroke-width="2"/>
+  <text x="475" y="550" text-anchor="middle" font-size="18" font-weight="bold" fill="black">Mercado de</text>
+  <text x="475" y="580" text-anchor="middle" font-size="18" font-weight="bold" fill="black">Factores de</text>
+  <text x="475" y="610" text-anchor="middle" font-size="18" font-weight="bold" fill="black">Producción</text>
 
-  <!-- Agente: Empresas (Izquierda) -->
-  <ellipse cx="140" cy="375" rx="100" ry="70" fill="#2a2415" stroke="#eab308" stroke-width="2"/>
-  <text x="140" y="382" text-anchor="middle" font-size="19" font-weight="bold" fill="#f8f9fa">Empresas</text>
+  <!-- Empresas -->
+  <ellipse cx="120" cy="360" rx="115" ry="70" fill="#f0ad1f" stroke="#333" stroke-width="1"/>
+  <text x="120" y="368" text-anchor="middle" font-size="19" font-weight="bold" fill="black">Empresas</text>
 
-  <!-- Agente: Familias (Derecha) -->
-  <ellipse cx="860" cy="375" rx="100" ry="70" fill="#2a2415" stroke="#eab308" stroke-width="2"/>
-  <text x="860" y="382" text-anchor="middle" font-size="19" font-weight="bold" fill="#f8f9fa">Familias</text>
+  <!-- Familias -->
+  <ellipse cx="830" cy="360" rx="115" ry="70" fill="#f0ad1f" stroke="#333" stroke-width="1"/>
+  <text x="830" y="368" text-anchor="middle" font-size="19" font-weight="bold" fill="black">Familias</text>
 
+  <!-- Empresas -> Mercado -->
+  <path d="M150,300 L330,150" stroke="#c0392b" stroke-width="4" fill="none" marker-end="url(#arrowRed)"/>
+  <text x="150" y="220" font-size="16" font-weight="bold" fill="white">Bienes y Servicios</text>
+  <text x="150" y="240" font-size="16" font-weight="bold" fill="white">vendidos (Q)</text>
+  <text x="150" y="262" font-size="16" fill="#1a5d1a" font-weight="bold">{bys_vendidos}</text>
 
-  <!-- ================= FLUXO REAL (Rojo/Coral - Interno) ================= -->
+  <!-- Ingresos Empresas -->
+  <path d="M330,110 L90,110 L90,300" stroke="#2c3e50" stroke-width="4" fill="none" marker-end="url(#arrowBlue)"/>
+  <text x="150" y="100" font-size="20" font-weight="bold" fill="white">Ingresos ($)</text>
+  <text x="90" y="200" font-size="16" fill="#1a5d1a" font-weight="bold">{ingresos_empresas}</text>
 
-  <!-- Empresas -> Mercado Bienes (Bienes vendidos) -->
-  <path d="M 215,322 C 240,275 285,215 340,185" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowRed)"/>
-  <text x="240" y="235" font-size="13" font-weight="bold" fill="#ff7675" text-anchor="middle">Bienes y Servicios</text>
-  <text x="240" y="253" font-size="13" font-weight="bold" fill="#ff7675" text-anchor="middle">vendidos (Q)</text>
-  <text x="240" y="278" font-size="15" font-weight="bold" fill="#2ecc71" text-anchor="middle">{bys_vendidos}</text>
+  <!-- Gastos -->
+  <path d="M620,110 L860,110 L860,300" stroke="#2c3e50" stroke-width="4" fill="none" marker-end="url(#arrowBlue)"/>
+  <text x="700" y="100" font-size="20" font-weight="bold" fill="white">Gastos ($)</text>
+  <text x="800" y="200" font-size="16" fill="#1a5d1a" font-weight="bold">{gastos}</text>
 
-  <!-- Mercado Bienes -> Familias (Bienes comprados) -->
-  <path d="M 660,185 C 715,215 760,275 785,322" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowRed)"/>
-  <text x="760" y="235" font-size="13" font-weight="bold" fill="#ff7675" text-anchor="middle">Bienes y servicios</text>
-  <text x="760" y="253" font-size="13" font-weight="bold" fill="#ff7675" text-anchor="middle">comprados (Q)</text>
-  <text x="760" y="278" font-size="15" font-weight="bold" fill="#2ecc71" text-anchor="middle">{bys_comprados}</text>
+  <!-- Mercado -> Familias -->
+  <path d="M620,150 L800,300" stroke="#c0392b" stroke-width="4" fill="none" marker-end="url(#arrowRed)"/>
+  <text x="640" y="220" font-size="16" font-weight="bold" fill="white">Bienes y</text>
+  <text x="640" y="240" font-size="16" font-weight="bold" fill="white">servicios comprados (Q)</text>
+  <text x="640" y="262" font-size="16" fill="#1a5d1a" font-weight="bold">{bys_comprados}</text>
 
-  <!-- Familias -> Mercado Factores (Factores ofrecidos) -->
-  <path d="M 785,428 C 760,475 715,535 660,565" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowRed)"/>
-  <text x="760" y="505" font-size="13" font-weight="bold" fill="#ff7675" text-anchor="middle">Trabajo y factores</text>
-  <text x="760" y="523" font-size="13" font-weight="bold" fill="#ff7675" text-anchor="middle">ofrecidos (F)</text>
-  <text x="760" y="548" font-size="15" font-weight="bold" fill="#2ecc71" text-anchor="middle">{trabajo_tierra_capital}</text>
+  <!-- Factores -> Empresas -->
+  <path d="M330,570 L150,420" stroke="#c0392b" stroke-width="4" fill="none" marker-end="url(#arrowRed)"/>
+  <text x="150" y="475" font-size="16" font-weight="bold" fill="white">Factores de</text>
+  <text x="150" y="495" font-size="16" font-weight="bold" fill="white">producción</text>
+  <text x="150" y="517" font-size="16" fill="#1a5d1a" font-weight="bold">{factores_produccion}</text>
 
-  <!-- Mercado Factores -> Empresas (Factores de producción) -->
-  <path d="M 340,565 C 285,535 240,475 215,428" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowRed)"/>
-  <text x="240" y="505" font-size="13" font-weight="bold" fill="#ff7675" text-anchor="middle">Factores de</text>
-  <text x="240" y="523" font-size="13" font-weight="bold" fill="#ff7675" text-anchor="middle">producción</text>
-  <text x="240" y="548" font-size="15" font-weight="bold" fill="#2ecc71" text-anchor="middle">{factores_produccion}</text>
+  <!-- Empresas -> Mercado Factores -->
+  <path d="M90,420 L90,610 L330,610" stroke="#2c3e50" stroke-width="4" fill="none" marker-end="url(#arrowBlue)"/>
+  <text x="100" y="650" font-size="16" font-weight="bold" fill="white">Salarios y</text>
+  <text x="100" y="670" font-size="16" font-weight="bold" fill="white">beneficios ($)</text>
+  <text x="100" y="500" font-size="16" fill="#1a5d1a" font-weight="bold">{salarios_rentas}</text>
 
+  <!-- Familias -> Mercado Factores -->
+  <path d="M800,420 L620,570" stroke="#c0392b" stroke-width="4" fill="none" marker-end="url(#arrowRed)"/>
+  <text x="640" y="475" font-size="16" font-weight="bold" fill="white">Trabajo y</text>
+  <text x="640" y="495" font-size="16" font-weight="bold" fill="white">factores ofrecidos</text>
+  <text x="640" y="517" font-size="16" fill="#1a5d1a" font-weight="bold">{trabajo_tierra_capital}</text>
 
-  <!-- ================= FLUXO MONETARIO (Azul Cielo - Externo) ================= -->
-
-  <!-- Familias -> Mercado Bienes (Gastos) -->
-  <path d="M 895,305 C 930,180 780,60 580,90" stroke="#3498db" stroke-width="3" fill="none" marker-end="url(#arrowBlue)"/>
-  <text x="810" y="110" font-size="14" font-weight="bold" fill="#74b9ff" text-anchor="middle">Gastos ($)</text>
-  <text x="810" y="135" font-size="15" font-weight="bold" fill="#2ecc71" text-anchor="middle">{gastos}</text>
-
-  <!-- Mercado Bienes -> Empresas (Ingresos) -->
-  <path d="M 420,90 C 220,60 70,180 105,305" stroke="#3498db" stroke-width="3" fill="none" marker-end="url(#arrowBlue)"/>
-  <text x="190" y="110" font-size="14" font-weight="bold" fill="#74b9ff" text-anchor="middle">Ingresos ($)</text>
-  <text x="190" y="135" font-size="15" font-weight="bold" fill="#2ecc71" text-anchor="middle">{ingresos_empresas}</text>
-
-  <!-- Empresas -> Mercado Factores (Salarios/Rentas) -->
-  <path d="M 105,445 C 70,570 220,690 420,660" stroke="#3498db" stroke-width="3" fill="none" marker-end="url(#arrowBlue)"/>
-  <text x="190" y="635" font-size="14" font-weight="bold" fill="#74b9ff" text-anchor="middle">Salarios y</text>
-  <text x="190" y="655" font-size="14" font-weight="bold" fill="#74b9ff" text-anchor="middle">beneficios ($)</text>
-  <text x="190" y="680" font-size="15" font-weight="bold" fill="#2ecc71" text-anchor="middle">{salarios_rentas}</text>
-
-  <!-- Mercado Factores -> Familias (Ingresos Familias) -->
-  <path d="M 580,660 C 780,690 930,570 895,445" stroke="#3498db" stroke-width="3" fill="none" marker-end="url(#arrowBlue)"/>
-  <text x="810" y="635" font-size="14" font-weight="bold" fill="#74b9ff" text-anchor="middle">Ingresos</text>
-  <text x="810" y="655" font-size="14" font-weight="bold" fill="#74b9ff" text-anchor="middle">Familias ($)</text>
-  <text x="810" y="680" font-size="15" font-weight="bold" fill="#2ecc71" text-anchor="middle">{ingresos_familias}</text>
+  <!-- Ingresos Familias -->
+  <path d="M860,420 L860,610 L620,610" stroke="#2c3e50" stroke-width="4" fill="none" marker-end="url(#arrowBlue)"/>
+  <text x="700" y="650" font-size="20" font-weight="bold" fill="white">Ingresos ($)</text>
+  <text x="800" y="500" font-size="16" fill="#1a5d1a" font-weight="bold">{ingresos_familias}</text>
 </svg>
 """
 
@@ -527,7 +517,7 @@ def obtener_delta_doble(actual, capturado, decimales_abs=2, decimales_rel=1):
         return "N/A"
     diff_abs = actual - capturado
     rel_texto = obtener_delta_texto(actual, capturado, decimales=decimales_rel)
-    return f"{diff_abs:+.{decimales_abs}f}\n({rel_texto})"
+    return f"{diff_abs:+.{decimales_abs}f} ({rel_texto})"
 
 
 if st.session_state.auto_avance:
@@ -700,7 +690,7 @@ with st.sidebar:
                 if col in df_cache_visual.columns:
                     df_cache_visual[col] = df_cache_visual[col].map(lambda x: f"{x:.2f}")
 
-            st.dataframe(df_cache_visual, width=True)
+            st.dataframe(df_cache_visual, use_container_width=True)
             if st.button("🗑️ Limpiar Caché", key="btn_limpiar_cache", width="stretch"):
                 st.session_state.valores_guardados = []
                 st.rerun()
@@ -1052,9 +1042,19 @@ def panel():
                     "ingresos_familias": formato_svg_comparativo(val_gasto_empresas, delta_gasto_empresas, " $"),
                 }
 
-                # Renderizar gráfico SVG comparativo
+                # Renderizar gráfico SVG comparativo con aislamiento de marcadores para prevenir conflictos del DOM
                 st.markdown("#### Diagrama Comparativo del Flujo Circular")
                 svg_renderizado_comp = SVG_TEMPLATE.format(**valores_svg_comp)
+                
+                # Reemplazo de identificadores para que las puntas de flecha se dibujen correctamente
+                svg_renderizado_comp = (
+                    svg_renderizado_comp
+                    .replace('id="arrowRed"', 'id="arrowRedComp"')
+                    .replace('id="arrowBlue"', 'id="arrowBlueComp"')
+                    .replace('url(#arrowRed)', 'url(#arrowRedComp)')
+                    .replace('url(#arrowBlue)', 'url(#arrowBlueComp)')
+                )
+                
                 svg_html_comp = f'<div style="text-align: center;">{svg_renderizado_comp}</div>'
                 st.markdown(svg_html_comp, unsafe_allow_html=True)
 
