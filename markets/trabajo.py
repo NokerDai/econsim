@@ -94,8 +94,9 @@ def mercado_laboral(estado):
         tasa_empleo = num_empleados_formales / estado.config.num_trabajadores
         tasa_límite = estado.config.salario_mínimo_automático_formalidad_límite
         reducción = estado.config.salario_mínimo_automático_reducción
+        aumento = estado.config.salario_mínimo_automático_aumento
         if tasa_empleo > tasa_límite:
-            estado.config.salario_mínimo = (salario_formal_máximo * estado.config.tasa_salario_mínimo)
+            estado.config.salario_mínimo = min(estado.config.salario_mínimo * aumento, salario_formal_máximo * estado.config.tasa_salario_mínimo)
         elif tasa_empleo < tasa_límite:
             estado.config.salario_mínimo *= reducción
 
