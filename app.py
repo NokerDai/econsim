@@ -17,8 +17,6 @@ from ui import (
     callbacks as cb
 )
 
-from versiones import VERSIONES_DISPONIBLES
-
 st.set_page_config(
     page_icon="📈",
     page_title="econsim",
@@ -248,18 +246,24 @@ def panel():
             st.info("Inicie la simulación en la pestaña Configuración.")
 
     with tab_config:
+        st.subheader("Control de ejecución")
+        
+        from versiones import VERSIONES_DISPONIBLES
+        
         versión_seleccionada = st.selectbox(
             "Versión del Modelo Económico",
             options=VERSIONES_DISPONIBLES,
             index=VERSIONES_DISPONIBLES.index(sim.config.version_modelo) if sim.config.version_modelo in VERSIONES_DISPONIBLES else 0
         )
 
+        # Si el usuario cambia la selección, actualizamos la configuración y reiniciamos
         if versión_seleccionada != sim.config.version_modelo:
             sim.config.version_modelo = versión_seleccionada
             st.session_state.clear()
             st.rerun()
 
-        st.subheader("Control de ejecución")
+        st.divider()
+
         col_btn1, col_btn2 = st.columns(2)
         with col_btn1:
             if st.session_state.auto_avance:
