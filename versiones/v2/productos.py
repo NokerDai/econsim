@@ -14,10 +14,13 @@ def mercado_productos(estado):
     estado.aleatorio.shuffle(productos_disponibles)
     productos_disponibles = deque(productos_disponibles)
 
+    sp = estado.config.sensibilidad_precio
+    sc = estado.config.sensibilidad_calidad
+
     for trabajador in estado.trabajadores:
         if productos_disponibles:
             opciones_trabajador = list(productos_disponibles)[:10]
-            opciones_trabajador.sort(key=lambda e: e.precio * trabajador.sensibilidad_precio + e.calidad * trabajador.sensibilidad_calidad)
+            opciones_trabajador.sort(key=lambda e: e.precio * trabajador.sensibilidad_precio * sp + e.calidad * trabajador.sensibilidad_calidad * sc)
             seleccionado = opciones_trabajador[0]
 
             if trabajador.presupuesto >= seleccionado.precio:
