@@ -534,7 +534,7 @@ def obtener_delta_doble(actual, capturado, decimales_abs=2, decimales_rel=1):
         return "N/A"
     diff_abs = actual - capturado
     rel_texto = obtener_delta_texto(actual, capturado, decimales=decimales_rel)
-    return f"{diff_abs:+.{decimales_abs}f}\n\n({rel_texto})"
+    return f"{diff_abs:+.{decimales_abs}f}\n({rel_texto})"
 
 
 if st.session_state.auto_avance:
