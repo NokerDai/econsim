@@ -749,7 +749,6 @@ with st.sidebar:
                 max_value=2.0,
                 step=0.01,
                 key="tasa_slider",
-                value=st.session_state.tasa_slider,
                 on_change=sincronizar_tasa,
             )
         with col_btn_tasa:
