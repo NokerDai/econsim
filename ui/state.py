@@ -18,7 +18,7 @@ def inicializar_estado_ui(sim):
                 "Salario", "Salario informal", "Precio Lista", "Precio Transacción",
                 "Poder Compra Formal", "Poder Compra Informal", "Empleo formal",
                 "Empleo informal", "Desempleo", "Bienes Vendidos", "Empresas Ingreso",
-                "Empresas Gasto"
+                "Empresas Gasto", "Calidad Media Transacción", "Satisfacción Media"
             ]
         ).astype(float)
         st.session_state.historial.index.name = "Día"

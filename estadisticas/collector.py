@@ -7,6 +7,8 @@ def actualizar_estadisticas(estado):
     total_ventas = sum(e.ventas_hoy for e in estado.empresas)
 
     calidad_media_transacción = sum(e.calidad for e in estado.empresas) / total_ventas if total_ventas > 0 else 0.0
+
+    satisfacción_media = sum(e.satisfacción for e in estado.empresas) / total_empresas if total_empresas > 0 else 0.0
     
     total_ingreso_empresas = sum(
         getattr(e, "precio_venta_real", e.precio) * e.ventas_hoy 
@@ -54,5 +56,6 @@ def actualizar_estadisticas(estado):
 
     estado.estadisticas.bienes_vendidos.append(float(total_ventas))
     estado.estadisticas.calidad_media.append(float(calidad_media_transacción))
+    estado.estadisticas.satisfacción_media.append(float(satisfacción_media))
     estado.estadisticas.empresas_ingreso.append(float(total_ingreso_empresas))
     estado.estadisticas.empresas_gasto.append(float(total_gasto_empresas))

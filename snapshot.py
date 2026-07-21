@@ -31,6 +31,8 @@ class Snapshot:
 
     calidad_media: float
 
+    satisfacción_media: float
+
     empresas_ingreso: float
 
     empresas_gasto: float

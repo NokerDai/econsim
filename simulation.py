@@ -70,6 +70,7 @@ class Simulación:
                 informalidad_por_empresa=self.config.informalidad_por_empresa,
                 bienes_vendidos=estadísticas.bienes_vendidos[-1] if estadísticas.bienes_vendidos else 0.0,
                 calidad_media=estadísticas.calidad_media[-1] if estadísticas.calidad_media else 0.0,
+                satisfacción_media=estadísticas.satisfacción_media[-1] if estadísticas.satisfacción_media else 0.0,
                 empresas_ingreso=estadísticas.empresas_ingreso[-1] if estadísticas.empresas_ingreso else 0.0,
                 empresas_gasto=estadísticas.empresas_gasto[-1] if estadísticas.empresas_gasto else 0.0,
             )

@@ -23,6 +23,8 @@ class Estadisticas:
 
     calidad_media: list = field(default_factory=list)
 
+    satisfacción_media: list = field(default_factory=list)
+
     empresas_ingreso: list = field(default_factory=list)
 
     empresas_gasto: list = field(default_factory=list)

@@ -95,6 +95,7 @@ def registrar_snapshots(snapshots):
                 "Desempleo": float(snap.desempleo),
                 "Bienes Vendidos": float(snap.bienes_vendidos),
                 "Calidad Media Transacción": float(snap.calidad_media),
+                "Satisfacción Media": float(snap.satisfacción_media),
                 "Empresas Ingreso": float(snap.empresas_ingreso),
                 "Empresas Gasto": float(snap.empresas_gasto),
             })
@@ -188,6 +189,7 @@ def panel():
         val_poder_i = historial_reciente["Poder Compra Informal"].mean()
         val_bienes = historial_reciente["Bienes Vendidos"].mean()
         val_calidad = historial_reciente["Calidad Media Transacción"].mean()
+        val_satisfaccion = historial_reciente["Satisfacción Media"].mean()
         val_ingresos_empresas = historial_reciente["Empresas Ingreso"].mean()
         val_gasto_empresas = historial_reciente["Empresas Gasto"].mean()
 
@@ -196,6 +198,7 @@ def panel():
 
         if captura is not None:
             fila1[4].metric("Calidad media", f"{val_calidad:.2f}", obtener_delta_doble(val_calidad, captura["Calidad Media Transacción"]))
+            fila1[3].metric("Satisfacción media", f"{val_satisfaccion:.2f}", obtener_delta_doble(val_satisfaccion, captura["Satisfacción Media"]))
 
             fila2[0].metric("Salario mínimo", f"{sim.config.salario_mínimo:.2f}", obtener_delta_doble(sim.config.salario_mínimo, captura["Salario Mínimo"]))
             fila2[1].metric("Salario medio", f"{val_salario:.2f}", obtener_delta_doble(val_salario, captura["Salario Medio"]))
@@ -210,6 +213,7 @@ def panel():
             fila3[4].metric("Desempleo", f"{val_desempleo:.4f}", f"{(val_desempleo - captura['Desempleo']):+.4f}")
         else:
             fila1[4].metric("Calidad media", f"{val_calidad:.2f}")
+            fila1[3].metric("Satisfacción media", f"{val_satisfaccion:.2f}")
             
             fila2[0].metric("Salario mínimo", f"{sim.config.salario_mínimo:.2f}")
             fila2[1].metric("Salario medio", f"{val_salario:.2f}")
@@ -314,6 +318,7 @@ def panel():
                 "Desempleo": float(hr["Desempleo"].mean()),
                 "Bienes Vendidos": float(hr["Bienes Vendidos"].mean()),
                 "Calidad Media Transacción": float(hr["Calidad Media Transacción"].mean()),
+                "Satisfacción Media": float(hr["Satisfacción Media"].mean()),
                 "Flujo Empresas (Ing)": float(hr["Empresas Ingreso"].mean()),
                 "Flujo Empresas (Gast)": float(hr["Empresas Gasto"].mean()),
                 "Trabajadores Form.": int(num_formales_c),
