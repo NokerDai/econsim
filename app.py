@@ -464,11 +464,7 @@ def graficar_line_chart(df, columnas, titulo=""):
         min_val = df_reset[columnas_validas].min().min()
         max_val = df_reset[columnas_validas].max().max()
 
-    if pd.notna(min_val) and pd.notna(max_val) and abs(max_val - min_val) < 1e-4:
-        margen = max(1.0, abs(min_val) * 0.1)
-        y_scale = alt.Scale(domain=[min_val - margen, max_val + margen], zero=False)
-    else:
-        y_scale = alt.Scale(zero=False)
+    y_scale = alt.Scale(zero=False)
 
     if len(columnas_validas) == 1:
         col = columnas_validas[0]
