@@ -14,5 +14,7 @@ class Trabajador:
         valores iniciales correspondientes de forma encapsulada.
         """
         return cls(
+            sensibilidad_precio=round(aleatorio.uniform(0.0, 2.0), 2),
+            sensibilidad_calidad=round(aleatorio.uniform(0.0, 2.0), 2),
             presupuesto=0.0
         )

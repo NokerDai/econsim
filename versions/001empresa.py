@@ -38,6 +38,7 @@ class Empresa:
         return cls(
             presupuesto=config.presupuesto_inicial,
             precio=config.precio_inicial,
+            calidad=round(aleatorio.uniform(0.8, 1.2), 2),
             salario=config.salario_inicial,
             salario_informal=config.salario_informal_inicial
         )
