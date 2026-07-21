@@ -228,6 +228,7 @@ class Simulación:
         with self.lock:
 
             self.config.velocidad = valor
+            self.config.velocidad_streamlit = valor
 
 
     def obtener_parametros(self):

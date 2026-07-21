@@ -149,7 +149,7 @@ sim = st.session_state.simulación
 if "velocidad" not in st.session_state:
     st.session_state.velocidad = max(
         1,
-        int(getattr(sim.config, "velocidad", 1))
+        int(getattr(sim.config, "velocidad_streamlit", 1))
     )
 
 if "_velocidad_ui" not in st.session_state:
@@ -208,13 +208,13 @@ if "tasa_slider" not in st.session_state:
     sim.config.tasa_salario_mínimo = 0.3
 
 if "velocidad_slider" not in st.session_state:
-    st.session_state.velocidad_slider = max(1, int(getattr(sim.config, "velocidad", 1)))
+    st.session_state.velocidad_slider = max(1, int(getattr(sim.config, "velocidad_streamlit", 1)))
 
 if "velocidad_input" not in st.session_state:
-    st.session_state.velocidad_input = max(1, int(getattr(sim.config, "velocidad", 1)))
+    st.session_state.velocidad_input = max(1, int(getattr(sim.config, "velocidad_streamlit", 1)))
 
 if "velocidad" not in st.session_state:
-    st.session_state.velocidad = max(1, int(getattr(sim.config, "velocidad", 1)))
+    st.session_state.velocidad = max(1, int(getattr(sim.config, "velocidad_streamlit", 1)))
 
 if "tasa_emisión_slider" not in st.session_state:
     st.session_state.tasa_emisión_slider = float(sim.config.tasa_emisión)
@@ -464,7 +464,11 @@ def graficar_line_chart(df, columnas, titulo=""):
         min_val = df_reset[columnas_validas].min().min()
         max_val = df_reset[columnas_validas].max().max()
 
-    y_scale = alt.Scale(zero=False)
+    if pd.notna(min_val) and pd.notna(max_val) and abs(max_val - min_val) < 1e-4:
+        margen = max(1.0, abs(min_val) * 0.1)
+        y_scale = alt.Scale(domain=[min_val - margen, max_val + margen], zero=False)
+    else:
+        y_scale = alt.Scale(zero=False)
 
     if len(columnas_validas) == 1:
         col = columnas_validas[0]
