@@ -1,7 +1,7 @@
 from typing import Any, Mapping
 
 
-def esta_activa(dia_marcado: int, dia_actual: int, ventana_dias: int = 365) -> bool:
+def esta_activa(dia_marcado: int, dia_actual: int, ventana_dias: int = 1000) -> bool:
     if dia_marcado is None:
         return False
 
