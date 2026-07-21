@@ -15,14 +15,12 @@ class Simulación:
         self.callbacks = []
         self.lock = threading.Lock()
 
-        # NUEVO: Carga la versión elegida dinámicamente (por ej. "versiones.v1")
         try:
             ruta_version = f"versiones.{config.version_modelo}"
             self.modulo_version = importlib.import_module(ruta_version)
         except ModuleNotFoundError as e:
             raise ValueError(f"La versión del modelo '{config.version_modelo}' no fue encontrada.") from e
 
-        # NUEVO: Se crea el Estado pasándole las clases específicas de la versión importada
         self.estado = state.Estado(
             config, 
             self.modulo_version.Empresa, 
@@ -51,7 +49,6 @@ class Simulación:
 
         return True
 
-    # ... (El resto de tus métodos de Simulación permanecen idénticos)
     def agregar_callback(self, callback):
         self.callbacks.append(callback)
 
@@ -72,6 +69,7 @@ class Simulación:
                 salario_mínimo_automático=self.config.salario_mínimo_automático,
                 informalidad_por_empresa=self.config.informalidad_por_empresa,
                 bienes_vendidos=estadísticas.bienes_vendidos[-1] if estadísticas.bienes_vendidos else 0.0,
+                calidad_media=estadísticas.calidad_media[-1] if estadísticas.calidad_media else 0.0,
                 empresas_ingreso=estadísticas.empresas_ingreso[-1] if estadísticas.empresas_ingreso else 0.0,
                 empresas_gasto=estadísticas.empresas_gasto[-1] if estadísticas.empresas_gasto else 0.0,
             )

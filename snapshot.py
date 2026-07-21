@@ -29,6 +29,8 @@ class Snapshot:
 
     bienes_vendidos: float
 
+    calidad_media: float
+
     empresas_ingreso: float
 
     empresas_gasto: float
