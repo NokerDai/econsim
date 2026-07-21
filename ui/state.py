@@ -50,6 +50,10 @@ def inicializar_estado_ui(sim):
     if "tasa_slider" not in st.session_state:
         st.session_state.tasa_slider = 0.3
         sim.config.tasa_salario_mínimo = 0.3
+    
+    if "formalidad_límite_slider" not in st.session_state:
+        st.session_state.formalidad_límite_slider = 0.0
+        sim.config.formalidad_límite_slider = 0.0
 
     if "velocidad_slider" not in st.session_state:
         st.session_state.velocidad_slider = max(1, int(getattr(sim.config, "velocidad_streamlit", 1)))
