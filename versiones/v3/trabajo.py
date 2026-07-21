@@ -73,7 +73,7 @@ def mercado_laboral(estado):
                 # Control dinámico del presupuesto: la empresa debe poder costearlo en este momento
                 if emp.presupuesto >= salario_propuesto:
                     # Atributos evaluados de la vacante
-                    valor_seguridad = 10.0 if es_formal else 0.0          # Premio por formalidad
+                    valor_seguridad = 100.0 if es_formal else 0.0          # Premio por formalidad
                     valor_estabilidad = emp.productividad                 # Atractivo estructural de la empresa
                     
                     score = (salario_propuesto * peso_salario) + \
