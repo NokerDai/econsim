@@ -558,7 +558,7 @@ def controles_velocidad():
         st.slider(
             "Velocidad (días por paso)",
             min_value=1,
-            max_value=1000,
+            max_value=365,
             key="velocidad_slider",
             on_change=sincronizar_velocidad_slider,
         )
@@ -566,7 +566,7 @@ def controles_velocidad():
         st.number_input(
             "Valor exacto",
             min_value=1,
-            max_value=1000,
+            max_value=365,
             step=1,
             key="velocidad_input",
             on_change=sincronizar_velocidad_input,
@@ -638,7 +638,7 @@ def panel():
     # PESTAÑA 1: Gráficos de evolución temporal
     with tab_graficos:
         if hay_datos:
-            historial_graficos = st.session_state.historial.tail(365)
+            historial_graficos = st.session_state.historial.tail(1000)
 
             st.subheader("1. Evolución de Salarios")
             graficar_line_chart(historial_graficos, ["Salario", "Salario informal"])
@@ -656,7 +656,7 @@ def panel():
             marcadores_activos = obtener_marcadores_activos()
             if marcadores_activos:
                 st.write("---")
-                with st.expander("📍 Ajustes de Parámetros Activos (Últimos 365 días)", expanded=True):
+                with st.expander("📍 Ajustes de Parámetros Activos", expanded=True):
                     for marcador in marcadores_activos:
                         st.markdown(f"**Día {marcador['día']}:** {marcador['label']}")
         else:
