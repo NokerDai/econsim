@@ -5,7 +5,7 @@ from dataclasses import dataclass
 class Config:
 
     # Simulación
-    semilla: int = 1
+    semilla: int = 0
     velocidad: float = 0
     frecuencia_actualización: int = 100
     velocidad_streamlit: int = 1
