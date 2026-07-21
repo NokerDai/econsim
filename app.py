@@ -327,7 +327,7 @@ def panel():
             col_formalidad, col_btn_formalidad = st.columns([5, 1])
             with col_formalidad:
                 st.slider(
-                    "Formalidad límite", min_value=0.0, max_value=2.0, step=0.01,
+                    "Formalidad límite", min_value=0.0, max_value=1.0, step=0.01,
                     key="formalidad_límite_slider", on_change=lambda: cb.sincronizar_formalidad_límite(sim)
                 )
             with col_btn_formalidad:
@@ -398,11 +398,11 @@ def panel():
         col_em, col_btn_em = st.columns([5, 1])
         with col_em:
             st.slider(
-                "Tasa emisión", min_value=-1.0, max_value=1.0, step=0.001,
+                "Tasa emisión", min_value=-1.000, max_value=1.000, step=0.001,
                 key="tasa_emisión_slider", on_change=lambda: cb.sincronizar_tasa_emisión_slider(sim)
             )
             st.number_input(
-                "Valor exacto", min_value=-1.0, max_value=1.0, step=0.001,
+                "Valor exacto", min_value=-1.000, max_value=1.000, step=0.001,
                 key="tasa_emisión_input", on_change=lambda: cb.sincronizar_tasa_emisión_input(sim)
             )
         with col_btn_em:
