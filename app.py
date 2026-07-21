@@ -391,8 +391,8 @@ def registrar_snapshots(snapshots):
         df_nuevos = pd.DataFrame(nuevos_datos).set_index("Día").astype(float)
         st.session_state.historial = pd.concat([st.session_state.historial, df_nuevos])
         
-        if len(st.session_state.historial) > 400:
-            st.session_state.historial = st.session_state.historial.tail(400)
+        if len(st.session_state.historial) > 1000:
+            st.session_state.historial = st.session_state.historial.tail(1000)
 
 
 def marcar_valor(nombre, valor, día=None):
@@ -558,7 +558,7 @@ def controles_velocidad():
         st.slider(
             "Velocidad (días por paso)",
             min_value=1,
-            max_value=365,
+            max_value=1000,
             key="velocidad_slider",
             on_change=sincronizar_velocidad_slider,
         )
@@ -566,7 +566,7 @@ def controles_velocidad():
         st.number_input(
             "Valor exacto",
             min_value=1,
-            max_value=365,
+            max_value=1000,
             step=1,
             key="velocidad_input",
             on_change=sincronizar_velocidad_input,
