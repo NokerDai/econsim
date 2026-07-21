@@ -6,6 +6,7 @@ class Empresa:
     presupuesto: float
     precio: float
     calidad: float
+    satisfacción: float
     salario: float
     salario_informal: float
 
@@ -39,6 +40,7 @@ class Empresa:
             presupuesto=config.presupuesto_inicial,
             precio=config.precio_inicial,
             calidad=round(aleatorio.uniform(0.5, 1.5), 2),
+            satisfacción=round(aleatorio.uniform(0.5, 1.5), 2),
             salario=config.salario_inicial,
             salario_informal=config.salario_informal_inicial
         )
