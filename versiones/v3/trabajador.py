@@ -20,7 +20,7 @@ class Trabajador:
             sensibilidad_precio=round(aleatorio.uniform(0.0, 2.0), 2),
             sensibilidad_calidad=round(aleatorio.uniform(0.0, 2.0), 2),
             sensibilidad_estabilidad=round(aleatorio.uniform(0.0, 2.0), 2),
-            sensibilidad_seguridad=round(aleatorio.uniform(0.0, 2.0), 2),
+            sensibilidad_seguridad=round(aleatorio.uniform(2.0, 3.0), 2),
             sensibilidad_salario=round(aleatorio.uniform(0.0, 2.0), 2),
             presupuesto=0.0
         )
