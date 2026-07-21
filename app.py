@@ -594,8 +594,7 @@ def panel():
     captura = st.session_state.get("captura_activa")
 
     if hay_datos:
-        n_dias = max(1, int(st.session_state.velocidad))
-        historial_reciente = st.session_state.historial.tail(n_dias)
+        historial_reciente = st.session_state.historial.tail(1)
 
         val_salario = historial_reciente["Salario"].mean()
         val_salario_inf = historial_reciente["Salario informal"].mean()
