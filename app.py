@@ -564,7 +564,7 @@ def controles_velocidad():
         st.slider(
             "Velocidad (días por paso)",
             min_value=1,
-            max_value=365,
+            max_value=1000,
             key="velocidad_slider",
             on_change=sincronizar_velocidad_slider,
         )
@@ -572,7 +572,7 @@ def controles_velocidad():
         st.number_input(
             "Valor exacto",
             min_value=1,
-            max_value=365,
+            max_value=1000,
             step=1,
             key="velocidad_input",
             on_change=sincronizar_velocidad_input,
@@ -864,10 +864,8 @@ def panel():
 
         # SELECTOR DE COMPARACIÓN EN CONFIGURACIÓN (Visible solo si hay capturas en caché)
         if st.session_state.valores_guardados:
-            st.write("---")
-            st.subheader("⚖️ Comparación de Escenarios")
-            opciones_comp = ["Ninguna (Estándar)"] + [
-                f"Día {cap['Día']} - (Registrado a las {cap['Hora']})" 
+            opciones_comp = ["Ninguna"] + [
+                f"Día {cap['Día']}" 
                 for cap in st.session_state.valores_guardados
             ]
             
