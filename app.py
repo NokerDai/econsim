@@ -184,6 +184,12 @@ if "historial" not in st.session_state:
 if "valores_guardados" not in st.session_state:
     st.session_state.valores_guardados = []
 
+if "indice_comparacion" not in st.session_state:
+    st.session_state.indice_comparacion = 0
+
+if "captura_activa" not in st.session_state:
+    st.session_state.captura_activa = None
+
 # Estado de controles
 if "salario_mínimo_automático" not in st.session_state:
     st.session_state.salario_mínimo_automático = sim.config.salario_mínimo_automático
@@ -584,6 +590,9 @@ def panel():
     fila2 = st.columns(5)
     fila3 = st.columns(5)
 
+    # Detectar si hay una comparación activa configurada
+    captura = st.session_state.get("captura_activa")
+
     if hay_datos:
         n_dias = max(1, int(st.session_state.velocidad))
         historial_reciente = st.session_state.historial.tail(n_dias)
@@ -601,26 +610,55 @@ def panel():
         val_ingresos_empresas = historial_reciente["Empresas Ingreso"].mean()
         val_gasto_empresas = historial_reciente["Empresas Gasto"].mean()
 
-        fila1[0].metric("Día", sim.estado.día)
+        # Fila 1: Mostrar Día actual (y su delta si estamos comparando)
+        delta_dia = f"{sim.estado.día - captura['Día']:+d} d." if (captura is not None and sim.estado.día != captura['Día']) else None
+        fila1[0].metric("Día", sim.estado.día, delta=delta_dia)
 
-        fila2[0].metric("Salario mínimo", f"{sim.config.salario_mínimo:.2f}")
-        fila2[1].metric("Salario medio", f"{val_salario:.2f}")
-        fila2[2].metric("Salario informal med.", f"{val_salario_inf:.2f}")
-        fila2[3].metric("Precio lista med.", f"{val_precio_lista:.2f}")
-        fila2[4].metric("Precio transac. med.", f"{val_precio:.2f}")
+        if captura is not None:
+            # RENDERIZAR TARJETAS EN MODO COMPARACIÓN (con variaciones)
+            delta_sal_min = obtener_delta_doble(sim.config.salario_mínimo, captura["Salario Mínimo"])
+            delta_sal_med = obtener_delta_doble(val_salario, captura["Salario Medio"])
+            delta_sal_inf = obtener_delta_doble(val_salario_inf, captura["Salario Informal"])
+            delta_prec_list = obtener_delta_doble(val_precio_lista, captura["Precio Lista"])
+            delta_prec_trans = obtener_delta_doble(val_precio, captura["Precio Transac."])
+            
+            delta_poder_f_abs = f"{(val_poder_f - captura['Poder Compra Form.']):+.4f}"
+            delta_poder_i_abs = f"{(val_poder_i - captura['Poder Compra Inf.']):+.4f}"
+            delta_emp_formal_abs = f"{(val_emp_formal - captura['Emp. Formal']):+.4f}"
+            delta_emp_informal_abs = f"{(val_emp_informal - captura['Emp. Informal']):+.4f}"
+            delta_desempleo_abs = f"{(val_desempleo - captura['Desempleo']):+.4f}"
 
-        # Se muestran en formato de tasa decimal (:.4f) en lugar de porcentaje
-        fila3[0].metric("Poder compra formal", f"{val_poder_f:.4f}")
-        fila3[1].metric("Poder compra informal", f"{val_poder_i:.4f}")
-        fila3[2].metric("Empleo formal", f"{val_emp_formal:.4f}")
-        fila3[3].metric("Empleo informal", f"{val_emp_informal:.4f}")
-        fila3[4].metric("Desempleo", f"{val_desempleo:.4f}")
+            fila2[0].metric("Salario mínimo", f"{sim.config.salario_mínimo:.2f}", delta_sal_min)
+            fila2[1].metric("Salario medio", f"{val_salario:.2f}", delta_sal_med)
+            fila2[2].metric("Salario informal med.", f"{val_salario_inf:.2f}", delta_sal_inf)
+            fila2[3].metric("Precio lista med.", f"{val_precio_lista:.2f}", delta_prec_list)
+            fila2[4].metric("Precio transac. med.", f"{val_precio:.2f}", delta_prec_trans)
+
+            fila3[0].metric("Poder compra formal", f"{val_poder_f:.4f}", delta_poder_f_abs)
+            fila3[1].metric("Poder compra informal", f"{val_poder_i:.4f}", delta_poder_i_abs)
+            fila3[2].metric("Empleo formal", f"{val_emp_formal:.4f}", delta_emp_formal_abs)
+            fila3[3].metric("Empleo informal", f"{val_emp_informal:.4f}", delta_emp_informal_abs)
+            fila3[4].metric("Desempleo", f"{val_desempleo:.4f}", delta_desempleo_abs)
+        else:
+            # RENDERIZAR TARJETAS EN MODO ESTÁNDAR (sin variaciones)
+            fila2[0].metric("Salario mínimo", f"{sim.config.salario_mínimo:.2f}")
+            fila2[1].metric("Salario medio", f"{val_salario:.2f}")
+            fila2[2].metric("Salario informal med.", f"{val_salario_inf:.2f}")
+            fila2[3].metric("Precio lista med.", f"{val_precio_lista:.2f}")
+            fila2[4].metric("Precio transac. med.", f"{val_precio:.2f}")
+
+            # Se muestran en formato de tasa decimal (:.4f) en lugar de porcentaje
+            fila3[0].metric("Poder compra formal", f"{val_poder_f:.4f}")
+            fila3[1].metric("Poder compra informal", f"{val_poder_i:.4f}")
+            fila3[2].metric("Empleo formal", f"{val_emp_formal:.4f}")
+            fila3[3].metric("Empleo informal", f"{val_emp_informal:.4f}")
+            fila3[4].metric("Desempleo", f"{val_desempleo:.4f}")
     else:
         fila1[0].metric("Día", "—")
         fila2[0].metric("Salario mínimo", "—")
 
-    tab_graficos, tab_flujo, tab_comparacion, tab_config = st.tabs(
-        ["📈 Gráficos de Evolución", "🔄 Flujo Circular de la Economía", "⚖️ Comparación con Captura", "⚙️ Configuración"],
+    tab_graficos, tab_flujo, tab_config = st.tabs(
+        ["📈 Gráficos de Evolución", "🔄 Flujo Circular de la Economía", "⚙️ Configuración"],
         key="pestana_activa",
         on_change="rerun"
     )
@@ -665,97 +703,20 @@ def panel():
     # PESTAÑA 2: Diagrama de flujo circular dinámico
     with tab_flujo:
         if hay_datos:
-            st.markdown("### Flujos de Mercado de Bienes y Factores de Producción")
-            
             total_trabajadores = sim.config.num_trabajadores
             num_formales = val_emp_formal * total_trabajadores
             num_informales = val_emp_informal * total_trabajadores
 
-            valores_svg = {
-                "bys_vendidos": f"{val_bienes:.1f} u.",
-                "bys_comprados": f"{val_bienes:.1f} u.",
-                "ingresos_empresas": f"$ {val_ingresos_empresas:,.2f}",
-                "gastos": f"$ {val_ingresos_empresas:,.2f}",
-                "factores_produccion": f"F: {num_formales:.0f} | I: {num_informales:.0f}",
-                "trabajo_tierra_capital": f"F: {num_formales:.0f} | I: {num_informales:.0f}",
-                "salarios_rentas": f"$ {val_gasto_empresas:,.2f}",
-                "ingresos_familias": f"$ {val_gasto_empresas:,.2f}",
-            }
+            if captura is not None:
+                # FLUJO EN MODO COMPARACIÓN (Variación activa)
+                st.markdown(f"### Flujos de Mercado (Comparando con Día {captura['Día']})")
 
-            svg_renderizado = SVG_TEMPLATE.format(**valores_svg)
-            svg_html = f'<div style="text-align: center;">{svg_renderizado}</div>'
-            st.markdown(svg_html, unsafe_allow_html=True)
-        else:
-            st.info("Todavía no hay datos. Dirígete a la pestaña ⚙️ Configuración para iniciar la simulación.")
-
-    # PESTAÑA 3: Comparación con Captura
-    with tab_comparacion:
-        if hay_datos:
-            st.subheader("Análisis de Variación con Captura de Caché")
-            if not st.session_state.valores_guardados:
-                st.info(
-                    "No se encontraron capturas guardadas en caché. "
-                    "Por favor, use el botón '💾 Guardar en Caché' en la pestaña ⚙️ Configuración "
-                    "en el escenario o día que desee registrar primero."
-                )
-            else:
-                # Construir las opciones del selector
-                opciones = [
-                    f"Día {cap['Día']} - (Registrado a las {cap['Hora']})" 
-                    for cap in st.session_state.valores_guardados
-                ]
-                seleccion = st.selectbox(
-                    "Seleccione la captura de referencia para comparar:", 
-                    opciones
-                )
-                
-                idx_seleccionado = opciones.index(seleccion)
-                captura = st.session_state.valores_guardados[idx_seleccionado]
-                
-                # Fila 1: Mostrar variaciones de salarios y precios tanto en formato absoluto como relativo
-                delta_sal_min = obtener_delta_doble(sim.config.salario_mínimo, captura["Salario Mínimo"])
-                delta_sal_med = obtener_delta_doble(val_salario, captura["Salario Medio"])
-                delta_sal_inf = obtener_delta_doble(val_salario_inf, captura["Salario Informal"])
-                delta_prec_list = obtener_delta_doble(val_precio_lista, captura["Precio Lista"])
-                delta_prec_trans = obtener_delta_doble(val_precio, captura["Precio Transac."])
-                
-                # Fila 2: Variaciones estrictamente absolutas en escala decimal
-                delta_poder_f_abs = f"{(val_poder_f - captura['Poder Compra Form.']):+.4f}"
-                delta_poder_i_abs = f"{(val_poder_i - captura['Poder Compra Inf.']):+.4f}"
-                delta_emp_formal_abs = f"{(val_emp_formal - captura['Emp. Formal']):+.4f}"
-                delta_emp_informal_abs = f"{(val_emp_informal - captura['Emp. Informal']):+.4f}"
-                delta_desempleo_abs = f"{(val_desempleo - captura['Desempleo']):+.4f}"
-                
-                # Variaciones generales
                 delta_bienes = obtener_delta_texto(val_bienes, captura["Bienes Vendidos"])
                 delta_ingresos_empresas = obtener_delta_texto(val_ingresos_empresas, captura["Flujo Empresas (Ing)"])
                 delta_gasto_empresas = obtener_delta_texto(val_gasto_empresas, captura["Flujo Empresas (Gast)"])
-
-                total_trabajadores = sim.config.num_trabajadores
-                num_formales = val_emp_formal * total_trabajadores
-                num_informales = val_emp_informal * total_trabajadores
                 delta_num_formales = obtener_delta_texto(num_formales, captura["Trabajadores Form."])
                 delta_num_informales = obtener_delta_texto(num_informales, captura["Trabajadores Inf."])
 
-                # Renderizar las tarjetas de comparación (los deltas de la Fila 1 tendrán dos líneas gracias al CSS)
-                st.markdown("#### Métricas actuales y variación respecto a la captura")
-                col_c1, col_c2, col_c3, col_c4, col_c5 = st.columns(5)
-                col_c1.metric("Salario Mínimo", f"{sim.config.salario_mínimo:.2f}", delta_sal_min)
-                col_c2.metric("Salario Medio", f"{val_salario:.2f}", delta_sal_med)
-                col_c3.metric("Salario Informal Med.", f"{val_salario_inf:.2f}", delta_sal_inf)
-                col_c4.metric("Precio Lista Med.", f"{val_precio_lista:.2f}", delta_prec_list)
-                col_c5.metric("Precio Transac. Med.", f"{val_precio:.2f}", delta_prec_trans)
-
-                col_c2_1, col_c2_2, col_c2_3, col_c2_4, col_c2_5 = st.columns(5)
-                col_c2_1.metric("Poder Compra Formal", f"{val_poder_f:.4f}", delta_poder_f_abs)
-                col_c2_2.metric("Poder Compra Informal", f"{val_poder_i:.4f}", delta_poder_i_abs)
-                col_c2_3.metric("Empleo Formal", f"{val_emp_formal:.4f}", delta_emp_formal_abs)
-                col_c2_4.metric("Empleo Informal", f"{val_emp_informal:.4f}", delta_emp_informal_abs)
-                col_c2_5.metric("Desempleo", f"{val_desempleo:.4f}", delta_desempleo_abs)
-
-                st.write("---")
-
-                # Formateador de textos para inyectar los deltas formateados en el SVG
                 def formato_svg_comparativo(valor_actual, delta_texto, unidad=""):
                     return f"{valor_actual:.1f}{unidad} ({delta_texto})"
 
@@ -776,25 +737,38 @@ def panel():
                     "ingresos_familias": formato_svg_comparativo(val_gasto_empresas, delta_gasto_empresas, " $"),
                 }
 
-                # Renderizar gráfico SVG comparativo con aislamiento de marcadores para prevenir conflictos del DOM
-                st.markdown("#### Diagrama Comparativo del Flujo Circular")
-                svg_renderizado_comp = SVG_TEMPLATE.format(**valores_svg_comp)
+                svg_renderizado = SVG_TEMPLATE.format(**valores_svg_comp)
                 
-                # Reemplazo de identificadores para que las puntas de flecha se dibujen correctamente
-                svg_renderizado_comp = (
-                    svg_renderizado_comp
+                # Reemplazo de identificadores para asegurar el dibujo de las flechas
+                svg_renderizado = (
+                    svg_renderizado
                     .replace('id="arrowRed"', 'id="arrowRedComp"')
                     .replace('id="arrowBlue"', 'id="arrowBlueComp"')
                     .replace('url(#arrowRed)', 'url(#arrowRedComp)')
                     .replace('url(#arrowBlue)', 'url(#arrowBlueComp)')
                 )
-                
-                svg_html_comp = f'<div style="text-align: center;">{svg_renderizado_comp}</div>'
-                st.markdown(svg_html_comp, unsafe_allow_html=True)
+            else:
+                # FLUJO EN MODO ESTÁNDAR (Sin variación)
+                st.markdown("### Flujos de Mercado de Bienes y Factores de Producción")
+
+                valores_svg = {
+                    "bys_vendidos": f"{val_bienes:.1f} u.",
+                    "bys_comprados": f"{val_bienes:.1f} u.",
+                    "ingresos_empresas": f"$ {val_ingresos_empresas:,.2f}",
+                    "gastos": f"$ {val_ingresos_empresas:,.2f}",
+                    "factores_produccion": f"F: {num_formales:.0f} | I: {num_informales:.0f}",
+                    "trabajo_tierra_capital": f"F: {num_formales:.0f} | I: {num_informales:.0f}",
+                    "salarios_rentas": f"$ {val_gasto_empresas:,.2f}",
+                    "ingresos_familias": f"$ {val_gasto_empresas:,.2f}",
+                }
+                svg_renderizado = SVG_TEMPLATE.format(**valores_svg)
+
+            svg_html = f'<div style="text-align: center;">{svg_renderizado}</div>'
+            st.markdown(svg_html, unsafe_allow_html=True)
         else:
             st.info("Todavía no hay datos. Dirígete a la pestaña ⚙️ Configuración para iniciar la simulación.")
 
-    # PESTAÑA 4: Configuración
+    # PESTAÑA 3: Configuración
     with tab_config:
         st.subheader("Control de ejecución")
 
@@ -831,6 +805,8 @@ def panel():
             st.session_state.historial.index.name = "Día"
             st.session_state.auto_avance = False
             st.session_state.valores_guardados = []
+            st.session_state.indice_comparacion = 0
+            st.session_state.captura_activa = None
             st.session_state.necesita_rerun_completo = True
 
         # BOTÓN PARA GUARDAR VALORES EN CACHÉ (GUARDADO COMO FLOATS)
@@ -880,11 +856,48 @@ def panel():
                 "Hora": time.strftime("%H:%M:%S")
             }
             st.session_state.valores_guardados.append(nueva_captura)
+            # Por defecto, seleccionar la última captura registrada al ser creada
+            st.session_state.indice_comparacion = len(st.session_state.valores_guardados)
+            st.session_state.captura_activa = nueva_captura
             st.toast("Captura de métricas guardada en la caché de sesión", icon="💾")
+            st.rerun()
+
+        # SELECTOR DE COMPARACIÓN EN CONFIGURACIÓN (Visible solo si hay capturas en caché)
+        if st.session_state.valores_guardados:
+            st.write("---")
+            st.subheader("⚖️ Comparación de Escenarios")
+            opciones_comp = ["Ninguna (Estándar)"] + [
+                f"Día {cap['Día']} - (Registrado a las {cap['Hora']})" 
+                for cap in st.session_state.valores_guardados
+            ]
+            
+            # Control de índice seguro
+            if "indice_comparacion" not in st.session_state:
+                st.session_state.indice_comparacion = len(st.session_state.valores_guardados)
+            
+            if st.session_state.indice_comparacion >= len(opciones_comp):
+                st.session_state.indice_comparacion = len(opciones_comp) - 1
+                
+            seleccion = st.selectbox(
+                "Seleccione la captura de referencia para comparar en toda la aplicación:", 
+                opciones_comp,
+                index=st.session_state.indice_comparacion,
+                key="selector_comparacion_ui"
+            )
+            
+            st.session_state.indice_comparacion = opciones_comp.index(seleccion)
+            
+            if seleccion != "Ninguna (Estándar)":
+                st.session_state.captura_activa = st.session_state.valores_guardados[st.session_state.indice_comparacion - 1]
+            else:
+                st.session_state.captura_activa = None
+        else:
+            st.session_state.captura_activa = None
+            st.session_state.indice_comparacion = 0
 
         # MOSTRAR LECTURAS EN CACHÉ SI EXISTEN (CON FORMATO SÓLO DE VISUALIZACIÓN)
         if st.session_state.valores_guardados:
-            with st.expander("📂 Capturas en Caché", expanded=False):
+            with st.expander("📂 Historial de Capturas en Caché", expanded=False):
                 df_cache_visual = pd.DataFrame(st.session_state.valores_guardados).copy()
                 tasa_cols = ["Emp. Formal", "Emp. Informal", "Desempleo"]
                 for col in tasa_cols:
@@ -902,6 +915,9 @@ def panel():
                 st.dataframe(df_cache_visual, width='stretch')
                 if st.button("🗑️ Limpiar Caché", key="btn_limpiar_cache", width="stretch"):
                     st.session_state.valores_guardados = []
+                    st.session_state.indice_comparacion = 0
+                    st.session_state.captura_activa = None
+                    st.rerun()
 
         controles_velocidad()
 
