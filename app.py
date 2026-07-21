@@ -5,7 +5,7 @@ import time
 
 from config import Config
 from simulation import Simulación
-from marcador import construir_texto_marcado
+from ui.marcador import construir_texto_marcado
 
 from ui import (
     inyectar_estilos,

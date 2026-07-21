@@ -2,7 +2,7 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-from marcador import esta_activa
+from ui.marcador import esta_activa
 
 def obtener_marcadores_activos(sim, marcadores):
     dia_actual = int(getattr(sim.estado, "día", 0))
