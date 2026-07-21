@@ -1,5 +1,5 @@
 # --- productos.py ---
-from collections import deque
+from itertools import islice
 
 def mercado_productos(estado):
     productos_disponibles = []
@@ -12,14 +12,13 @@ def mercado_productos(estado):
         productos_disponibles.extend([empresa] * int(min(estado.config.num_trabajadores, empresa.inventario)))
 
     estado.aleatorio.shuffle(productos_disponibles)
-    productos_disponibles = deque(productos_disponibles)
 
     sp = estado.config.sensibilidad_precio
     sc = estado.config.sensibilidad_calidad
 
     for trabajador in estado.trabajadores:
         if productos_disponibles:
-            opciones_trabajador = list(productos_disponibles)[:10]
+            opciones_trabajador = islice(productos_disponibles, 10)
             opciones_trabajador.sort(key=lambda e: e.calidad * trabajador.sensibilidad_calidad * sc - e.precio * trabajador.sensibilidad_precio * sp, reverse=True)
             seleccionado = opciones_trabajador[0]
 
