@@ -14,5 +14,7 @@ class Trabajador:
         valores iniciales correspondientes de forma encapsulada.
         """
         return cls(
-            presupuesto=0.0
+            presupuesto=0.0,
+            sensibilidad_precio=0.0,
+            sensibilidad_calidad=0.0
         )
