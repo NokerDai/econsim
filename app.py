@@ -13,7 +13,7 @@ from marcador import construir_texto_marcado, esta_activa
 st.set_page_config(
     page_icon="📈",
     page_title="econsim",
-    layout="wide",
+    layout="centered",
 )
 
 
