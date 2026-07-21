@@ -41,3 +41,5 @@ class Config:
     productividad_informal: float = 0.7
     aumento_precio: float = 1.01
     reducción_precio: float = 0.99
+    sensibilidad_precio: float = 1.0
+    sensibilidad_calidad: float = 1.0

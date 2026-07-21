@@ -128,6 +128,14 @@ class Simulación:
             self.config.velocidad = valor
             self.config.velocidad_streamlit = valor
 
+    def cambiar_sensibilidad_precio(self, valor):
+        with self.lock:
+            self.config.sensibilidad_precio = float(valor)
+
+    def cambiar_sensibilidad_calidad(self, valor):
+        with self.lock:
+            self.config.sensibilidad_calidad = float(valor)
+
     def obtener_parametros(self):
         with self.lock:
             return {

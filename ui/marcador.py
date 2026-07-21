@@ -40,6 +40,8 @@ def obtener_valores_marcado(sim, session_state):
         "Informalidad": float(sim.config.informalidad_por_empresa),
         "Productividad formal": float(sim.config.productividad_formal),
         "Productividad informal": float(sim.config.productividad_informal),
+        "Sensibilidad precio": float(sim.config.sensibilidad_precio),
+        "Sensibilidad calidad": float(sim.config.sensibilidad_calidad),
         "Tasa emisión": float(sim.config.tasa_emisión),
         "Velocidad": int(getattr(sim.config, "velocidad", 0)),
     }

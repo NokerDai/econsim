@@ -135,3 +135,43 @@ def sincronizar_productividad_informal_input(sim):
     st.session_state.productividad_informal_input = val
     st.session_state._productividad_informal_slider = val
     aplicar_productividad_informal(sim, val)
+
+def aplicar_sensibilidad_precio(sim, valor):
+    if hasattr(sim, "cambiar_sensibilidad_precio"):
+        sim.cambiar_sensibilidad_precio(valor)
+    else:
+        sim.config.sensibilidad_precio = float(valor)
+
+def aplicar_sensibilidad_calidad(sim, valor):
+    if hasattr(sim, "cambiar_sensibilidad_calidad"):
+        sim.cambiar_sensibilidad_calidad(valor)
+    else:
+        sim.config.sensibilidad_calidad = float(valor)
+
+def sincronizar_sensibilidad_precio_slider(sim):
+    val = st.session_state.get("_sensibilidad_precio_slider", float(sim.config.sensibilidad_precio))
+    st.session_state.sensibilidad_precio_slider = val
+    st.session_state.sensibilidad_precio_input = val
+    st.session_state._sensibilidad_precio_input = val
+    aplicar_sensibilidad_precio(sim, val)
+
+def sincronizar_sensibilidad_precio_input(sim):
+    val = st.session_state.get("_sensibilidad_precio_input", float(sim.config.sensibilidad_precio))
+    st.session_state.sensibilidad_precio_slider = val
+    st.session_state.sensibilidad_precio_input = val
+    st.session_state._sensibilidad_precio_slider = val
+    aplicar_sensibilidad_precio(sim, val)
+
+def sincronizar_sensibilidad_calidad_slider(sim):
+    val = st.session_state.get("_sensibilidad_calidad_slider", float(sim.config.sensibilidad_calidad))
+    st.session_state.sensibilidad_calidad_slider = val
+    st.session_state.sensibilidad_calidad_input = val
+    st.session_state._sensibilidad_calidad_input = val
+    aplicar_sensibilidad_calidad(sim, val)
+
+def sincronizar_sensibilidad_calidad_input(sim):
+    val = st.session_state.get("_sensibilidad_calidad_input", float(sim.config.sensibilidad_calidad))
+    st.session_state.sensibilidad_calidad_slider = val
+    st.session_state.sensibilidad_calidad_input = val
+    st.session_state._sensibilidad_calidad_slider = val
+    aplicar_sensibilidad_calidad(sim, val)

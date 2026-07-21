@@ -313,7 +313,7 @@ def panel():
                 "Emp. Informal": float(hr["Empleo informal"].mean()),
                 "Desempleo": float(hr["Desempleo"].mean()),
                 "Bienes Vendidos": float(hr["Bienes Vendidos"].mean()),
-                "Calidad Transac.": float(hr["Calidad Media Transacción"].mean()),
+                "Calidad Media Transacción": float(hr["Calidad Media Transacción"].mean()),
                 "Flujo Empresas (Ing)": float(hr["Empresas Ingreso"].mean()),
                 "Flujo Empresas (Gast)": float(hr["Empresas Gasto"].mean()),
                 "Trabajadores Form.": int(num_formales_c),
@@ -433,6 +433,38 @@ def panel():
         with col_btn_i:
             if st.button("📍", key="marcar_productividad_informal"):
                 marcar_valor("Productividad informal", st.session_state.productividad_informal_slider)
+
+        st.divider()
+
+        col_sp, col_btn_sp = st.columns([5, 1])
+        with col_sp:
+            st.slider(
+                "Sensibilidad precio", min_value=0.0, max_value=5.0, step=0.01,
+                key="_sensibilidad_precio_slider", on_change=lambda: cb.sincronizar_sensibilidad_precio_slider(sim)
+            )
+            st.number_input(
+                "Valor exacto (Sens. Precio)", min_value=0.0, max_value=5.0, step=0.01,
+                key="_sensibilidad_precio_input", on_change=lambda: cb.sincronizar_sensibilidad_precio_input(sim)
+            )
+        with col_btn_sp:
+            if st.button("📍", key="marcar_sensibilidad_precio"):
+                marcar_valor("Sensibilidad precio", st.session_state.sensibilidad_precio_slider)
+
+        st.divider()
+
+        col_sc, col_btn_sc = st.columns([5, 1])
+        with col_sc:
+            st.slider(
+                "Sensibilidad calidad", min_value=0.0, max_value=5.0, step=0.01,
+                key="_sensibilidad_calidad_slider", on_change=lambda: cb.sincronizar_sensibilidad_calidad_slider(sim)
+            )
+            st.number_input(
+                "Valor exacto (Sens. Calidad)", min_value=0.0, max_value=5.0, step=0.01,
+                key="_sensibilidad_calidad_input", on_change=lambda: cb.sincronizar_sensibilidad_calidad_input(sim)
+            )
+        with col_btn_sc:
+            if st.button("📍", key="marcar_sensibilidad_calidad"):
+                marcar_valor("Sensibilidad calidad", st.session_state.sensibilidad_calidad_slider)
 
         st.divider()
 
