@@ -6,6 +6,7 @@ import time
 from config import Config
 from simulation import Simulación
 from ui.marcador import construir_texto_marcado
+from versiones import VERSIONES_DISPONIBLES
 
 from ui import (
     inyectar_estilos,
@@ -24,12 +25,39 @@ st.set_page_config(
 
 inyectar_estilos()
 
+# --- PANTALLA DE SELECCIÓN INICIAL (BLOQUEANTE) ---
+if "version_seleccionada" not in st.session_state:
+    st.subheader("Selección de Versión del Modelo Económico")
+    st.write(
+        "Por favor, seleccione la versión del modelo antes de continuar. "
+        "Una vez iniciada la simulación, esta configuración no podrá modificarse en caliente."
+    )
+    
+    version_elegida = st.selectbox(
+        "Versión disponible del Modelo",
+        options=VERSIONES_DISPONIBLES,
+        key="temp_version_selector"
+    )
+    
+    if st.button("Confirmar Selección y Cargar Simulación", use_container_width=True):
+        st.session_state.version_seleccionada = version_elegida
+        # Se inicializa de inmediato la simulación con la versión seleccionada
+        config = Config(version_modelo=version_elegida)
+        st.session_state.simulación = Simulación(config)
+        # Se preparan las variables del estado de la UI
+        inicializar_estado_ui(st.session_state.simulación)
+        st.rerun()
+        
+    st.stop() # Evita renderizar el resto del panel hasta que se presione el botón
+
+# --- INICIALIZACIÓN COMPLEMENTARIA ---
 if "simulación" not in st.session_state:
-    st.session_state.simulación = Simulación(Config())
+    config = Config(version_modelo=st.session_state.version_seleccionada)
+    st.session_state.simulación = Simulación(config)
 
 sim = st.session_state.simulación
 
-# Ejecutar inicialización del estado UI al cargar por primera vez
+# Asegurar el estado de UI
 inicializar_estado_ui(sim)
 
 # Sincronización del salario automático
@@ -137,8 +165,6 @@ def controles_velocidad():
 
 
 def panel():
-    # CORRECCIÓN: Asegura que el estado de los controles de la UI se inicialice
-    # en cada rerun del fragmento (por ejemplo, al cambiar de pestañas).
     inicializar_estado_ui(sim)
     
     hay_datos = len(st.session_state.historial) > 0
@@ -248,19 +274,13 @@ def panel():
     with tab_config:
         st.subheader("Control de ejecución")
         
-        from versiones import VERSIONES_DISPONIBLES
-        
-        versión_seleccionada = st.selectbox(
-            "Versión del Modelo Económico",
-            options=VERSIONES_DISPONIBLES,
-            index=VERSIONES_DISPONIBLES.index(sim.config.version_modelo) if sim.config.version_modelo in VERSIONES_DISPONIBLES else 0
+        # Se muestra la versión actualmente seleccionada como de solo lectura
+        st.text_input(
+            "Versión del Modelo Económico (Bloqueada)",
+            value=sim.config.version_modelo,
+            disabled=True,
+            help="Para cambiar de versión, es necesario reiniciar por completo la sesión."
         )
-
-        # Si el usuario cambia la selección, actualizamos la configuración y reiniciamos
-        if versión_seleccionada != sim.config.version_modelo:
-            sim.config.version_modelo = versión_seleccionada
-            st.session_state.clear()
-            st.rerun()
 
         st.divider()
 
@@ -280,7 +300,6 @@ def panel():
             st.rerun()
 
         if st.button("💾 Guardar en Caché", width="stretch", disabled=not hay_datos):
-            # Lógica para registrar caché
             n_dias = max(1, int(st.session_state.velocidad))
             hr = st.session_state.historial.tail(n_dias)
             total_trabajadores = sim.config.num_trabajadores
