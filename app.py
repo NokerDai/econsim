@@ -241,9 +241,7 @@ if "productividad_informal_input" not in st.session_state:
 if "pestana_activa" not in st.session_state:
     st.session_state.pestana_activa = "📈 Gráficos de Evolución"
 
-
-# --- MECANISMO DE PROTECCIÓN DE ESTADO (SESSION STATE KEEPER) ---
-# Evita que Streamlit elimine las variables de sesión de los controles cuando no estén renderizados
+# Recomitir claves para evitar que Streamlit las limpie cuando la pestaña de configuración no está activa
 keys_to_protect = [
     "salario_mínimo_automático",
     "tasa_slider",
@@ -416,6 +414,8 @@ def marcar_valor(nombre, valor, día=None):
 def iniciar_avance():
     st.session_state.auto_avance = True
     st.session_state.last_auto_step = time.time()
+    # Al iniciar de forma automática, redirecciona a la visualización de gráficos
+    st.session_state.pestana_activa = "📈 Gráficos de Evolución"
 
 
 def detener_avance():
@@ -594,123 +594,6 @@ def controles_velocidad():
             marcar_valor("Velocidad", st.session_state.velocidad)
 
 
-# --- BARRA LATERAL (BARRA DE CONTROL Y CACHÉ ÚNICAMENTE) ---
-with st.sidebar:
-    st.subheader("Control de ejecución")
-
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
-        if st.session_state.auto_avance:
-            st.button("⏸ Pausar", width="stretch", on_click=detener_avance)
-        else:
-            st.button("▶ Iniciar", width="stretch", on_click=iniciar_avance)
-
-    with col_btn2:
-        if st.button("⏭ Día", disabled=st.session_state.auto_avance, width="stretch"):
-            if sim.step():
-                registrar_snapshots([sim.obtener_snapshot()])
-            st.rerun()
-
-    if st.button("🔄 Reiniciar", width="stretch"):
-        detener_avance()
-        sim.reset()
-        st.session_state.historial = pd.DataFrame(
-            columns=[
-                "Salario",
-                "Salario informal",
-                "Precio Lista",
-                "Precio Transacción",
-                "Poder Compra Formal",
-                "Poder Compra Informal",
-                "Empleo formal",
-                "Empleo informal",
-                "Desempleo",
-                "Bienes Vendidos",
-                "Empresas Ingreso",
-                "Empresas Gasto"
-            ]
-        ).astype(float)
-        st.session_state.historial.index.name = "Día"
-        st.session_state.auto_avance = False
-        st.session_state.valores_guardados = []
-        st.rerun()
-
-    # BOTÓN PARA GUARDAR VALORES EN CACHÉ (GUARDADO COMO FLOATS)
-    hay_historial = len(st.session_state.historial) > 0
-    if st.button(
-        "💾 Guardar en Caché", 
-        width="stretch", 
-        disabled=not hay_historial, 
-        help="Guarda las métricas actuales del panel y del flujo circular en una tabla de caché"
-    ):
-        n_dias = max(1, int(st.session_state.velocidad))
-        historial_reciente = st.session_state.historial.tail(n_dias)
-
-        val_salario = historial_reciente["Salario"].mean()
-        val_salario_inf = historial_reciente["Salario informal"].mean()
-        val_precio_lista = historial_reciente["Precio Lista"].mean()
-        val_precio = historial_reciente["Precio Transacción"].mean()
-        val_emp_formal = historial_reciente["Empleo formal"].mean()
-        val_emp_informal = historial_reciente["Empleo informal"].mean()
-        val_desempleo = historial_reciente["Desempleo"].mean()
-        val_poder_f = historial_reciente["Poder Compra Formal"].mean()
-        val_poder_i = historial_reciente["Poder Compra Informal"].mean()
-        val_bienes = historial_reciente["Bienes Vendidos"].mean()
-        val_ingresos_empresas = historial_reciente["Empresas Ingreso"].mean()
-        val_gasto_empresas = historial_reciente["Empresas Gasto"].mean()
-
-        total_trabajadores = sim.config.num_trabajadores
-        num_formales = val_emp_formal * total_trabajadores
-        num_informales = val_emp_informal * total_trabajadores
-
-        nueva_captura = {
-            "Día": int(sim.estado.día),
-            "Salario Mínimo": float(sim.config.salario_mínimo),
-            "Salario Medio": float(val_salario),
-            "Salario Informal": float(val_salario_inf),
-            "Precio Lista": float(val_precio_lista),
-            "Precio Transac.": float(val_precio),
-            "Poder Compra Form.": float(val_poder_f),
-            "Poder Compra Inf.": float(val_poder_i),
-            "Emp. Formal": float(val_emp_formal),
-            "Emp. Informal": float(val_emp_informal),
-            "Desempleo": float(val_desempleo),
-            "Bienes Vendidos": float(val_bienes),
-            "Flujo Empresas (Ing)": float(val_ingresos_empresas),
-            "Flujo Empresas (Gast)": float(val_gasto_empresas),
-            "Trabajadores Form.": int(num_formales),
-            "Trabajadores Inf.": int(num_informales),
-            "Hora": time.strftime("%H:%M:%S")
-        }
-        st.session_state.valores_guardados.append(nueva_captura)
-        st.toast("Captura de métricas guardada en la caché de sesión", icon="💾")
-
-    # MOSTRAR LECTURAS EN CACHÉ SI EXISTEN (CON FORMATO SÓLO DE VISUALIZACIÓN)
-    if st.session_state.valores_guardados:
-        with st.expander("📂 Capturas en Caché", expanded=False):
-            df_cache_visual = pd.DataFrame(st.session_state.valores_guardados).copy()
-            # Formatear tasas como floats limpios con cuatro decimales
-            tasa_cols = ["Emp. Formal", "Emp. Informal", "Desempleo"]
-            for col in tasa_cols:
-                if col in df_cache_visual.columns:
-                    df_cache_visual[col] = df_cache_visual[col].map(lambda x: f"{x:.4f}")
-            float_cols = [
-                "Salario Mínimo", "Salario Medio", "Salario Informal", "Precio Lista", 
-                "Precio Transac.", "Poder Compra Form.", "Poder Compra Inf.", "Bienes Vendidos", 
-                "Flujo Empresas (Ing)", "Flujo Empresas (Gast)"
-            ]
-            for col in float_cols:
-                if col in df_cache_visual.columns:
-                    df_cache_visual[col] = df_cache_visual[col].map(lambda x: f"{x:.2f}")
-
-            st.dataframe(df_cache_visual, width='stretch')
-            if st.button("🗑️ Limpiar Caché", key="btn_limpiar_cache", width="stretch"):
-                st.session_state.valores_guardados = []
-                st.rerun()
-
-    controles_velocidad()
-
-
 # --- PANEL PRINCIPAL ---
 def panel():
     hay_datos = len(st.session_state.historial) > 0
@@ -826,7 +709,7 @@ def panel():
             if not st.session_state.valores_guardados:
                 st.info(
                     "No se encontraron capturas guardadas en caché. "
-                    "Por favor, use el botón '💾 Guardar en Caché' del menú lateral "
+                    "Por favor, use el botón '💾 Guardar en Caché' "
                     "en el escenario o día que desee registrar primero."
                 )
             else:
@@ -927,10 +810,130 @@ def panel():
 
     # PESTAÑA 4: Configuración de Parámetros del Modelo
     with tab_config:
-        st.subheader("⚙️ Configuración de Parámetros del Modelo")
+        st.subheader("⚙️ Configuración y Control del Modelo")
         
-        if st.session_state.auto_avance:
-            st.info("⏸️ Ejecución en pausa temporalmente mientras editas los parámetros. Cambia de pestaña para reanudar.")
+        # --- SECCIÓN SUPERIOR: CONTROL DE EJECUCIÓN Y CACHÉ ---
+        col_exec, col_cache = st.columns([1, 1])
+
+        with col_exec:
+            st.markdown("### Control de Simulación")
+            col_btn1, col_btn2 = st.columns(2)
+            with col_btn1:
+                if st.session_state.auto_avance:
+                    st.button("⏸ Pausar", use_container_width=True, on_click=detener_avance)
+                else:
+                    st.button("▶ Iniciar", use_container_width=True, on_click=iniciar_avance)
+
+            with col_btn2:
+                if st.button("⏭ Día", disabled=st.session_state.auto_avance, use_container_width=True):
+                    if sim.step():
+                        registrar_snapshots([sim.obtener_snapshot()])
+                    st.rerun()
+
+            if st.button("🔄 Reiniciar", use_container_width=True):
+                detener_avance()
+                sim.reset()
+                st.session_state.historial = pd.DataFrame(
+                    columns=[
+                        "Salario",
+                        "Salario informal",
+                        "Precio Lista",
+                        "Precio Transacción",
+                        "Poder Compra Formal",
+                        "Poder Compra Informal",
+                        "Empleo formal",
+                        "Empleo informal",
+                        "Desempleo",
+                        "Bienes Vendidos",
+                        "Empresas Ingreso",
+                        "Empresas Gasto"
+                    ]
+                ).astype(float)
+                st.session_state.historial.index.name = "Día"
+                st.session_state.auto_avance = False
+                st.session_state.valores_guardados = []
+                st.rerun()
+
+            st.write("")
+            controles_velocidad()
+
+        with col_cache:
+            st.markdown("### Historial y Capturas (Caché)")
+            hay_historial_local = len(st.session_state.historial) > 0
+            if st.button(
+                "💾 Guardar en Caché", 
+                use_container_width=True, 
+                disabled=not hay_historial_local, 
+                help="Guarda las métricas actuales del panel y del flujo circular en una tabla de caché"
+            ):
+                n_dias = max(1, int(st.session_state.velocidad))
+                historial_reciente = st.session_state.historial.tail(n_dias)
+
+                val_salario_c = historial_reciente["Salario"].mean()
+                val_salario_inf_c = historial_reciente["Salario informal"].mean()
+                val_precio_lista_c = historial_reciente["Precio Lista"].mean()
+                val_precio_c = historial_reciente["Precio Transacción"].mean()
+                val_emp_formal_c = historial_reciente["Empleo formal"].mean()
+                val_emp_informal_c = historial_reciente["Empleo informal"].mean()
+                val_desempleo_c = historial_reciente["Desempleo"].mean()
+                val_poder_f_c = historial_reciente["Poder Compra Formal"].mean()
+                val_poder_i_c = historial_reciente["Poder Compra Informal"].mean()
+                val_bienes_c = historial_reciente["Bienes Vendidos"].mean()
+                val_ingresos_empresas_c = historial_reciente["Empresas Ingreso"].mean()
+                val_gasto_empresas_c = historial_reciente["Empresas Gasto"].mean()
+
+                total_trabajadores = sim.config.num_trabajadores
+                num_formales = val_emp_formal_c * total_trabajadores
+                num_informales = val_emp_informal_c * total_trabajadores
+
+                nueva_captura = {
+                    "Día": int(sim.estado.día),
+                    "Salario Mínimo": float(sim.config.salario_mínimo),
+                    "Salario Medio": float(val_salario_c),
+                    "Salario Informal": float(val_salario_inf_c),
+                    "Precio Lista": float(val_precio_lista_c),
+                    "Precio Transac.": float(val_precio_c),
+                    "Poder Compra Form.": float(val_poder_f_c),
+                    "Poder Compra Inf.": float(val_poder_i_c),
+                    "Emp. Formal": float(val_emp_formal_c),
+                    "Emp. Informal": float(val_emp_informal_c),
+                    "Desempleo": float(val_desempleo_c),
+                    "Bienes Vendidos": float(val_bienes_c),
+                    "Flujo Empresas (Ing)": float(val_ingresos_empresas_c),
+                    "Flujo Empresas (Gast)": float(val_gasto_empresas_c),
+                    "Trabajadores Form.": int(num_formales),
+                    "Trabajadores Inf.": int(num_informales),
+                    "Hora": time.strftime("%H:%M:%S")
+                }
+                st.session_state.valores_guardados.append(nueva_captura)
+                st.toast("Captura de métricas guardada en la caché de sesión", icon="💾")
+
+            if st.session_state.valores_guardados:
+                with st.expander("📂 Capturas en Caché", expanded=True):
+                    df_cache_visual = pd.DataFrame(st.session_state.valores_guardados).copy()
+                    # Formatear tasas como floats limpios con cuatro decimales
+                    tasa_cols = ["Emp. Formal", "Emp. Informal", "Desempleo"]
+                    for col in tasa_cols:
+                        if col in df_cache_visual.columns:
+                            df_cache_visual[col] = df_cache_visual[col].map(lambda x: f"{x:.4f}")
+                    float_cols = [
+                        "Salario Mínimo", "Salario Medio", "Salario Informal", "Precio Lista", 
+                        "Precio Transac.", "Poder Compra Form.", "Poder Compra Inf.", "Bienes Vendidos", 
+                        "Flujo Empresas (Ing)", "Flujo Empresas (Gast)"
+                    ]
+                    for col in float_cols:
+                        if col in df_cache_visual.columns:
+                            df_cache_visual[col] = df_cache_visual[col].map(lambda x: f"{x:.2f}")
+
+                    st.dataframe(df_cache_visual, use_container_width=True)
+                    if st.button("🗑️ Limpiar Caché", key="btn_limpiar_cache", use_container_width=True):
+                        st.session_state.valores_guardados = []
+                        st.rerun()
+
+        st.divider()
+
+        # --- SECCIÓN INFERIOR: CONFIGURACIÓN DE PARÁMETROS ECONÓMICOS ---
+        st.markdown("### Parámetros Económicos del Modelo")
 
         st.checkbox(
             "Salario mínimo automático",
@@ -1091,7 +1094,7 @@ def panel():
 
 
 # Determinación del intervalo de ejecución automática
-# Si el usuario está editando los parámetros, desactivamos temporalmente el run_every
+# Si el usuario está en la pestaña de configuración, se suspende temporalmente el auto-avance para editar con comodidad
 if st.session_state.auto_avance:
     pestana_actual = st.session_state.get("pestana_activa", "📈 Gráficos de Evolución")
     if pestana_actual == "⚙️ Configuración":
@@ -1105,7 +1108,6 @@ else:
 @st.fragment(run_every=run_every_val)
 def auto_avance_fragment():
     if st.session_state.auto_avance:
-        # Solo calculamos avances si no estamos en la pestaña de configuración
         pestana_actual = st.session_state.get("pestana_activa", "📈 Gráficos de Evolución")
         if pestana_actual != "⚙️ Configuración":
             st.session_state.last_auto_step = time.time()
