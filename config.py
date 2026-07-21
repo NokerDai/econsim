@@ -41,8 +41,8 @@ class Config:
     sensibilidad_satisfacción: float = 1.0
 
     # Parámetros del mercado
-    productividad_formal: float = 1
-    productividad_informal: float = 0.7
+    productividad_formal: float = 2
+    productividad_informal: float = 1.5
     aumento_precio: float = 1.01
     reducción_precio: float = 0.99
     sensibilidad_precio: float = 1.0
