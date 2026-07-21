@@ -38,6 +38,10 @@ def sincronizar_tasa(sim):
     st.session_state.tasa_slider = float(st.session_state.tasa_slider)
     sim.config.tasa_salario_mínimo = st.session_state.tasa_slider
 
+def sincronizar_formalidad_límite(sim):
+    st.session_state.formalidad_límite_slider = float(st.session_state.formalidad_límite_slider)
+    sim.config.salario_mínimo_automático_formalidad_límite = st.session_state.formalidad_límite_slider
+
 def sincronizar_velocidad_slider(sim):
     valor = max(1, int(st.session_state.velocidad_slider))
     st.session_state.velocidad = valor

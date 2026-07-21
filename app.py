@@ -323,6 +323,17 @@ def panel():
             with col_btn_tasa:
                 if st.button("📍", key="marcar_tasa_salario"):
                     marcar_valor("Tasa de salario mínimo", st.session_state.tasa_slider)
+
+            col_formalidad, col_btn_formalidad = st.columns([5, 1])
+            with col_formalidad:
+                st.slider(
+                    "Formalidad límite", min_value=0.0, max_value=2.0, step=0.01,
+                    key="tasa_slider", on_change=lambda: cb.sincronizar_formalidad_límite(sim)
+                )
+            with col_btn_formalidad:
+                if st.button("📍", key="marcar_formalidad_límite"):
+                    marcar_valor("Formalidad límite", st.session_state.formalidad_límite_slider)
+            
         else:
             col_salario, col_btn_salario = st.columns([5, 1])
             with col_salario:
