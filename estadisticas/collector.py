@@ -45,7 +45,7 @@ def actualizar_estadisticas(estado):
     estado.estadisticas.precio_lista_medio.append(precio_lista_medio)
     estado.estadisticas.precio_transaccion_medio.append(precio_transaccion_medio)
 
-    total_trabajadores = estado.config.num_trabajadores
+    total_trabajadores = len(estado.trabajadores)
     tasa_formal = num_formales / total_trabajadores if total_trabajadores > 0 else 0.0
     tasa_informal = num_informales / total_trabajadores if total_trabajadores > 0 else 0.0
     tasa_desempleo = max(0.0, 1.0 - tasa_formal - tasa_informal)
