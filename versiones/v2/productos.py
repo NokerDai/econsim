@@ -18,7 +18,7 @@ def mercado_productos(estado):
 
     for trabajador in estado.trabajadores:
         if productos_disponibles:
-            opciones_trabajador = islice(productos_disponibles, 10)
+            opciones_trabajador = list(islice(productos_disponibles, 10))
             opciones_trabajador.sort(key=lambda e: e.calidad * trabajador.sensibilidad_calidad * sc - e.precio * trabajador.sensibilidad_precio * sp, reverse=True)
             seleccionado = opciones_trabajador[0]
 
