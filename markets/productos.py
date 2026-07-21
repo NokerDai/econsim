@@ -10,23 +10,17 @@ def mercado_productos(estado):
         empresa.inventario += (empresa.empleados_formales * pf + empresa.empleados_informales * pi) * empresa.productividad
         productos_disponibles.extend([empresa] * int(empresa.inventario))
 
+    productos_disponibles.sort(key=lambda e: e.precio)
     productos_disponibles = deque(productos_disponibles)
 
     for trabajador in estado.trabajadores:
         if productos_disponibles:
-            candidatos = estado.aleatorio.sample(list(productos_disponibles), min(20, len(productos_disponibles)))
-            seleccionado = max(
-                candidatos,
-                key=lambda empresa:
-                    trabajador.sensibilidad_calidad * empresa.calidad
-                    - trabajador.sensibilidad_precio * empresa.precio
-            )
-            if trabajador.presupuesto >= seleccionado.precio:
+            if trabajador.presupuesto >= productos_disponibles[0].precio:
+                seleccionado = productos_disponibles.popleft()
                 seleccionado.presupuesto += seleccionado.precio
                 trabajador.presupuesto -= seleccionado.precio
                 seleccionado.inventario -= 1
                 seleccionado.ventas_hoy += 1
-                productos_disponibles.remove(seleccionado)
         else:
             break
 

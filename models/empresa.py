@@ -5,7 +5,6 @@ from dataclasses import dataclass
 class Empresa:
     presupuesto: float
     precio: float
-    calidad: float
     salario: float
     salario_informal: float
 

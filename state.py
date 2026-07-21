@@ -18,10 +18,7 @@ class Estado:
 
         # Agentes
         self.trabajadores = [
-            Trabajador(
-                sensibilidad_precio=self.aleatorio.uniform(0.5, 2.0),
-                sensibilidad_calidad=self.aleatorio.uniform(0.5, 2.0)
-            )
+            Trabajador()
             for _ in range(config.num_trabajadores)
         ]
 
@@ -30,8 +27,7 @@ class Estado:
                 presupuesto=config.presupuesto_inicial,
                 precio=config.precio_inicial,
                 salario=config.salario_inicial,
-                salario_informal=config.salario_informal_inicial,
-                calidad=self.aleatorio.uniform(0.8, 1.2)
+                salario_informal=config.salario_informal_inicial
             )
             for _ in range(config.num_empresas)
         ]

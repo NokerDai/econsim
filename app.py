@@ -207,6 +207,9 @@ if "tasa_slider" not in st.session_state:
     st.session_state.tasa_slider = 0.3
     sim.config.tasa_salario_mínimo = 0.3
 
+if "velocidad_slider" not in st.session_state:
+    st.session_state.velocidad_slider = max(1, int(getattr(sim.config, "velocidad_streamlit", 1)))
+
 if "velocidad_input" not in st.session_state:
     st.session_state.velocidad_input = max(1, int(getattr(sim.config, "velocidad_streamlit", 1)))
 
@@ -291,10 +294,21 @@ def sincronizar_tasa():
     sim.config.tasa_salario_mínimo = st.session_state.tasa_slider
 
 
+def sincronizar_velocidad_slider():
+    valor = max(1, int(st.session_state.velocidad_slider))
+
+    st.session_state.velocidad = valor
+    st.session_state.velocidad_input = valor
+    st.session_state._velocidad_ui = valor
+
+    sim.cambiar_velocidad(valor)
+
+
 def sincronizar_velocidad_input():
     valor = max(1, int(st.session_state.velocidad_input))
 
     st.session_state.velocidad = valor
+    st.session_state.velocidad_slider = valor
     st.session_state._velocidad_ui = valor
 
     sim.cambiar_velocidad(valor)
@@ -560,10 +574,19 @@ def controles_velocidad():
 
     if st.session_state.get("_velocidad_ui") != velocidad:
         st.session_state._velocidad_ui = velocidad
+        st.session_state.velocidad_slider = velocidad
         st.session_state.velocidad_input = velocidad
 
     col_velocidad, col_btn_velocidad = st.columns([5, 1])
     with col_velocidad:
+        st.slider(
+            "Velocidad (días por paso)",
+            min_value=1,
+            max_value=365,
+            key="velocidad_slider",
+            on_change=sincronizar_velocidad_slider,
+        )
+
         st.number_input(
             "Valor exacto",
             min_value=1,
