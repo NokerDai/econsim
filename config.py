@@ -6,7 +6,6 @@ class Config:
 
     # Simulación
     semilla: int = 1
-    días: int = 100000
     velocidad: float = 0
     frecuencia_actualización: int = 100
     velocidad_streamlit: int = 1

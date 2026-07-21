@@ -111,13 +111,6 @@ class Simulación:
 
         with self.lock:
 
-            if self.estado.día >= self.config.días:
-
-                self.corriendo = False
-
-                return False
-
-
             self.estado.día += 1
 
             emisión_monetaria(self.estado)
@@ -241,10 +234,3 @@ class Simulación:
                 "velocidad": self.config.velocidad,
                 "informalidad_por_empresa": self.config.informalidad_por_empresa,
             }
-
-
-    def terminada(self):
-
-        with self.lock:
-
-            return self.estado.día >= self.config.días
