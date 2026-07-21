@@ -1,4 +1,4 @@
-from ui.fenwick import FenwickTree
+from fenwick import FenwickTree
 
 
 def mercado_productos(estado):
