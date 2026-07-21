@@ -437,71 +437,53 @@ def obtener_marcadores_activos():
     ]
 
 
-def graficar_line_chart(df, columnas, titulo=""):
+def graficar_line_chart(df, columnas):
     if df is None or df.empty:
         return
 
-    columnas_validas = [col for col in columnas if col in df.columns]
-    if not columnas_validas:
+    columnas = [c for c in columnas if c in df.columns]
+    if not columnas:
         return
 
-    df_reset = df.copy()
-    if df_reset.index.name is None:
-        df_reset.index.name = "Día"
-    df_reset = df_reset.reset_index()
+    df = df.copy()
+    df.index.name = df.index.name or "Día"
+    df = df.reset_index()
 
-    for col in columnas_validas:
-        if "Precio" in col:
-            df_reset[col] = df_reset[col].replace(0.0, float('nan'))
+    for c in columnas:
+        if "Precio" in c:
+            df[c] = df[c].replace(0, pd.NA)
 
-    df_reset[columnas_validas] = df_reset[columnas_validas].ffill().bfill().fillna(0.0)
+    df[columnas] = df[columnas].ffill().bfill().fillna(0)
 
-    if len(columnas_validas) == 1:
-        col = columnas_validas[0]
-        min_val = df_reset[col].min()
-        max_val = df_reset[col].max()
+    minimo = df[columnas].min().min()
+    maximo = df[columnas].max().max()
+
+    if pd.notna(minimo) and abs(maximo - minimo) < 1e-4:
+        margen = max(1, abs(minimo) * 0.1)
+        escala = alt.Scale(domain=[minimo - margen, maximo + margen], zero=False)
     else:
-        min_val = df_reset[columnas_validas].min().min()
-        max_val = df_reset[columnas_validas].max().max()
+        escala = alt.Scale(zero=False)
 
-    if pd.notna(min_val) and pd.notna(max_val) and abs(max_val - min_val) < 1e-4:
-        margen = max(1.0, abs(min_val) * 0.1)
-        y_scale = alt.Scale(domain=[min_val - margen, max_val + margen], zero=False)
-    else:
-        y_scale = alt.Scale(zero=False)
+    datos = df.melt(
+        id_vars="Día",
+        value_vars=columnas,
+        var_name="Métrica",
+        value_name="Valor"
+    )
 
-    if len(columnas_validas) == 1:
-        col = columnas_validas[0]
-        chart_line = alt.Chart(df_reset).mark_line().encode(
-            x=alt.X("Día:Q", title="Día"),
-            y=alt.Y(f"{col}:Q", title=None, scale=y_scale)
-        )
-    else:
-        df_melted = df_reset.melt(
-            id_vars=["Día"],
-            value_vars=columnas_validas,
-            var_name="Métrica",
-            value_name="Valor"
-        )
-        chart_line = alt.Chart(df_melted).mark_line().encode(
-            x=alt.X("Día:Q", title="Día"),
-            y=alt.Y("Valor:Q", title=None, scale=y_scale),
-            color=alt.Color("Métrica:N", legend=alt.Legend(orient="top", title=None))
-        )
+    grafico = alt.Chart(datos).mark_line().encode(
+        x=alt.X("Día:Q", title="Día"),
+        y=alt.Y("Valor:Q", scale=escala, title=None),
+        color=alt.Color("Métrica:N", legend=alt.Legend(title=None, orient="top"))
+    )
 
-    marcadores_activos = obtener_marcadores_activos()
-    min_dia = df_reset["Día"].min()
-    max_dia = df_reset["Día"].max()
-
-    marcadores_filtrados = [
-        m for m in marcadores_activos
-        if min_dia <= m["día"] <= max_dia
+    marcadores = [
+        m for m in obtener_marcadores_activos()
+        if df["Día"].min() <= m["día"] <= df["Día"].max()
     ]
 
-    if marcadores_filtrados:
-        df_rules = pd.DataFrame(marcadores_filtrados)
-        
-        rules = alt.Chart(df_rules).mark_rule(
+    if marcadores:
+        reglas = alt.Chart(pd.DataFrame(marcadores)).mark_rule(
             color="#FF4B4B",
             strokeDash=[4, 4],
             strokeWidth=1.5
@@ -509,33 +491,27 @@ def graficar_line_chart(df, columnas, titulo=""):
             x="día:Q",
             tooltip=[
                 alt.Tooltip("nombre:N", title="Parámetro"),
-                alt.Tooltip("valor:Q", title="Valor Ajustado"),
-                alt.Tooltip("día:Q", title="Día del Ajuste")
-            ]
+                alt.Tooltip("valor:Q", title="Valor"),
+                alt.Tooltip("día:Q", title="Día"),
+            ],
         )
 
-        labels = alt.Chart(df_rules).mark_text(
+        etiquetas = alt.Chart(pd.DataFrame(marcadores)).mark_text(
             align="left",
             dx=5,
             dy=12,
             color="#FF4B4B",
             fontSize=10,
-            fontWeight="bold"
+            fontWeight="bold",
         ).encode(
             x="día:Q",
             y=alt.value(8),
-            text="nombre:N"
+            text="nombre:N",
         )
 
-        chart = alt.layer(chart_line, rules, labels).properties(
-            height=320
-        ).interactive()
-    else:
-        chart = chart_line.properties(
-            height=320
-        ).interactive()
+        grafico = alt.layer(grafico, reglas, etiquetas)
 
-    st.altair_chart(chart, width='stretch')
+    st.altair_chart(grafico.properties(height=320).interactive(), width="stretch")
 
 
 def obtener_delta_texto(actual, capturado, decimales=1):
