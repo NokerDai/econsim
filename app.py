@@ -241,11 +241,15 @@ if "productividad_informal_input" not in st.session_state:
 if "pestana_activa" not in st.session_state:
     st.session_state.pestana_activa = "⚙️ Configuración"
 
-# ==============================================================================
-# Lógica de pausa automática al ingresar a Configuración
-# ==============================================================================
-if st.session_state.get("pestana_activa") == "⚙️ Configuración":
-    st.session_state.auto_avance = False
+# Bandera para coordinar recargas completas de la aplicación
+if "necesita_rerun_completo" not in st.session_state:
+    st.session_state.necesita_rerun_completo = False
+
+
+# Sincronización inicial o reactiva del salario mínimo si está en automático
+if st.session_state.get("salario_mínimo_automático", False):
+    st.session_state.salario_slider = int(sim.config.salario_mínimo or 0)
+    st.session_state.salario_input = int(sim.config.salario_mínimo or 0)
 
 
 def sincronizar_salario_slider():
@@ -412,16 +416,17 @@ def marcar_valor(nombre, valor, día=None):
     st.session_state.marcadores = marcadores
 
 
+# Callbacks simples que no ejecutan st.rerun() dentro de sí mismos
 def iniciar_avance():
     st.session_state.auto_avance = True
     st.session_state.last_auto_step = time.time()
     st.session_state.pestana_activa = "📈 Gráficos de Evolución"
-    st.rerun()
+    st.session_state.necesita_rerun_completo = True
 
 
 def detener_avance():
     st.session_state.auto_avance = False
-    st.rerun()
+    st.session_state.necesita_rerun_completo = True
 
 
 def obtener_marcadores_activos():
@@ -644,6 +649,16 @@ def panel():
         on_change="rerun"
     )
 
+    # Lógica de detección de pausa si se ingresa de forma manual a la pestaña Configuración
+    if st.session_state.pestana_activa == "⚙️ Configuración" and st.session_state.auto_avance:
+        st.session_state.auto_avance = False
+        st.session_state.necesita_rerun_completo = True
+
+    # Comprobación de recarga completa delegada al cuerpo del fragmento
+    if st.session_state.get("necesita_rerun_completo", False):
+        st.session_state.necesita_rerun_completo = False
+        st.rerun()
+
     # PESTAÑA 1: Gráficos de evolución temporal
     with tab_graficos:
         if hay_datos:
@@ -818,7 +833,6 @@ def panel():
             if st.button("⏭ Día", disabled=st.session_state.auto_avance, width="stretch"):
                 if sim.step():
                     registrar_snapshots([sim.obtener_snapshot()])
-                st.rerun()
 
         if st.button("🔄 Reiniciar", width="stretch"):
             sim.reset()
@@ -841,7 +855,7 @@ def panel():
             st.session_state.historial.index.name = "Día"
             st.session_state.auto_avance = False
             st.session_state.valores_guardados = []
-            st.rerun()
+            st.session_state.necesita_rerun_completo = True
 
         # BOTÓN PARA GUARDAR VALORES EN CACHÉ (GUARDADO COMO FLOATS)
         if st.button(
@@ -912,7 +926,6 @@ def panel():
                 st.dataframe(df_cache_visual, width='stretch')
                 if st.button("🗑️ Limpiar Caché", key="btn_limpiar_cache", width="stretch"):
                     st.session_state.valores_guardados = []
-                    st.rerun()
 
         controles_velocidad()
 
