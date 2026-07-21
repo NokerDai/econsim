@@ -21,6 +21,6 @@ class Trabajador:
             sensibilidad_calidad=round(aleatorio.uniform(0.0, 2.0), 2),
             sensibilidad_salario=round(aleatorio.uniform(0.0, 2.0), 2),
             sensibilidad_satisfacción=round(aleatorio.uniform(0.0, 2.0), 2),
-            productividad=round(aleatorio.uniform(0.5, 1.5), 2),
+            productividad=round(aleatorio.uniform(0.1, 1.0), 2),
             presupuesto=0.0
         )

@@ -53,16 +53,76 @@ def mercado_laboral(estado):
                     seen.add(idx)
                     indices.append(idx)
 
+            salario_min = float("inf")
+            salario_max = -float("inf")
+            satisf_min = float("inf")
+            satisf_max = -float("inf")
+
+            for idx in indices:
+                emp = vacantes_formales[idx]
+
+                if emp.salario < salario_min:
+                    salario_min = emp.salario
+                if emp.salario > salario_max:
+                    salario_max = emp.salario
+
+                if emp.satisfacción < satisf_min:
+                    satisf_min = emp.satisfacción
+                if emp.satisfacción > satisf_max:
+                    satisf_max = emp.satisfacción
+
+            salario_rango = max(salario_max - salario_min, 1e-9)
+            satisf_rango = max(satisf_max - satisf_min, 1e-9)
+
             # 2. Búsqueda de la mejor empresa (mayor salario y satisfacción, ponderados)
             best_idx_in_list = -1
-            best_score = -float('inf')
+            best_score = -float("inf")
             seleccionada = None
 
             for idx in indices:
                 emp = vacantes_formales[idx]
-                u_empleado = emp.salario * peso_salario + emp.satisfacción * peso_satisfacción
-                u_empresa = trabajador.productividad * emp.exigencia / emp.salario
-                score = u_empleado + u_empresa
+
+                # ===========================
+                # Utilidad del trabajador (0-100)
+                # ===========================
+
+                salario_norm = (emp.salario - salario_min) / salario_rango
+                satisf_norm = (emp.satisfacción - satisf_min) / satisf_rango
+
+                suma_pesos = peso_salario + peso_satisfacción
+
+                if suma_pesos > 0:
+                    u_empleado = 100 * (
+                        salario_norm * peso_salario +
+                        satisf_norm * peso_satisfacción
+                    ) / suma_pesos
+                else:
+                    u_empleado = 50.0
+
+               # ===========================
+                # Utilidad de la empresa (0-100)
+                # ===========================
+
+                error = abs(
+                    trabajador.productividad -
+                    emp.productividad_objetivo
+                ) / 0.9  # productividad ∈ [0.1,1]
+
+                u_empresa = 100 * (
+                    1 - error * (1 - emp.tolerancia)
+                )
+
+                u_empresa = max(0.0, min(100.0, u_empresa))
+
+                # ===========================
+                # Score conjunto
+                # ===========================
+
+                score = (
+                    estado.config.peso_trabajador * u_empleado +
+                    estado.config.peso_empresa * u_empresa
+                )
+
                 if score > best_score:
                     best_score = score
                     best_idx_in_list = idx
@@ -120,15 +180,75 @@ def mercado_laboral(estado):
                     seen.add(idx)
                     indices.append(idx)
 
+            salario_informal_min = float("inf")
+            salario_informal_max = -float("inf")
+            satisf_min = float("inf")
+            satisf_max = -float("inf")
+
+            for idx in indices:
+                emp = vacantes_informales[idx]
+
+                if emp.salario_informal < salario_informal_min:
+                    salario_informal_min = emp.salario_informal
+                if emp.salario_informal > salario_informal_max:
+                    salario_informal_max = emp.salario_informal
+
+                if emp.satisfacción < satisf_min:
+                    satisf_min = emp.satisfacción
+                if emp.satisfacción > satisf_max:
+                    satisf_max = emp.satisfacción
+
+            salario_informal_rango = max(salario_informal_max - salario_informal_min, 1e-9)
+            satisf_rango = max(satisf_max - satisf_min, 1e-9)
+
             best_idx_in_list = -1
-            best_score = -float('inf')
+            best_score = -float("inf")
             seleccionada = None
 
             for idx in indices:
                 emp = vacantes_informales[idx]
-                u_empleado = emp.salario_informal * peso_salario + emp.satisfacción * peso_satisfacción
-                u_empresa = trabajador.productividad * emp.exigencia / emp.salario_informal
-                score = u_empleado + u_empresa
+
+                # ===========================
+                # Utilidad del trabajador (0-100)
+                # ===========================
+
+                salario_informal_norm = (emp.salario_informal - salario_informal_min) / salario_informal_rango
+                satisf_norm = (emp.satisfacción - satisf_min) / satisf_rango
+
+                suma_pesos = peso_salario + peso_satisfacción
+
+                if suma_pesos > 0:
+                    u_empleado = 100 * (
+                        salario_informal_norm * peso_salario +
+                        satisf_norm * peso_satisfacción
+                    ) / suma_pesos
+                else:
+                    u_empleado = 50.0
+
+                # ===========================
+                # Utilidad de la empresa (0-100)
+                # ===========================
+
+                error = abs(
+                    trabajador.productividad -
+                    emp.productividad_objetivo
+                ) / 0.9  # productividad ∈ [0.1,1]
+
+                u_empresa = 100 * (
+                    1 - error * (1 - emp.tolerancia)
+                )
+
+                u_empresa = max(0.0, min(100.0, u_empresa))
+
+                # ===========================
+                # Score conjunto
+                # ===========================
+
+                score = (
+                    estado.config.peso_trabajador * u_empleado +
+                    estado.config.peso_empresa * u_empresa
+                )
+
                 if score > best_score:
                     best_score = score
                     best_idx_in_list = idx

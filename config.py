@@ -32,6 +32,8 @@ class Config:
     tasa_emisión: float = 0
 
     # Parámetros del modelo laboral
+    peso_trabajador: float = 1.0
+    peso_empresa: float = 1.0
     reducción_salario: float = 0.99
     aumento_salario: float = 1.01
     informalidad_por_empresa: float = 1.0

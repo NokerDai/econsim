@@ -12,7 +12,8 @@ class Empresa:
     salario: float
     salario_informal: float
 
-    exigencia: float
+    productividad_objetivo_empleado: float
+    tolerancia: float
 
     precio_venta_real: float = 0.0
     salario_pago_real: float = 0.0
@@ -45,7 +46,8 @@ class Empresa:
             precio=config.precio_inicial,
             calidad=round(aleatorio.uniform(0.5, 1.5), 2),
             satisfacción=round(aleatorio.uniform(0.5, 1.5), 2),
-            exigencia=round(aleatorio.uniform(0.5, 1.5), 2),
+            productividad_objetivo_empleado=round(aleatorio.uniform(0.1, 1.0), 2),
+            tolerancia=round(aleatorio.uniform(0.0, 1.0), 2),
             salario=config.salario_inicial,
             salario_informal=config.salario_informal_inicial
         )
