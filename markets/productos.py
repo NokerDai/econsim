@@ -8,7 +8,7 @@ def mercado_productos(estado):
     for empresa in estado.empresas:
         empresa.ventas_hoy = 0
         empresa.inventario += (empresa.empleados_formales * pf + empresa.empleados_informales * pi) * empresa.productividad
-        productos_disponibles.extend([empresa] * int(empresa.inventario))
+        productos_disponibles.extend([empresa] * int(min(estado.config.num_trabajadores, empresa.inventario)))
 
     productos_disponibles.sort(key=lambda e: e.precio)
     productos_disponibles = deque(productos_disponibles)
