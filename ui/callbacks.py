@@ -1,6 +1,6 @@
 # ui/callbacks.py
 import streamlit as st
-from salario_utils import resolver_valor_salario
+from ui.salario_utils import resolver_valor_salario
 
 def sincronizar_salario_slider(sim):
     st.session_state.salario_input = st.session_state.salario_slider
