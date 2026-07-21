@@ -328,7 +328,7 @@ def panel():
             with col_formalidad:
                 st.slider(
                     "Formalidad límite", min_value=0.0, max_value=2.0, step=0.01,
-                    key="tasa_slider", on_change=lambda: cb.sincronizar_formalidad_límite(sim)
+                    key="formalidad_límite_slider", on_change=lambda: cb.sincronizar_formalidad_límite(sim)
                 )
             with col_btn_formalidad:
                 if st.button("📍", key="marcar_formalidad_límite"):
