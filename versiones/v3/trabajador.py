@@ -5,6 +5,9 @@ from dataclasses import dataclass
 class Trabajador:
     sensibilidad_precio: float
     sensibilidad_calidad: float
+    sensibilidad_estabilidad: float
+    sensibilidad_seguridad: float
+    sensibilidad_salario: float
     presupuesto: float = 0.0
 
     @classmethod
