@@ -78,13 +78,6 @@ def mercado_laboral(estado):
             seleccionada.presupuesto -= seleccionada.salario_informal
 
     # ===========================
-    # Actualizar salario mínimo
-    # ===========================
-
-    if estado.config.salario_mínimo_automático and estado.día % estado.config.salario_mínimo_automático_intervalo == 0:
-        estado.config.salario_mínimo = (salario_formal_máximo * estado.config.tasa_salario_mínimo)
-
-    # ===========================
     # Ajustar salarios empresas
     # ===========================
 
@@ -92,6 +85,23 @@ def mercado_laboral(estado):
     num_empleados_formales = sum([empresa.empleados_formales for empresa in estado.empresas])
     num_empleados_informales_proyectados = estado.config.num_trabajadores - num_empleados_formales
     vacantes_informales_proyectadas = (num_empleados_informales_proyectados * estado.config.informalidad_por_empresa) / estado.config.num_empresas
+
+    # ===========================
+    # Actualizar salario mínimo
+    # ===========================
+
+    if estado.config.salario_mínimo_automático and estado.día % estado.config.salario_mínimo_automático_intervalo == 0:
+        tasa_empleo = num_empleados_formales / estado.config.num_trabajadores
+        tasa_límite = estado.config.salario_mínimo_automático_formalidad_límite
+        reducción = estado.config.salario_mínimo_automático_reducción
+        aumento = estado.config.salario_mínimo_automático_aumento
+        if tasa_empleo > tasa_límite * 1.05:
+            if estado.config.salario_mínimo > 1:
+                estado.config.salario_mínimo = min(estado.config.salario_mínimo * aumento, salario_formal_máximo * estado.config.tasa_salario_mínimo)
+            else:
+                estado.config.salario_mínimo = salario_formal_máximo * estado.config.tasa_salario_mínimo * reducción
+        elif tasa_empleo < tasa_límite * 0.95:
+            estado.config.salario_mínimo *= reducción
 
     for empresa in estado.empresas:
         empresa.salario_pago_real = empresa.salario

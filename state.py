@@ -1,30 +1,21 @@
-# --- state.py ---
-import random
-
-from models import Trabajador, Empresa
+# state.py
 from estadisticas import Estadisticas
 
-
 class Estado:
-
-    def __init__(self, config):
-
+    def __init__(self, config, EmpresaCls, TrabajadorCls):
         self.config = config
-
-        # Tiempo
         self.día = 0
-
-        # Aleatoriedad
+        
+        import random
         self.aleatorio = random.Random(config.semilla)
 
-        # Creación de agentes desacoplada mediante métodos factoría
         self.trabajadores = [
-            Trabajador.crear_inicial(config, self.aleatorio)
+            TrabajadorCls.crear_inicial(config, self.aleatorio)
             for _ in range(config.num_trabajadores)
         ]
 
         self.empresas = [
-            Empresa.crear_inicial(config, self.aleatorio)
+            EmpresaCls.crear_inicial(config, self.aleatorio)
             for _ in range(config.num_empresas)
         ]
 

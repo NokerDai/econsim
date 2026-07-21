@@ -1,133 +1,44 @@
-# --- simulation.py ---
-import snapshot
 import state
-import threading
-import time
-
-from markets import (
-    emisión_monetaria,
-    mercado_laboral,
-    mercado_productos,
-)
-
 from estadisticas import actualizar_estadisticas
 
-
 class Simulación:
-
     def __init__(self, config):
-
         self.config = config
-
-        self.estado = state.Estado(config)
-
         self.corriendo = False
-
         self.hilo = None
-
         self.callbacks = []
-
         self.lock = threading.Lock()
 
+        try:
+            ruta_version = f"versiones.{config.version_modelo}"
+            self.modulo_version = importlib.import_module(ruta_version)
+        except ModuleNotFoundError as e:
+            raise ValueError(f"La versión del modelo '{config.version_modelo}' no fue encontrada.") from e
 
-    def agregar_callback(self, callback):
-
-        self.callbacks.append(callback)
-
-
-    def obtener_snapshot(self):
-        with self.lock:
-            estadísticas = self.estado.estadisticas
-            return snapshot.Snapshot(
-                día=self.estado.día,
-                salario_medio=(
-                    estadísticas.salario_medio[-1]
-                    if estadísticas.salario_medio
-                    else 0
-                ),
-                salario_informal_medio=(
-                    estadísticas.salario_informal_medio[-1]
-                    if estadísticas.salario_informal_medio
-                    else 0
-                ),
-                precio_lista_medio=(
-                    estadísticas.precio_lista_medio[-1]
-                    if estadísticas.precio_lista_medio
-                    else 0
-                ),
-                precio_transaccion_medio=(
-                    estadísticas.precio_transaccion_medio[-1]
-                    if estadísticas.precio_transaccion_medio
-                    else 0
-                ),
-                empleo_formal=(
-                    estadísticas.empleo_formal[-1]
-                    if estadísticas.empleo_formal
-                    else 0
-                ),
-                empleo_informal=(
-                    estadísticas.empleo_informal[-1]
-                    if estadísticas.empleo_informal
-                    else 0
-                ),
-                desempleo=(
-                    estadísticas.desempleo[-1]
-                    if estadísticas.desempleo
-                    else 0
-                ),
-                tasa_emisión=self.config.tasa_emisión,
-                salario_mínimo=self.config.salario_mínimo,
-                salario_mínimo_automático=self.config.salario_mínimo_automático,
-                informalidad_por_empresa=self.config.informalidad_por_empresa,
-                
-                bienes_vendidos=(
-                    estadísticas.bienes_vendidos[-1]
-                    if estadísticas.bienes_vendidos
-                    else 0.0
-                ),
-                empresas_ingreso=(
-                    estadísticas.empresas_ingreso[-1]
-                    if estadísticas.empresas_ingreso
-                    else 0.0
-                ),
-                empresas_gasto=(
-                    estadísticas.empresas_gasto[-1]
-                    if estadísticas.empresas_gasto
-                    else 0.0
-                ),
-            )
-
-
-    def notificar(self):
-
-        snapshot_obj = self.obtener_snapshot()
-
-        for callback in self.callbacks:
-
-            callback(snapshot_obj)
-
+        self.estado = state.Estado(
+            config, 
+            self.modulo_version.Empresa, 
+            self.modulo_version.Trabajador
+        )
 
     def step(self):
-
         with self.lock:
-
             self.estado.día += 1
 
-            emisión_monetaria(self.estado)
+            # 3. Consumir las funciones del módulo de la versión cargada
+            self.modulo_version.emisión_monetaria(self.estado)
              
             self.estado.aleatorio.shuffle(self.estado.trabajadores)
 
-            mercado_laboral(self.estado)
+            self.modulo_version.mercado_laboral(self.estado)
 
             self.estado.aleatorio.shuffle(self.estado.trabajadores)
 
-            mercado_productos(self.estado)
+            self.modulo_version.mercado_productos(self.estado)
 
             actualizar_estadisticas(self.estado)
 
-
         if self.estado.día % self.config.frecuencia_actualización == 0:
-
             self.notificar()
 
         return True
