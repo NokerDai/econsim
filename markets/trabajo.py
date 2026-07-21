@@ -1,11 +1,16 @@
+# --- trabajo.py ---
 from collections import deque
 
 def mercado_laboral(estado):
     vacantes_formales = []
 
-    # Generar vacantes formales
     for empresa in estado.empresas:
-        empresa.vacantes_formales = int(empresa.presupuesto / empresa.salario)
+        salario_seguro = max(empresa.salario, 1.0)
+        
+        empresa.vacantes_formales = min(
+            int(empresa.presupuesto / salario_seguro),
+            estado.config.num_trabajadores
+        )
         empresa.vacantes_informales = 0
         empresa.empleados_formales = 0
         empresa.empleados_informales = 0
@@ -48,7 +53,12 @@ def mercado_laboral(estado):
             vacantes = []
 
             for empresa in estado.empresas:
-                empresa.vacantes_informales = int(empresa.presupuesto / empresa.salario_informal)
+                salario_inf_seguro = max(empresa.salario_informal, 1.0)
+                
+                empresa.vacantes_informales = min(
+                    int(empresa.presupuesto / salario_inf_seguro),
+                    estado.config.num_trabajadores
+                )
                 vacantes.extend([empresa] * empresa.vacantes_informales)
 
             vacantes.sort(key=lambda e: e.salario_informal, reverse=True)
@@ -89,7 +99,8 @@ def mercado_laboral(estado):
 
         ratio = empresa.vacantes_formales - int(vacantes_formales_proyectadas)
         empresa.salario *= 1 + ratio / 100
-        empresa.salario = max(empresa.salario, estado.config.salario_mínimo)
+        empresa.salario = max(empresa.salario, estado.config.salario_mínimo, 1.0)
 
         ratio = empresa.vacantes_informales - int(vacantes_informales_proyectadas)
         empresa.salario_informal *= 1 + ratio / 100
+        empresa.salario_informal = max(empresa.salario_informal, 1.0)
