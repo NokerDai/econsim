@@ -1,3 +1,4 @@
+# --- state.py ---
 import random
 
 from models import Trabajador, Empresa
@@ -16,19 +17,14 @@ class Estado:
         # Aleatoriedad
         self.aleatorio = random.Random(config.semilla)
 
-        # Agentes
+        # Creación de agentes desacoplada mediante métodos factoría
         self.trabajadores = [
-            Trabajador()
+            Trabajador.crear_inicial(config, self.aleatorio)
             for _ in range(config.num_trabajadores)
         ]
 
         self.empresas = [
-            Empresa(
-                presupuesto=config.presupuesto_inicial,
-                precio=config.precio_inicial,
-                salario=config.salario_inicial,
-                salario_informal=config.salario_informal_inicial
-            )
+            Empresa.crear_inicial(config, self.aleatorio)
             for _ in range(config.num_empresas)
         ]
 

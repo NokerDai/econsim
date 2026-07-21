@@ -5,6 +5,7 @@ from dataclasses import dataclass
 class Empresa:
     presupuesto: float
     precio: float
+    calidad: float
     salario: float
     salario_informal: float
 
@@ -27,3 +28,17 @@ class Empresa:
     racha_aumentado: int = 0
 
     ventas_hoy: int = 0
+
+    @classmethod
+    def crear_inicial(cls, config, aleatorio):
+        """
+        Método de fábrica para construir una Empresa con sus 
+        valores iniciales correspondientes de forma encapsulada.
+        """
+        return cls(
+            presupuesto=config.presupuesto_inicial,
+            precio=config.precio_inicial,
+            calidad=round(aleatorio.uniform(0.8, 1.2), 2),
+            salario=config.salario_inicial,
+            salario_informal=config.salario_informal_inicial
+        )
