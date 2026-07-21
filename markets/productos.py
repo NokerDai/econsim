@@ -16,7 +16,7 @@ def mercado_productos(estado):
 
     for trabajador in estado.trabajadores:
         if productos_disponibles:
-            opciones_trabajador = list(productos_disponibles)[:20]
+            opciones_trabajador = list(productos_disponibles)[:10]
             opciones_trabajador.sort(key=lambda e: e.precio * trabajador.sensibilidad_precio + e.calidad * trabajador.sensibilidad_calidad)
             seleccionado = opciones_trabajador[0]
 
