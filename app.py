@@ -29,7 +29,7 @@ if "simulación" not in st.session_state:
 
 sim = st.session_state.simulación
 
-# Ejecutar inicialización del estado UI
+# Ejecutar inicialización del estado UI al cargar por primera vez
 inicializar_estado_ui(sim)
 
 # Sincronización del salario automático
@@ -137,6 +137,10 @@ def controles_velocidad():
 
 
 def panel():
+    # CORRECCIÓN: Asegura que el estado de los controles de la UI se inicialice
+    # en cada rerun del fragmento (por ejemplo, al cambiar de pestañas).
+    inicializar_estado_ui(sim)
+    
     hay_datos = len(st.session_state.historial) > 0
     captura = st.session_state.get("captura_activa")
 
