@@ -20,7 +20,7 @@ def mercado_productos(estado):
     for trabajador in estado.trabajadores:
         if productos_disponibles:
             opciones_trabajador = list(productos_disponibles)[:10]
-            opciones_trabajador.sort(key=lambda e: e.precio * trabajador.sensibilidad_precio * sp + e.calidad * trabajador.sensibilidad_calidad * sc)
+            opciones_trabajador.sort(key=lambda e: e.precio * trabajador.sensibilidad_precio * sp + e.calidad * trabajador.sensibilidad_calidad * sc, reverse=True)
             seleccionado = opciones_trabajador[0]
 
             if trabajador.presupuesto >= seleccionado.precio:
