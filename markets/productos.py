@@ -1,3 +1,4 @@
+# --- productos.py ---
 from collections import deque
 
 def mercado_productos(estado):
@@ -10,17 +11,21 @@ def mercado_productos(estado):
         empresa.inventario += (empresa.empleados_formales * pf + empresa.empleados_informales * pi) * empresa.productividad
         productos_disponibles.extend([empresa] * int(min(estado.config.num_trabajadores, empresa.inventario)))
 
-    productos_disponibles.sort(key=lambda e: e.precio)
+    estado.aleatorio.shuffle(productos_disponibles)
     productos_disponibles = deque(productos_disponibles)
 
     for trabajador in estado.trabajadores:
         if productos_disponibles:
-            if trabajador.presupuesto >= productos_disponibles[0].precio:
-                seleccionado = productos_disponibles.popleft()
+            opciones_trabajador = list(productos_disponibles)[:20]
+            opciones_trabajador.sort(key=lambda e: e.precio * trabajador.sensibilidad_precio + e.calidad * trabajador.sensibilidad_calidad)
+            seleccionado = opciones_trabajador[0]
+
+            if trabajador.presupuesto >= seleccionado.precio:
                 seleccionado.presupuesto += seleccionado.precio
                 trabajador.presupuesto -= seleccionado.precio
                 seleccionado.inventario -= 1
                 seleccionado.ventas_hoy += 1
+                productos_disponibles.remove(seleccionado)
         else:
             break
 
