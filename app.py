@@ -34,8 +34,11 @@ inicializar_estado_ui(sim)
 
 # Sincronización del salario automático
 if st.session_state.get("salario_mínimo_automático", False):
-    st.session_state.salario_slider = int(sim.config.salario_mínimo or 0)
-    st.session_state.salario_input = int(sim.config.salario_mínimo or 0)
+    val_sal = int(sim.config.salario_mínimo or 0)
+    st.session_state.salario_slider = val_sal
+    st.session_state.salario_input = val_sal
+    st.session_state._salario_slider = val_sal
+    st.session_state._salario_input = val_sal
 
 
 def registrar_snapshots(snapshots):
@@ -108,6 +111,8 @@ def controles_velocidad():
         st.session_state._velocidad_ui = velocidad
         st.session_state.velocidad_slider = velocidad
         st.session_state.velocidad_input = velocidad
+        st.session_state._velocidad_slider = velocidad
+        st.session_state._velocidad_input = velocidad
 
     col_velocidad, col_btn = st.columns([5, 1])
     with col_velocidad:
@@ -115,7 +120,7 @@ def controles_velocidad():
             "Velocidad (días por paso)",
             min_value=1,
             max_value=1000,
-            key="velocidad_slider",
+            key="_velocidad_slider",
             on_change=lambda: cb.sincronizar_velocidad_slider(sim),
         )
         st.number_input(
@@ -123,7 +128,7 @@ def controles_velocidad():
             min_value=1,
             max_value=1000,
             step=1,
-            key="velocidad_input",
+            key="_velocidad_input",
             on_change=lambda: cb.sincronizar_velocidad_input(sim),
         )
     with col_btn:
@@ -310,7 +315,7 @@ def panel():
 
         st.checkbox(
             "Salario mínimo automático",
-            key="salario_mínimo_automático",
+            key="_salario_mínimo_automático",
             on_change=lambda: cb.sincronizar_salario_mínimo_automático(sim),
         )
 
@@ -319,7 +324,7 @@ def panel():
             with col_tasa:
                 st.slider(
                     "Tasa de salario mínimo", min_value=0.0, max_value=2.0, step=0.01,
-                    key="tasa_slider", on_change=lambda: cb.sincronizar_tasa(sim)
+                    key="_tasa_slider", on_change=lambda: cb.sincronizar_tasa(sim)
                 )
             with col_btn_tasa:
                 if st.button("📍", key="marcar_tasa_salario"):
@@ -329,7 +334,7 @@ def panel():
             with col_formalidad:
                 st.slider(
                     "Formalidad límite", min_value=0.0, max_value=1.0, step=0.01,
-                    key="formalidad_límite_slider", on_change=lambda: cb.sincronizar_formalidad_límite(sim)
+                    key="_formalidad_límite_slider", on_change=lambda: cb.sincronizar_formalidad_límite(sim)
                 )
             with col_btn_formalidad:
                 if st.button("📍", key="marcar_formalidad_límite"):
@@ -340,11 +345,11 @@ def panel():
             with col_salario:
                 st.slider(
                     "Salario mínimo", min_value=0, max_value=10000,
-                    key="salario_slider", on_change=lambda: cb.sincronizar_salario_slider(sim)
+                    key="_salario_slider", on_change=lambda: cb.sincronizar_salario_slider(sim)
                 )
                 st.number_input(
                     "Valor exacto", min_value=0, max_value=10000, step=1,
-                    key="salario_input", on_change=lambda: cb.sincronizar_salario_input(sim)
+                    key="_salario_input", on_change=lambda: cb.sincronizar_salario_input(sim)
                 )
             with col_btn_salario:
                 if st.button("📍", key="marcar_salario"):
@@ -354,11 +359,11 @@ def panel():
         with col_inf:
             st.slider(
                 "Informalidad por empresa", min_value=0.0, max_value=1.0, step=0.01,
-                key="informalidad_por_empresa_slider", on_change=lambda: cb.sincronizar_informalidad_por_empresa_slider(sim)
+                key="_informalidad_por_empresa_slider", on_change=lambda: cb.sincronizar_informalidad_por_empresa_slider(sim)
             )
             st.number_input(
                 "Valor exacto", min_value=0.0, max_value=1.0, step=0.01,
-                key="informalidad_por_empresa_input", on_change=lambda: cb.sincronizar_informalidad_por_empresa_input(sim)
+                key="_informalidad_por_empresa_input", on_change=lambda: cb.sincronizar_informalidad_por_empresa_input(sim)
             )
         with col_btn_inf:
             if st.button("📍", key="marcar_informalidad"):
@@ -370,11 +375,11 @@ def panel():
         with col_f:
             st.slider(
                 "Productividad formal", min_value=0.0, max_value=5.0, step=0.01,
-                key="productividad_formal_slider", on_change=lambda: cb.sincronizar_productividad_formal_slider(sim)
+                key="_productividad_formal_slider", on_change=lambda: cb.sincronizar_productividad_formal_slider(sim)
             )
             st.number_input(
                 "Valor exacto", min_value=0.0, max_value=5.0, step=0.01,
-                key="productividad_formal_input", on_change=lambda: cb.sincronizar_productividad_formal_input(sim)
+                key="_productividad_formal_input", on_change=lambda: cb.sincronizar_productividad_formal_input(sim)
             )
         with col_btn_f:
             if st.button("📍", key="marcar_productividad_formal"):
@@ -384,11 +389,11 @@ def panel():
         with col_i:
             st.slider(
                 "Productividad informal", min_value=0.0, max_value=5.0, step=0.01,
-                key="productividad_informal_slider", on_change=lambda: cb.sincronizar_productividad_informal_slider(sim)
+                key="_productividad_informal_slider", on_change=lambda: cb.sincronizar_productividad_informal_slider(sim)
             )
             st.number_input(
                 "Valor exacto", min_value=0.0, max_value=5.0, step=0.01,
-                key="productividad_informal_input", on_change=lambda: cb.sincronizar_productividad_informal_input(sim)
+                key="_productividad_informal_input", on_change=lambda: cb.sincronizar_productividad_informal_input(sim)
             )
         with col_btn_i:
             if st.button("📍", key="marcar_productividad_informal"):
@@ -400,11 +405,11 @@ def panel():
         with col_em:
             st.slider(
                 "Tasa emisión", min_value=-1.000, max_value=1.000, step=0.001,
-                key="tasa_emisión_slider", on_change=lambda: cb.sincronizar_tasa_emisión_slider(sim)
+                key="_tasa_emisión_slider", on_change=lambda: cb.sincronizar_tasa_emisión_slider(sim)
             )
             st.number_input(
                 "Valor exacto", min_value=-1.000, max_value=1.000, step=0.001,
-                key="tasa_emisión_input", on_change=lambda: cb.sincronizar_tasa_emisión_input(sim)
+                key="_tasa_emisión_input", on_change=lambda: cb.sincronizar_tasa_emisión_input(sim)
             )
         with col_btn_em:
             if st.button("📍", key="marcar_tasa_emision"):

@@ -85,3 +85,19 @@ def inicializar_estado_ui(sim):
 
     if "necesita_rerun_completo" not in st.session_state:
         st.session_state.necesita_rerun_completo = False
+
+    st.session_state._salario_mínimo_automático = bool(st.session_state.salario_mínimo_automático)
+    st.session_state._salario_slider = int(st.session_state.salario_slider)
+    st.session_state._salario_input = int(st.session_state.salario_input)
+    st.session_state._informalidad_por_empresa_slider = float(st.session_state.informalidad_por_empresa_slider)
+    st.session_state._informalidad_por_empresa_input = float(st.session_state.informalidad_por_empresa_input)
+    st.session_state._tasa_slider = float(st.session_state.tasa_slider)
+    st.session_state._formalidad_límite_slider = float(st.session_state.formalidad_límite_slider)
+    st.session_state._velocidad_slider = int(st.session_state.velocidad_slider)
+    st.session_state._velocidad_input = int(st.session_state.velocidad_input)
+    st.session_state._tasa_emisión_slider = float(st.session_state.tasa_emisión_slider)
+    st.session_state._tasa_emisión_input = float(st.session_state.tasa_emisión_input)
+    st.session_state._productividad_formal_slider = float(st.session_state.productividad_formal_slider)
+    st.session_state._productividad_formal_input = float(st.session_state.productividad_formal_input)
+    st.session_state._productividad_informal_slider = float(st.session_state.productividad_informal_slider)
+    st.session_state._productividad_informal_input = float(st.session_state.productividad_informal_input)
