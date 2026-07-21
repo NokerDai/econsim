@@ -7,7 +7,9 @@ def mercado_productos(estado):
 
     for empresa in estado.empresas:
         empresa.ventas_hoy = 0
-        empresa.inventario += (empresa.empleados_formales * pf + empresa.empleados_informales * pi) * empresa.productividad
+        produccion_formal = empresa.productividad_acumulada_formales * pf
+        produccion_informal = empresa.productividad_acumulada_informales * pi
+        empresa.inventario += (produccion_formal + produccion_informal) * empresa.productividad
         productos_disponibles.extend([empresa] * int(min(estado.config.num_trabajadores, empresa.inventario)))
 
     sp = estado.config.sensibilidad_precio
@@ -77,6 +79,9 @@ def mercado_productos(estado):
             empresa.racha_aumentado += 1
             empresa.racha_reducido = 0
             empresa.precio *= estado.config.aumento_precio
+        else:
+            empresa.racha_reducido = 0
+            empresa.racha_aumentado = 0
             
         if empresa.racha_reducido > 30:
             empresa.productividad *= 0.99

@@ -13,6 +13,8 @@ def mercado_laboral(estado):
         empresa.vacantes_informales = 0
         empresa.empleados_formales = 0
         empresa.empleados_informales = 0
+        empresa.productividad_acumulada_formales = 0.0
+        empresa.productividad_acumulada_informales = 0.0
 
         vacantes_formales.extend([empresa] * empresa.vacantes_formales)
 
@@ -129,6 +131,7 @@ def mercado_laboral(estado):
                     seleccionada = emp
 
             seleccionada.empleados_formales += 1
+            seleccionada.productividad_acumulada_formales += trabajador.productividad
 
             trabajador.presupuesto += seleccionada.salario
             seleccionada.presupuesto -= seleccionada.salario
@@ -255,6 +258,7 @@ def mercado_laboral(estado):
                     seleccionada = emp
 
             seleccionada.empleados_informales += 1
+            seleccionada.productividad_acumulada_informales += trabajador.productividad
 
             trabajador.presupuesto += seleccionada.salario_informal
             seleccionada.presupuesto -= seleccionada.salario_informal
@@ -282,11 +286,11 @@ def mercado_laboral(estado):
         tasa_límite = estado.config.salario_mínimo_automático_formalidad_límite
         reducción = estado.config.salario_mínimo_automático_reducción
         aumento = estado.config.salario_mínimo_automático_aumento
+
+        if estado.config.salario_mínimo == 0:
+            estado.config.salario_mínimo = salario_formal_máximo * estado.config.tasa_salario_mínimo * reducción
         if tasa_empleo > tasa_límite * 1.05:
-            if estado.config.salario_mínimo > 1:
-                estado.config.salario_mínimo = min(estado.config.salario_mínimo * aumento, salario_formal_máximo * estado.config.tasa_salario_mínimo)
-            else:
-                estado.config.salario_mínimo = salario_formal_máximo * estado.config.tasa_salario_mínimo * reducción
+            estado.config.salario_mínimo = min(estado.config.salario_mínimo * aumento, salario_formal_máximo * estado.config.tasa_salario_mínimo)
         elif tasa_empleo < tasa_límite * 0.95:
             estado.config.salario_mínimo *= reducción
 

@@ -26,6 +26,8 @@ class Empresa:
     empleados_informales: int = 0
 
     productividad: float = 0.7
+    productividad_acumulada_formales: float = 0.0
+    productividad_acumulada_informales: float = 0.0
 
     inventario: float = 0.0
     inventario_ayer: float = 0.0
