@@ -580,7 +580,7 @@ def controles_velocidad():
         st.slider(
             "Velocidad (días por paso)",
             min_value=1,
-            max_value=1000,
+            max_value=365,
             key="velocidad_slider",
             on_change=sincronizar_velocidad_slider,
         )
@@ -588,7 +588,7 @@ def controles_velocidad():
         st.number_input(
             "Valor exacto",
             min_value=1,
-            max_value=1000,
+            max_value=365,
             step=1,
             key="velocidad_input",
             on_change=sincronizar_velocidad_input,
