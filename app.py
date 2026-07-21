@@ -272,18 +272,6 @@ def panel():
             st.info("Inicie la simulación en la pestaña Configuración.")
 
     with tab_config:
-        st.subheader("Control de ejecución")
-        
-        # Se muestra la versión actualmente seleccionada como de solo lectura
-        st.text_input(
-            "Versión del Modelo Económico (Bloqueada)",
-            value=sim.config.version_modelo,
-            disabled=True,
-            help="Para cambiar de versión, es necesario reiniciar por completo la sesión."
-        )
-
-        st.divider()
-
         col_btn1, col_btn2 = st.columns(2)
         with col_btn1:
             if st.session_state.auto_avance:
