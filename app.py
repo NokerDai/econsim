@@ -700,7 +700,7 @@ with st.sidebar:
                 if col in df_cache_visual.columns:
                     df_cache_visual[col] = df_cache_visual[col].map(lambda x: f"{x:.2f}")
 
-            st.dataframe(df_cache_visual, use_container_width=True)
+            st.dataframe(df_cache_visual, width=True)
             if st.button("🗑️ Limpiar Caché", key="btn_limpiar_cache", width="stretch"):
                 st.session_state.valores_guardados = []
                 st.rerun()
