@@ -42,18 +42,16 @@ def inicializar_estado_ui(sim):
         st.session_state.salario_input = int(sim.config.salario_mínimo or 0)
 
     if "informalidad_por_empresa_slider" not in st.session_state:
-        st.session_state.informalidad_por_empresa_slider = int(sim.config.informalidad_por_empresa)
+        st.session_state.informalidad_por_empresa_slider = float(sim.config.informalidad_por_empresa)
 
     if "informalidad_por_empresa_input" not in st.session_state:
-        st.session_state.informalidad_por_empresa_input = int(sim.config.informalidad_por_empresa)
+        st.session_state.informalidad_por_empresa_input = float(sim.config.informalidad_por_empresa)
 
     if "tasa_slider" not in st.session_state:
-        st.session_state.tasa_slider = 0.3
-        sim.config.tasa_salario_mínimo = 0.3
+        st.session_state.tasa_slider = float(getattr(sim.config, "tasa_salario_mínimo", 0.3))
     
     if "formalidad_límite_slider" not in st.session_state:
-        st.session_state.formalidad_límite_slider = 0.0
-        sim.config.formalidad_límite_slider = 0.0
+        st.session_state.formalidad_límite_slider = float(getattr(sim.config, "salario_mínimo_automático_formalidad_límite", 0.0))
 
     if "velocidad_slider" not in st.session_state:
         st.session_state.velocidad_slider = max(1, int(getattr(sim.config, "velocidad_streamlit", 1)))
