@@ -241,6 +241,12 @@ if "productividad_informal_input" not in st.session_state:
 if "pestana_activa" not in st.session_state:
     st.session_state.pestana_activa = "⚙️ Configuración"
 
+# ==============================================================================
+# Lógica de pausa automática al ingresar a Configuración
+# ==============================================================================
+if st.session_state.get("pestana_activa") == "⚙️ Configuración":
+    st.session_state.auto_avance = False
+
 
 def sincronizar_salario_slider():
     st.session_state.salario_input = st.session_state.salario_slider
@@ -409,10 +415,13 @@ def marcar_valor(nombre, valor, día=None):
 def iniciar_avance():
     st.session_state.auto_avance = True
     st.session_state.last_auto_step = time.time()
+    st.session_state.pestana_activa = "📈 Gráficos de Evolución"
+    st.rerun()
 
 
 def detener_avance():
     st.session_state.auto_avance = False
+    st.rerun()
 
 
 def obtener_marcadores_activos():
@@ -812,7 +821,6 @@ def panel():
                 st.rerun()
 
         if st.button("🔄 Reiniciar", width="stretch"):
-            detener_avance()
             sim.reset()
             st.session_state.historial = pd.DataFrame(
                 columns=[
