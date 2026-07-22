@@ -7,6 +7,7 @@ def mercado_productos(estado):
 
     for empresa in estado.empresas:
         empresa.ventas_hoy = 0
+        empresa.días_sin_vender += 1
         produccion_formal = empresa.productividad_acumulada_formales * pf
         produccion_informal = empresa.productividad_acumulada_informales * pi
         empresa.inventario += (produccion_formal + produccion_informal) * empresa.productividad
@@ -18,6 +19,7 @@ def mercado_productos(estado):
     random_func = rand.random  # Acceso directo al generador en C, mucho más rápido
 
     for trabajador in estado.trabajadores:
+        trabajador.días_sin_comprar += 1
         n_disp = len(productos_disponibles)
         if n_disp > 0:
             peso_calidad = trabajador.sensibilidad_calidad * sc
@@ -58,6 +60,8 @@ def mercado_productos(estado):
                 trabajador.presupuesto -= seleccionado.precio
                 seleccionado.inventario -= 1
                 seleccionado.ventas_hoy += 1
+                trabajador.días_sin_comprar = 0
+                seleccionado.días_sin_vender = 0
                 
                 # 4. Eliminación O(1) con swap-and-pop
                 # Intercambiamos el elemento comprado por el último de la lista y hacemos pop()
