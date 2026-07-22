@@ -24,10 +24,10 @@ SVG_TEMPLATE = """
   <text x="500" y="625" text-anchor="middle" font-size="18" font-weight="bold" fill="#f8f9fa">Factores de Producción</text>
   <ellipse cx="140" cy="375" rx="100" ry="70" fill="#2a2415" stroke="#eab308" stroke-width="2"/>
   <text x="140" y="382" text-anchor="middle" font-size="19" font-weight="bold" fill="#f8f9fa">Empresas</text>
-  <text x="140" y="405" text-anchor="middle" font-size="12" font-weight="bold" fill="#a0a0a0">Cantidad: {num_empresas}</text>
+  <text x="140" y="405" text-anchor="middle" font-size="14" font-weight="bold" fill="#a0a0a0">{num_empresas}</text>
   <ellipse cx="860" cy="375" rx="100" ry="70" fill="#2a2415" stroke="#eab308" stroke-width="2"/>
   <text x="860" y="382" text-anchor="middle" font-size="19" font-weight="bold" fill="#f8f9fa">Familias</text>
-  <text x="860" y="405" text-anchor="middle" font-size="12" font-weight="bold" fill="#a0a0a0">Personas: {num_personas}</text>
+  <text x="860" y="405" text-anchor="middle" font-size="14" font-weight="bold" fill="#a0a0a0">{num_personas}</text>
   <path d="M 215,322 C 240,275 285,215 340,185" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowRed)"/>
   <text x="240" y="235" font-size="13" font-weight="bold" fill="#ff7675" text-anchor="middle">Bienes y Servicios</text>
   <text x="240" y="253" font-size="13" font-weight="bold" fill="#ff7675" text-anchor="middle">vendidos (Q)</text>
