@@ -83,7 +83,7 @@ def demografía_y_firmas(estado):
     nuevas_empresas = 0
     
     # Emprendimiento local
-    if rand.random() < config.tasa_creacion_empresas:
+    if rand.random() < config.tasa_creacion_empresas or precio_promedio/salario_promedio > 0.65:
         nuevas_empresas += 1
         
     # Entrada de capital/sucursales extranjeras
