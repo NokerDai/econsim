@@ -28,7 +28,7 @@ def demografía_y_firmas(estado):
         calidad_promedio = sum(e.calidad for e in estado.empresas) / num_empresas_actual
         satisfacción_promedio= sum(e.satisfacción for e in estado.empresas) / num_empresas_actual
         productividad_objetivo_promedio = sum(e.productividad_objetivo for e in estado.empresas) / num_empresas_actual
-        tolerancia_promedio = round sum(e.tolerancia for e in estado.empresas) / num_empresas_actual
+        tolerancia_promedio = sum(e.tolerancia for e in estado.empresas) / num_empresas_actual
     else:
         # Respaldo a los valores iniciales de config si el mercado se queda sin empresas
         presupuesto_promedio_empresa = config.presupuesto_inicial
