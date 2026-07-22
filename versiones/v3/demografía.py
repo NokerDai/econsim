@@ -2,7 +2,7 @@
 from .trabajador import Trabajador
 from .empresa import Empresa
 
-def demografia_y_firmas(estado):
+def demografía_y_firmas(estado):
     config = estado.config
     rand = estado.aleatorio
     
