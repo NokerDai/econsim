@@ -97,6 +97,10 @@ def demografía_y_firmas(estado):
             precio_promedio * 0.75, 
             precio_promedio * 1.25
         )
+        nueva_emp.inventario = rand.uniform(
+            inventario_promedio * 0.75, 
+            inventario_promedio * 1.25
+        )
         nueva_emp.salario = max(
             rand.uniform(salario_promedio * 0.75, salario_promedio * 1.25),
             config.salario_mínimo,
