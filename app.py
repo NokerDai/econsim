@@ -271,12 +271,13 @@ def panel():
     with tab_flujo:
         if hay_datos:
             total_trabajadores = len(sim.estado.trabajadores)
+            total_empresas = len(sim.estado.empresas)
             num_formales = val_emp_formal * total_trabajadores
             num_informales = val_emp_informal * total_trabajadores
 
             renderizar_diagrama(
                 val_bienes, val_ingresos_empresas, val_gasto_empresas, 
-                num_formales, num_informales, captura
+                num_formales, num_informales, total_empresas, total_trabajadores, captura
             )
         else:
             st.info("Inicie la simulación en la pestaña Configuración.")

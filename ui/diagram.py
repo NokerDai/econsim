@@ -24,8 +24,10 @@ SVG_TEMPLATE = """
   <text x="500" y="625" text-anchor="middle" font-size="18" font-weight="bold" fill="#f8f9fa">Factores de Producción</text>
   <ellipse cx="140" cy="375" rx="100" ry="70" fill="#2a2415" stroke="#eab308" stroke-width="2"/>
   <text x="140" y="382" text-anchor="middle" font-size="19" font-weight="bold" fill="#f8f9fa">Empresas</text>
+  <text x="140" y="405" text-anchor="middle" font-size="12" font-weight="bold" fill="#a0a0a0">Cantidad: {num_empresas}</text>
   <ellipse cx="860" cy="375" rx="100" ry="70" fill="#2a2415" stroke="#eab308" stroke-width="2"/>
   <text x="860" y="382" text-anchor="middle" font-size="19" font-weight="bold" fill="#f8f9fa">Familias</text>
+  <text x="860" y="405" text-anchor="middle" font-size="12" font-weight="bold" fill="#a0a0a0">Personas: {num_personas}</text>
   <path d="M 215,322 C 240,275 285,215 340,185" stroke="#e74c3c" stroke-width="3" fill="none" marker-end="url(#arrowRed)"/>
   <text x="240" y="235" font-size="13" font-weight="bold" fill="#ff7675" text-anchor="middle">Bienes y Servicios</text>
   <text x="240" y="253" font-size="13" font-weight="bold" fill="#ff7675" text-anchor="middle">vendidos (Q)</text>
@@ -59,7 +61,7 @@ SVG_TEMPLATE = """
 </svg>
 """
 
-def renderizar_diagrama(val_bienes, val_ingresos_empresas, val_gasto_empresas, num_formales, num_informales, captura=None):
+def renderizar_diagrama(val_bienes, val_ingresos_empresas, val_gasto_empresas, num_formales, num_informales, num_empresas, num_personas, captura=None):
     if captura is not None:
         delta_bienes = obtener_delta_texto(val_bienes, captura["Bienes Vendidos"])
         delta_ingresos_empresas = obtener_delta_texto(val_ingresos_empresas, captura["Flujo Empresas (Ing)"])
@@ -70,7 +72,21 @@ def renderizar_diagrama(val_bienes, val_ingresos_empresas, val_gasto_empresas, n
         def formato_svg_comparativo(valor_actual, delta_texto, unidad=""):
             return f"{valor_actual:.1f}{unidad} ({delta_texto})"
 
+        if "Número Empresas" in captura:
+            delta_num_empresas = obtener_delta_texto(num_empresas, captura["Número Empresas"])
+            texto_num_empresas = f"{num_empresas:.0f} ({delta_num_empresas})"
+        else:
+            texto_num_empresas = f"{num_empresas:.0f}"
+
+        if "Número Personas" in captura:
+            delta_num_personas = obtener_delta_texto(num_personas, captura["Número Personas"])
+            texto_num_personas = f"{num_personas:.0f} ({delta_num_personas})"
+        else:
+            texto_num_personas = f"{num_personas:.0f}"
+
         valores_svg_comp = {
+            "num_empresas": texto_num_empresas,
+            "num_personas": texto_num_personas,
             "bys_vendidos": formato_svg_comparativo(val_bienes, delta_bienes, " u."),
             "bys_comprados": formato_svg_comparativo(val_bienes, delta_bienes, " u."),
             "ingresos_empresas": formato_svg_comparativo(val_ingresos_empresas, delta_ingresos_empresas, " $"),
@@ -97,6 +113,8 @@ def renderizar_diagrama(val_bienes, val_ingresos_empresas, val_gasto_empresas, n
         )
     else:
         valores_svg = {
+            "num_empresas": f"{num_empresas:.0f}",
+            "num_personas": f"{num_personas:.0f}",
             "bys_vendidos": f"{val_bienes:.1f} u.",
             "bys_comprados": f"{val_bienes:.1f} u.",
             "ingresos_empresas": f"$ {val_ingresos_empresas:,.2f}",
