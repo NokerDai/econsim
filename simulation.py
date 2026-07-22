@@ -34,7 +34,7 @@ class Simulación:
             self.modulo_version.emisión_monetaria(self.estado)
 
             if hasattr(self.modulo_version, "demografía_y_firmas"):
-                self.modulo_version.demografia_y_firmas(self.estado)
+                self.modulo_version.demografía_y_firmas(self.estado)
 
             self.modulo_version.mercado_laboral(self.estado)
 
