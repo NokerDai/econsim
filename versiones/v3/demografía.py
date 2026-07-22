@@ -50,7 +50,7 @@ def demografía_y_firmas(estado):
             nuevos_habitantes += 1
             
     # Inmigración (evento externo independiente de la población actual)
-    if rand.random() < config.prob_inmigracion or precio_promedio/salario_promedio < 1:
+    if rand.random() < config.prob_inmigracion:
         nuevos_habitantes += rand.randint(1, config.num_inmigrantes_paso_max)
         
     # Inicialización e inserción de nuevos trabajadores en el estado
@@ -65,12 +65,11 @@ def demografía_y_firmas(estado):
     # --- Salidas (Mortalidad y Emigración) ---
     sobrevivientes = []
     for t in estado.trabajadores:
-    #    fallece = rand.random() < config.tasa_mortalidad
-    #    emigra = rand.random() < config.tasa_emigracion
-        sale = t.días_sin_comprar > 30
+        fallece = rand.random() < config.tasa_mortalidad
+        emigra = rand.random() < config.tasa_emigracion
         
         # Si no fallece ni emigra, permanece en el sistema
-        if not sale:
+        if not (fallece or emigra):
             sobrevivientes.append(t)
             
     estado.trabajadores = sobrevivientes
@@ -83,7 +82,7 @@ def demografía_y_firmas(estado):
     nuevas_empresas = 0
     
     # Emprendimiento local
-    if rand.random() < config.tasa_creacion_empresas or precio_promedio/salario_promedio > 1.5:
+    if rand.random() < config.tasa_creacion_empresas:
         nuevas_empresas += 1
         
     # Entrada de capital/sucursales extranjeras
@@ -138,16 +137,16 @@ def demografía_y_firmas(estado):
     empresas_activas = []
     for emp in estado.empresas:
         # 1. Quiebra endógena (si se queda sin presupuesto operativo para pagar)
-        quiebra_financiera = (emp.presupuesto <= 0 and emp.inventario == 0) or emp.días_sin_vender > 90
+        quiebra_financiera = (emp.presupuesto <= 0 and emp.inventario == 0)
         
         # 2. Cierre administrativo o liquidación voluntaria (exógeno)
-        #cierre_exogeno = rand.random() < config.tasa_cierre_empresas
+        cierre_exogeno = rand.random() < config.tasa_cierre_empresas
         
         # 3. Salida por relocalización (exógeno)
-        #relocalizacion = rand.random() < config.tasa_relocalizacion_empresas
+        relocalizacion = rand.random() < config.tasa_relocalizacion_empresas
         
         # Si no cumple ninguna de las condiciones de salida, sigue operando
-        if not quiebra_financiera:
+        if not (quiebra_financiera or cierre_exogeno or relocalizacion):
             empresas_activas.append(emp)
             
     estado.empresas = empresas_activas
