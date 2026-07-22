@@ -30,7 +30,8 @@ class Config:
     salario_mínimo_automático_reducción: float = 0.9
     tasa_salario_mínimo: float = 0.3
     tasa_emisión: float = 0
-    mantener_M0: bool True
+    mantenimiento_M0: bool True
+    mantenimiento_M0_intervalo: int = 30
 
     # Parámetros del modelo laboral
     peso_trabajador: float = 1.0
