@@ -50,7 +50,7 @@ def demografía_y_firmas(estado):
             nuevos_habitantes += 1
             
     # Inmigración (evento externo independiente de la población actual)
-    if rand.random() < config.prob_inmigracion:
+    if rand.random() < config.prob_inmigracion or precio_promedio/salario_promedio < 1:
         nuevos_habitantes += rand.randint(1, config.num_inmigrantes_paso_max)
         
     # Inicialización e inserción de nuevos trabajadores en el estado
