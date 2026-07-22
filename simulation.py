@@ -31,14 +31,12 @@ class Simulación:
         with self.lock:
             self.estado.día += 1
 
-            # NUEVO: Llama a las funciones del módulo importado dinámicamente
             self.modulo_version.emisión_monetaria(self.estado)
-             
-            self.estado.aleatorio.shuffle(self.estado.trabajadores)
+
+            if hasattr(self.modulo_version, "demografía_y_firmas"):
+                self.modulo_version.demografia_y_firmas(self.estado)
 
             self.modulo_version.mercado_laboral(self.estado)
-
-            self.estado.aleatorio.shuffle(self.estado.trabajadores)
 
             self.modulo_version.mercado_productos(self.estado)
 

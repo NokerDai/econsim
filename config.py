@@ -47,3 +47,16 @@ class Config:
     reducción_precio: float = 0.99
     sensibilidad_precio: float = 1.0
     sensibilidad_calidad: float = 1.0
+
+    # --- Demografía ---
+    tasa_natalidad: float = 0.000029               # Probabilidad diaria de nacimiento por habitante
+    prob_inmigracion: float = 0.015                # Probabilidad de llegada de inmigrantes un día cualquiera
+    num_inmigrantes_paso_max: int = 5              # Cantidad de inmigrantes máxima por suceso
+    tasa_mortalidad: float = 0.000023              # Probabilidad diaria de fallecimiento por habitante
+    tasa_emigracion: float = 0.000003              # Probabilidad diaria de emigración por habitante
+
+    # --- Ciclo de Vida Empresarial ---
+    tasa_creacion_empresas: float = 0.00012        # Probabilidad diaria de creación de una empresa local
+    tasa_entrada_extranjeras: float = 0.0004       # Probabilidad de ingreso de una empresa extranjera
+    tasa_cierre_empresas: float = 0.00004          # Probabilidad de liquidación exógena por empresa
+    tasa_relocalizacion_empresas: float = 0.000005 # Probabilidad de relocalización exógena al extranjero

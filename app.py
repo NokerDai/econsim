@@ -270,7 +270,7 @@ def panel():
 
     with tab_flujo:
         if hay_datos:
-            total_trabajadores = sim.config.num_trabajadores
+            total_trabajadores = len(sim.estado.trabajadores)
             num_formales = val_emp_formal * total_trabajadores
             num_informales = val_emp_informal * total_trabajadores
 
@@ -300,7 +300,7 @@ def panel():
         if st.button("💾 Guardar en Caché", width="stretch", disabled=not hay_datos):
             n_dias = max(1, int(st.session_state.velocidad))
             hr = st.session_state.historial.tail(n_dias)
-            total_trabajadores = sim.config.num_trabajadores
+            total_trabajadores = len(sim.estado.trabajadores)
             num_formales_c = hr["Empleo formal"].mean() * total_trabajadores
             num_informales_c = hr["Empleo informal"].mean() * total_trabajadores
 
