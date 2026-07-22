@@ -13,10 +13,10 @@ class Config:
 
     # Población
     num_trabajadores: int = 1000
-    num_empresas: int = 100
+    num_empresas: int = 10
     
     # Economía
-    presupuesto_inicial: float = 10000
+    presupuesto_inicial: float = 100000
     precio_inicial: float = 300
     salario_inicial: float = 300
     salario_informal_inicial: float = 50

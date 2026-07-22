@@ -22,16 +22,20 @@ def demografía_y_firmas(estado):
     if num_empresas_actual > 0:
         presupuesto_promedio_empresa = sum(e.presupuesto for e in estado.empresas) / num_empresas_actual
         precio_promedio = sum(e.precio for e in estado.empresas) / num_empresas_actual
-        inventario_promedio = sum(e.inventario for e in estado.empresas) / num_empresas_actual
         salario_promedio = sum(e.salario for e in estado.empresas) / num_empresas_actual
         salario_informal_promedio = sum(e.salario_informal for e in estado.empresas) / num_empresas_actual
+        trigger = True
+        calidad_promedio = sum(e.calidad for e in estado.empresas) / num_empresas_actual
+        satisfacción_promedio= sum(e.satisfacción for e in estado.empresas) / num_empresas_actual
+        productividad_objetivo_promedio = sum(e.productividad_objetivo for e in estado.empresas) / num_empresas_actual
+        tolerancia_promedio = round sum(e.tolerancia for e in estado.empresas) / num_empresas_actual
     else:
         # Respaldo a los valores iniciales de config si el mercado se queda sin empresas
         presupuesto_promedio_empresa = config.presupuesto_inicial
         precio_promedio = config.precio_inicial
-        inventario_promedio = 0
         salario_promedio = config.salario_inicial
         salario_informal_promedio = config.salario_informal_inicial
+        trigger = False
 
     # ==========================================
     # 2. DINÁMICA DE PERSONAS
@@ -97,10 +101,6 @@ def demografía_y_firmas(estado):
             precio_promedio * 0.75, 
             precio_promedio * 1.25
         )
-        nueva_emp.inventario = rand.uniform(
-            inventario_promedio * 0.75, 
-            inventario_promedio * 1.25
-        )
         nueva_emp.salario = max(
             rand.uniform(salario_promedio * 0.75, salario_promedio * 1.25),
             config.salario_mínimo,
@@ -110,13 +110,35 @@ def demografía_y_firmas(estado):
             rand.uniform(salario_informal_promedio * 0.75, salario_informal_promedio * 1.25),
             1.0
         )
+        if trigger:
+            nueva_emp.tolerancia = rand.uniform(
+                tolerancia_promedio * 0.75, 
+                tolerancia_promedio * 1.25
+            )
+            nueva_emp.productividad_objetivo = rand.uniform(
+                productividad_objetivo_promedio * 0.75, 
+                productividad_objetivo_promedio * 1.25
+            )
+            nueva_emp.satisfacción = rand.uniform(
+                satisfacción_promedio * 0.75, 
+                satisfacción_promedio * 1.25
+            )
+            nueva_emp.calidad = rand.uniform(
+                calidad_promedio * 0.75, 
+                calidad_promedio * 1.25
+            )
+        else:
+            nueva_emp.tolerancia = round(estado.aleatorio.uniform(0.0, 1.0), 2)
+            nueva_emp.productividad_objetivo = round(estado.aleatorio.uniform(0.1, 1.0), 2)
+            nueva_emp.satisfacción = round(estado.aleatorio.uniform(0.0, 1.0), 2),
+            nueva_emp.calidad = round(estado.aleatorio.uniform(0.0, 1.0), 2)
         estado.empresas.append(nueva_emp)
         
     # --- Salidas (Cierre y Relocalización) ---
     empresas_activas = []
     for emp in estado.empresas:
         # 1. Quiebra endógena (si se queda sin presupuesto operativo para pagar)
-        quiebra_financiera = (emp.presupuesto <= 0 and emp.inventario == 0) or emp.días_sin_vender > 30
+        quiebra_financiera = (emp.presupuesto <= 0 and emp.inventario == 0) or emp.días_sin_vender > 90
         
         # 2. Cierre administrativo o liquidación voluntaria (exógeno)
         #cierre_exogeno = rand.random() < config.tasa_cierre_empresas
