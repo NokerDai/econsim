@@ -18,6 +18,17 @@ def mercado_productos(estado):
     rand = estado.aleatorio
     random_func = rand.random  # Acceso directo al generador en C, mucho más rápido
 
+    rango_calidad = 0
+    rango_precio = 0
+    if productos_disponibles:
+        min_calidad = min(emp.calidad for emp in productos_disponibles)
+        max_calidad = max(emp.calidad for emp in productos_disponibles)
+        min_precio = min(emp.precio for emp in productos_disponibles)
+        max_precio = max(emp.precio for emp in productos_disponibles)
+
+        rango_calidad = max(max_calidad - min_calidad, 1e-9)
+        rango_precio = max(max_precio - min_precio, 1e-9)
+
     for trabajador in estado.trabajadores:
         trabajador.días_sin_comprar += 1
         n_disp = len(productos_disponibles)
@@ -48,7 +59,15 @@ def mercado_productos(estado):
             
             for idx in indices:
                 emp = productos_disponibles[idx]
-                score = emp.calidad * peso_calidad - emp.precio * peso_precio
+
+                calidad_norm = 100 * (emp.calidad - min_calidad) / rango_calidad
+                precio_norm = 100 * (max_precio - emp.precio) / rango_precio
+
+                score = (
+                    calidad_norm * peso_calidad +
+                    precio_norm * peso_precio
+                )
+
                 if score > best_score:
                     best_score = score
                     best_idx_in_list = idx
