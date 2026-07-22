@@ -302,11 +302,14 @@ def panel():
             n_dias = max(1, int(st.session_state.velocidad))
             hr = st.session_state.historial.tail(n_dias)
             total_trabajadores = len(sim.estado.trabajadores)
+            total_empresas_c = len(sim.estado.empresas)
             num_formales_c = hr["Empleo formal"].mean() * total_trabajadores
             num_informales_c = hr["Empleo informal"].mean() * total_trabajadores
 
             nueva_captura = {
                 "Día": int(sim.estado.día),
+                "Número Empresas": int(total_empresas_c),
+                "Número Personas": int(total_trabajadores),
                 "Salario Mínimo": float(sim.config.salario_mínimo),
                 "Salario Medio": float(hr["Salario"].mean()),
                 "Salario Informal": float(hr["Salario informal"].mean()),
