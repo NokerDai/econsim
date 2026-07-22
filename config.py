@@ -31,7 +31,7 @@ class Config:
     tasa_salario_mínimo: float = 0.3
     tasa_emisión: float = 0
     mantenimiento_M0: bool = True
-    mantenimiento_M0_intervalo: int = 30
+    mantenimiento_M0_suavizado: int = 10
 
     # Parámetros del modelo laboral
     peso_trabajador: float = 1.0
