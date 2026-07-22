@@ -83,7 +83,7 @@ def demografía_y_firmas(estado):
     nuevas_empresas = 0
     
     # Emprendimiento local
-    if rand.random() < config.tasa_creacion_empresas or precio_promedio/salario_promedio > 1:
+    if rand.random() < config.tasa_creacion_empresas or precio_promedio/salario_promedio > 1.5:
         nuevas_empresas += 1
         
     # Entrada de capital/sucursales extranjeras
@@ -128,10 +128,10 @@ def demografía_y_firmas(estado):
                 calidad_promedio * 1.25
             )
         else:
-            nueva_emp.tolerancia = round(estado.aleatorio.uniform(0.0, 1.0), 2)
-            nueva_emp.productividad_objetivo = round(estado.aleatorio.uniform(0.1, 1.0), 2)
-            nueva_emp.satisfacción = round(estado.aleatorio.uniform(0.0, 1.0), 2),
-            nueva_emp.calidad = round(estado.aleatorio.uniform(0.0, 1.0), 2)
+            nueva_emp.tolerancia = round(rand.uniform(0.0, 1.0), 2)
+            nueva_emp.productividad_objetivo = round(rand.uniform(0.1, 1.0), 2)
+            nueva_emp.satisfacción = round(rand.uniform(0.0, 1.0), 2),
+            nueva_emp.calidad = round(rand.uniform(0.0, 1.0), 2)
         estado.empresas.append(nueva_emp)
         
     # --- Salidas (Cierre y Relocalización) ---
