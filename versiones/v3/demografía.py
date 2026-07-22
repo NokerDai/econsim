@@ -22,12 +22,14 @@ def demografía_y_firmas(estado):
     if num_empresas_actual > 0:
         presupuesto_promedio_empresa = sum(e.presupuesto for e in estado.empresas) / num_empresas_actual
         precio_promedio = sum(e.precio for e in estado.empresas) / num_empresas_actual
+        inventario_promedio = sum(e.inventario for e in estado.empresas) / num_empresas_actual
         salario_promedio = sum(e.salario for e in estado.empresas) / num_empresas_actual
         salario_informal_promedio = sum(e.salario_informal for e in estado.empresas) / num_empresas_actual
     else:
         # Respaldo a los valores iniciales de config si el mercado se queda sin empresas
         presupuesto_promedio_empresa = config.presupuesto_inicial
         precio_promedio = config.precio_inicial
+        inventario_promedio = 0
         salario_promedio = config.salario_inicial
         salario_informal_promedio = config.salario_informal_inicial
 
