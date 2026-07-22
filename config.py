@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Config:
-    version_modelo: str = "v1"
+    version_modelo: str = "v3"
 
     # Simulación
     semilla: int = 0
@@ -16,7 +16,7 @@ class Config:
     num_empresas: int = 100
     
     # Economía
-    presupuesto_inicial: float = 100e2
+    presupuesto_inicial: float = 10000
     precio_inicial: float = 300
     salario_inicial: float = 300
     salario_informal_inicial: float = 50
