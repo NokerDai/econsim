@@ -8,7 +8,8 @@ class Trabajador:
     sensibilidad_salario: float
     sensibilidad_satisfacción: float
     productividad: float
-    presupuesto: float = 0.0
+    presupuesto: float
+    días_sin_comprar: int
 
     @classmethod
     def crear_inicial(cls, config, aleatorio):
@@ -23,4 +24,5 @@ class Trabajador:
             sensibilidad_satisfacción=round(aleatorio.uniform(0.0, 2.0), 2),
             productividad=round(aleatorio.uniform(0.1, 1.0), 2),
             presupuesto=0.0
+            días_sin_comprar=0
         )

@@ -30,11 +30,12 @@ def demografía_y_firmas(estado):
     # --- Salidas (Mortalidad y Emigración) ---
     sobrevivientes = []
     for t in estado.trabajadores:
-        fallece = rand.random() < config.tasa_mortalidad
-        emigra = rand.random() < config.tasa_emigracion
+    #    fallece = rand.random() < config.tasa_mortalidad
+    #    emigra = rand.random() < config.tasa_emigracion
+        sale = t.días_sin_comprar > 30
         
         # Si no fallece ni emigra, permanece en el sistema
-        if not (fallece or emigra):
+        if not sale:
             sobrevivientes.append(t)
             
     estado.trabajadores = sobrevivientes
@@ -63,16 +64,16 @@ def demografía_y_firmas(estado):
     empresas_activas = []
     for emp in estado.empresas:
         # 1. Quiebra endógena (si se queda sin presupuesto operativo para pagar)
-        quiebra_financiera = emp.presupuesto <= 0 and emp.inventario == 0
+        quiebra_financiera = (emp.presupuesto <= 0 and emp.inventario == 0) or emp.días_sin_vender > 30
         
         # 2. Cierre administrativo o liquidación voluntaria (exógeno)
-        cierre_exogeno = rand.random() < config.tasa_cierre_empresas
+        #cierre_exogeno = rand.random() < config.tasa_cierre_empresas
         
         # 3. Salida por relocalización (exógeno)
-        relocalizacion = rand.random() < config.tasa_relocalizacion_empresas
+        #relocalizacion = rand.random() < config.tasa_relocalizacion_empresas
         
         # Si no cumple ninguna de las condiciones de salida, sigue operando
-        if not (quiebra_financiera or cierre_exogeno or relocalizacion):
+        if not quiebra_financiera:
             empresas_activas.append(emp)
             
     estado.empresas = empresas_activas

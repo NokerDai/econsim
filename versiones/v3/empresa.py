@@ -15,6 +15,8 @@ class Empresa:
     productividad_objetivo: float
     tolerancia: float
 
+    días_sin_vender: int = 0
+
     precio_venta_real: float = 0.0
     salario_pago_real: float = 0.0
     salario_informal_pago_real: float = 0.0
