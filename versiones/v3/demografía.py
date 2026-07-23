@@ -53,7 +53,7 @@ def demografía_y_firmas(estado):
     # --- Entradas (Natalidad e Inmigración) ---
     nuevos_habitantes = 0
     
-    # Nacimientos (dependen de la riqueza promedio de los trabajadores con respecto a la referencia)
+    # Nacimientos (depende del poder de compra promedio de los trabajadores con respecto a la referencia)
     poder_de_compra = (presupuesto_promedio_trabajador / precio_promedio) / (estado.presupuesto_referencia_persona / estado.precio_referencia) if precio_promedio > 0 and estado.precio_referencia * estado.presupuesto_referencia_persona > 0 else 1.0
     tasa_natalidad_dinamica = config.tasa_natalidad * min(max(poder_de_compra, 0.5), 2.0)
     
@@ -61,9 +61,8 @@ def demografía_y_firmas(estado):
         if rand.random() < tasa_natalidad_dinamica:
             nuevos_habitantes += 1
             
-    # Inmigración (depende del salario medio real comparado con la referencia)
-    atractivo = salario_promedio / estado.salario_referencia if estado.salario_referencia > 0 else 1.0
-    prob_inmigracion_dinamica = config.prob_inmigracion * min(max(atractivo, 0.2), 3.0)
+    # Inmigración (depende del poder de compra promedio de los trabajadores con respecto a la referencia)
+    prob_inmigracion_dinamica = config.prob_inmigracion * min(max(poder_de_compra, 0.5), 2.0)
     
     if rand.random() < prob_inmigracion_dinamica:
         nuevos_habitantes += 1
