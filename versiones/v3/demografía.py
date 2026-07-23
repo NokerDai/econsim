@@ -43,10 +43,15 @@ def demografía_y_firmas(estado):
         estado.presupuesto_referencia_persona += (presupuesto_promedio_trabajador - estado.presupuesto_referencia_persona) * alpha
 
     # ==========================================
-    # DEFINICIÓN DEL FACTOR DE ESCALA
+    # DEFINICIÓN DEL FACTOR DE ESCALA Y ANCLA
     # ==========================================
-    poblacion_referencia = estado.config.num_trabajadores
+    # Se establece un valor por defecto de 1000.0 si 'num_trabajadores' no existe
+    poblacion_referencia = getattr(config, 'num_trabajadores', 1000.0)
     factor_escala = max(1.0, poblacion_actual / poblacion_referencia)
+
+    # Ancla demográfica suave: actúa como un resorte que frena entradas ante sobrepoblación
+    # y las incentiva en caso de despoblación extrema, sin anular las variables de mercado.
+    ancla_demografica = max(0.2, 1.5 - 0.5 * (poblacion_actual / poblacion_referencia))
 
     # ==========================================
     # 2. DINÁMICA DE PERSONAS
@@ -74,8 +79,9 @@ def demografía_y_firmas(estado):
     # El factor de estrés reduce la natalidad e inmigración si hay desempleo masivo
     factor_estres_economico = max(0.1, tasa_empleo) 
     
-    tasa_natalidad_dinamica = config.tasa_natalidad * min(max(poder_de_compra, 0.5), 2.0) * factor_estres_economico
-    prob_inmigracion_dinamica = config.prob_inmigracion * min(max(poder_de_compra, 0.5), 2.0) * factor_estres_economico
+    # Se combinan la economía y el ancla demográfica para regular las tasas
+    tasa_natalidad_dinamica = config.tasa_natalidad * min(max(poder_de_compra, 0.5), 2.0) * factor_estres_economico * ancla_demografica
+    prob_inmigracion_dinamica = config.prob_inmigracion * min(max(poder_de_compra, 0.5), 2.0) * factor_estres_economico * ancla_demografica
     
     # Intentos de natalidad
     for _ in range(poblacion_actual):
@@ -99,6 +105,7 @@ def demografía_y_firmas(estado):
     # --- Salidas (Mortalidad Dinámica y Emigración No Lineal) ---
     # La emigración reacciona exponencialmente ante el desempleo para balancear el mercado sin requerir muertes
     tasa_emigracion_dinamica = config.tasa_emigracion * (1.0 + 8.0 * (tasa_desempleo ** 2))
+    tasa_emigracion_dinamica = min(0.95, tasa_emigracion_dinamica) # Límite de estabilidad diario
     
     sobrevivientes = []
     for t in estado.trabajadores:
@@ -124,7 +131,8 @@ def demografía_y_firmas(estado):
     rentabilidad = presupuesto_promedio_empresa / estado.presupuesto_referencia if estado.presupuesto_referencia > 0 else 1.0
     prob_creacion = config.tasa_creacion_empresas * min(max(rentabilidad, 0.2), 3.0)
     
-    intentos_creacion = max(1, int(factor_escala))
+    # Escalamiento sublineal (exponente 0.6) para simular saturación de mercado y evitar bucles infinitos
+    intentos_creacion = max(1, int(factor_escala ** 0.6))
     for _ in range(intentos_creacion):
         if rand.random() < prob_creacion:
             nuevas_empresas += 1
@@ -132,7 +140,7 @@ def demografía_y_firmas(estado):
     # Entrada extranjera (ligada al poder de compra de los consumidores)
     prob_entrada = config.tasa_entrada_extranjeras * min(max(poder_de_compra, 0.2), 3.0)
     
-    intentos_entrada = max(1, int(factor_escala))
+    intentos_entrada = max(1, int(factor_escala ** 0.6))
     for _ in range(intentos_entrada):
         if rand.random() < prob_entrada:
             nuevas_empresas += 1
@@ -171,8 +179,7 @@ def demografía_y_firmas(estado):
     # --- Salidas (Cierre y Relocalización) ---
     empresas_activas = []
     
-    # Umbral de cierre voluntario que mezcla el promedio actual y la referencia histórica 
-    # para evitar que las empresas moribundas se vuelvan "zombis" en recesiones generales.
+    # Umbral de cierre voluntario híbrido (promedio móvil + referencia)
     benchmark_cierre = 0.2 * (presupuesto_promedio_empresa * 0.3 + estado.presupuesto_referencia * 0.7)
     
     for emp in estado.empresas:
