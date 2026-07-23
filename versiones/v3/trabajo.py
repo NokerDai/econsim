@@ -84,51 +84,70 @@ def mercado_laboral(estado):
             for idx in indices:
                 emp = vacantes_formales[idx]
 
-                # ===========================
-                # Utilidad del trabajador (0-100)
-                # ===========================
+                # ==========================================================
+                # Utilidad del trabajador
+                # ==========================================================
 
-                salario_norm = (emp.salario - salario_min) / salario_rango
-                satisf_norm = (emp.satisfacción - satisf_min) / satisf_rango
+                u_trabajador = (
+                    trabajador.sensibilidad_salario * empresa.salario +
+                    trabajador.sensibilidad_satisfacción * empresa.satisfacción
+                )
 
-                suma_pesos = peso_salario + peso_satisfacción
+                if u_trabajador <= trabajador.utilidad_reserva:
+                    continue
 
-                if suma_pesos > 0:
-                    u_empleado = 100 * (
-                        salario_norm * peso_salario +
-                        satisf_norm * peso_satisfacción
-                    ) / suma_pesos
-                else:
-                    u_empleado = 50.0
-
-               # ===========================
-                # Utilidad de la empresa (0-100)
-                # ===========================
+                # ==========================================================
+                # Utilidad de la empresa
+                # ==========================================================
 
                 error = abs(
                     trabajador.productividad -
-                    emp.productividad_objetivo
-                ) / 0.9  # productividad ∈ [0.1,1]
-
-                u_empresa = 100 * (
-                    1 - error * (1 - emp.tolerancia)
+                    empresa.productividad_objetivo
                 )
 
-                u_empresa = max(0.0, min(100.0, u_empresa))
-
-                # ===========================
-                # Score conjunto
-                # ===========================
-
-                score = (
-                    estado.config.peso_trabajador * u_empleado +
-                    estado.config.peso_empresa * u_empresa
+                compatibilidad = max(
+                    0.0,
+                    1 - error * (1 - empresa.tolerancia)
                 )
 
-                if score > best_score:
-                    best_score = score
-                    best_idx_in_list = idx
-                    seleccionada = emp
+                productividad_real = (
+                    trabajador.productividad *
+                    compatibilidad
+                )
+
+                beneficio = (
+                    empresa.precio *
+                    productividad_real *
+                    empresa.calidad
+                )
+
+                u_empresa = (
+                    beneficio -
+                    empresa.salario
+                )
+
+                if u_empresa <= 0:
+                    continue
+
+                # ==========================================================
+                # Negociación
+                # ==========================================================
+
+                alpha = estado.config.poder_trabajadores
+                beta = 1.0 - alpha
+
+                indice = (
+                    (u_trabajador - u_reserva) ** alpha *
+                    u_empresa ** beta
+                )
+
+                # ==========================================================
+                # Selección
+                # ==========================================================
+
+                if indice > mejor_indice:
+                    mejor_indice = indice
+                    seleccionada = empresa
 
             seleccionada.empleados_formales += 1
             seleccionada.productividad_acumulada_formales += trabajador.productividad
@@ -209,53 +228,72 @@ def mercado_laboral(estado):
             seleccionada = None
 
             for idx in indices:
-                emp = vacantes_informales[idx]
+                emp = vacantes_formales[idx]
 
-                # ===========================
-                # Utilidad del trabajador (0-100)
-                # ===========================
+                # ==========================================================
+                # Utilidad del trabajador
+                # ==========================================================
 
-                salario_informal_norm = (emp.salario_informal - salario_informal_min) / salario_informal_rango
-                satisf_norm = (emp.satisfacción - satisf_min) / satisf_rango
+                u_trabajador = (
+                    trabajador.sensibilidad_salario * empresa.salario_informal +
+                    trabajador.sensibilidad_satisfacción * empresa.satisfacción
+                )
 
-                suma_pesos = peso_salario + peso_satisfacción
+                if u_trabajador <= trabajador.utilidad_reserva:
+                    continue
 
-                if suma_pesos > 0:
-                    u_empleado = 100 * (
-                        salario_informal_norm * peso_salario +
-                        satisf_norm * peso_satisfacción
-                    ) / suma_pesos
-                else:
-                    u_empleado = 50.0
-
-                # ===========================
-                # Utilidad de la empresa (0-100)
-                # ===========================
+                # ==========================================================
+                # Utilidad de la empresa
+                # ==========================================================
 
                 error = abs(
                     trabajador.productividad -
-                    emp.productividad_objetivo
-                ) / 0.9  # productividad ∈ [0.1,1]
-
-                u_empresa = 100 * (
-                    1 - error * (1 - emp.tolerancia)
+                    empresa.productividad_objetivo
                 )
 
-                u_empresa = max(0.0, min(100.0, u_empresa))
-
-                # ===========================
-                # Score conjunto
-                # ===========================
-
-                score = (
-                    estado.config.peso_trabajador * u_empleado +
-                    estado.config.peso_empresa * u_empresa
+                compatibilidad = max(
+                    0.0,
+                    1 - error * (1 - empresa.tolerancia)
                 )
 
-                if score > best_score:
-                    best_score = score
-                    best_idx_in_list = idx
-                    seleccionada = emp
+                productividad_real = (
+                    trabajador.productividad *
+                    compatibilidad
+                )
+
+                beneficio = (
+                    empresa.precio *
+                    productividad_real *
+                    empresa.calidad
+                )
+
+                u_empresa = (
+                    beneficio -
+                    empresa.salario_informal
+                )
+
+                if u_empresa <= 0:
+                    continue
+
+                # ==========================================================
+                # Negociación
+                # ==========================================================
+
+                alpha = estado.config.poder_trabajadores
+                beta = 1.0 - alpha
+
+                indice = (
+                    (u_trabajador - u_reserva) ** alpha *
+                    u_empresa ** beta
+                )
+
+                # ==========================================================
+                # Selección
+                # ==========================================================
+
+                if indice > mejor_indice:
+                    mejor_indice = indice
+                    seleccionada = empresa
 
             seleccionada.empleados_informales += 1
             seleccionada.productividad_acumulada_informales += trabajador.productividad

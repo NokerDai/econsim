@@ -10,6 +10,7 @@ class Trabajador:
     productividad: float
     presupuesto: float
     días_sin_comprar: int
+    utilidad_reserva: float = 0
 
     @classmethod
     def crear_inicial(cls, config, aleatorio):
