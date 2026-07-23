@@ -49,11 +49,11 @@ class Config:
     sensibilidad_precio: float = 1.0
     sensibilidad_calidad: float = 1.0
 
-    # Entrada y salida Argentina: según ChatGPT 23/07/2026 ((*100))
-    tasa_natalidad: float = 0.000030*100      # ≈ 11 nacimientos por cada 1000 hab/año
-    prob_inmigracion: float = 0.0000010*100   # inmigración neta muy baja (~0.03-0.04% anual)
-    tasa_emigracion: float = 0.0000015*100    # emigración algo mayor que inmigración
-    tasa_mortalidad: float = 0.000021*100     # ≈ 7.8 muertes por cada 1000 hab/año
-    tasa_creacion_empresas: float = 0.0000060*100
-    tasa_entrada_extranjeras: float = 0.00000015*100
-    tasa_relocalizacion_empresas: float = 0.00000025*100
+    tasa_natalidad: float = 0.0000210 * 100
+    prob_inmigracion: float = 0.0000015 * 100
+    tasa_emigracion: float = 0.0000015 * 100
+    tasa_mortalidad: float = 0.0000210 * 100
+
+    tasa_creacion_empresas: float = 0.00000025 * 100
+    tasa_entrada_extranjeras: float = 0.00000015 * 100
+    tasa_relocalizacion_empresas: float = 0.00000040 * 100
