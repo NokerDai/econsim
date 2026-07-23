@@ -209,8 +209,8 @@ def mercado_laboral(estado):
 
             beneficio = (
                 emp.precio *
-                productividad_real *
-                emp.calidad
+                productividad_real #*
+                #emp.calidad
             )
 
             u_empresa = beneficio - emp.salario_informal
