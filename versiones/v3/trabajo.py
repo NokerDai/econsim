@@ -1,9 +1,6 @@
 # --- trabajo.py ---
 
 def mercado_laboral(estado):
-    if not estado.empresas:
-        return
-
     vacantes_formales = []
 
     for empresa in estado.empresas:
@@ -24,7 +21,7 @@ def mercado_laboral(estado):
     ssal = estado.config.sensibilidad_salario
     ssat = estado.config.sensibilidad_satisfacción
     rand = estado.aleatorio
-    random_func = rand.random  # Acceso directo al generador en C
+    random_func = rand.random  # Acceso directo al generador en C, mucho más rápido
 
     informalidad = False
     vacantes_informales = []
@@ -45,6 +42,7 @@ def mercado_laboral(estado):
         if n_disp > 0:
             k = min(10, n_disp)
 
+            # 1. Muestreo de k índices únicos ultra rápido (Rejection Sampling)
             if k == n_disp:
                 indices = list(range(n_disp))
             else:
@@ -78,6 +76,7 @@ def mercado_laboral(estado):
             salario_rango = max(salario_max - salario_min, 1e-9)
             satisf_rango = max(satisf_max - satisf_min, 1e-9)
 
+            # 2. Búsqueda de la mejor empresa (mayor salario y satisfacción, ponderados)
             best_idx_in_list = -1
             best_score = -float("inf")
             seleccionada = None
@@ -90,8 +89,8 @@ def mercado_laboral(estado):
                 # ==========================================================
 
                 u_trabajador = (
-                    trabajador.sensibilidad_salario * emp.salario +
-                    trabajador.sensibilidad_satisfacción * emp.satisfacción
+                    trabajador.sensibilidad_salario * empresa.salario +
+                    trabajador.sensibilidad_satisfacción * empresa.satisfacción
                 )
 
                 if u_trabajador <= trabajador.utilidad_reserva:
@@ -103,29 +102,28 @@ def mercado_laboral(estado):
 
                 error = abs(
                     trabajador.productividad -
-                    emp.productividad_objetivo
+                    empresa.productividad_objetivo
                 )
 
                 compatibilidad = max(
                     0.0,
-                    1 - error * (1 - emp.tolerancia)
+                    1 - error * (1 - empresa.tolerancia)
                 )
 
-                # Aplicación de la productividad formal definida en configuración
                 productividad_real = (
                     trabajador.productividad *
-                    compatibilidad *
-                    estado.config.productividad_formal
+                    compatibilidad
                 )
 
                 beneficio = (
-                    emp.precio *
-                    productividad_real
+                    empresa.precio *
+                    productividad_real *
+                    empresa.calidad
                 )
 
                 u_empresa = (
                     beneficio -
-                    emp.salario
+                    empresa.salario
                 )
 
                 if u_empresa <= 0:
@@ -147,13 +145,9 @@ def mercado_laboral(estado):
                 # Selección
                 # ==========================================================
 
-                if indice > best_score:
-                    best_score = indice
-                    best_idx_in_list = idx
-                    seleccionada = emp
-
-            if seleccionada is None:
-                continue
+                if indice > mejor_indice:
+                    mejor_indice = indice
+                    seleccionada = empresa
 
             seleccionada.empleados_formales += 1
             seleccionada.productividad_acumulada_formales += trabajador.productividad
@@ -163,6 +157,7 @@ def mercado_laboral(estado):
 
             salario_formal_máximo = max(salario_formal_máximo, seleccionada.salario)
 
+            # 3. Eliminación O(1) con swap-and-pop
             last_idx = len(vacantes_formales) - 1
             if best_idx_in_list != last_idx:
                 vacantes_formales[best_idx_in_list] = vacantes_formales[last_idx]
@@ -233,15 +228,15 @@ def mercado_laboral(estado):
             seleccionada = None
 
             for idx in indices:
-                emp = vacantes_informales[idx]
+                emp = vacantes_formales[idx]
 
                 # ==========================================================
                 # Utilidad del trabajador
                 # ==========================================================
 
                 u_trabajador = (
-                    trabajador.sensibilidad_salario * emp.salario_informal +
-                    trabajador.sensibilidad_satisfacción * emp.satisfacción
+                    trabajador.sensibilidad_salario * empresa.salario_informal +
+                    trabajador.sensibilidad_satisfacción * empresa.satisfacción
                 )
 
                 if u_trabajador <= trabajador.utilidad_reserva:
@@ -253,29 +248,28 @@ def mercado_laboral(estado):
 
                 error = abs(
                     trabajador.productividad -
-                    emp.productividad_objetivo
+                    empresa.productividad_objetivo
                 )
 
                 compatibilidad = max(
                     0.0,
-                    1 - error * (1 - emp.tolerancia)
+                    1 - error * (1 - empresa.tolerancia)
                 )
 
-                # Aplicación de la productividad informal definida en configuración
                 productividad_real = (
                     trabajador.productividad *
-                    compatibilidad *
-                    estado.config.productividad_informal
+                    compatibilidad
                 )
 
                 beneficio = (
-                    emp.precio *
-                    productividad_real
+                    empresa.precio *
+                    productividad_real *
+                    empresa.calidad
                 )
 
                 u_empresa = (
                     beneficio -
-                    emp.salario_informal
+                    empresa.salario_informal
                 )
 
                 if u_empresa <= 0:
@@ -297,13 +291,9 @@ def mercado_laboral(estado):
                 # Selección
                 # ==========================================================
 
-                if indice > best_score:
-                    best_score = indice
-                    best_idx_in_list = idx
-                    seleccionada = emp
-
-            if seleccionada is None:
-                continue
+                if indice > mejor_indice:
+                    mejor_indice = indice
+                    seleccionada = empresa
 
             seleccionada.empleados_informales += 1
             seleccionada.productividad_acumulada_informales += trabajador.productividad
@@ -320,14 +310,10 @@ def mercado_laboral(estado):
     # Ajustar salarios empresas
     # ===========================
 
-    total_empresas = len(estado.empresas)
-    if total_empresas == 0:
-        return
-
-    vacantes_formales_proyectadas = len(estado.trabajadores) / total_empresas
+    vacantes_formales_proyectadas = len(estado.trabajadores) / len(estado.empresas)
     num_empleados_formales = sum([empresa.empleados_formales for empresa in estado.empresas])
     num_empleados_informales_proyectados = len(estado.trabajadores) - num_empleados_formales
-    vacantes_informales_proyectadas = (num_empleados_informales_proyectados * estado.config.informalidad_por_empresa) / total_empresas
+    vacantes_informales_proyectadas = (num_empleados_informales_proyectados * estado.config.informalidad_por_empresa) / len(estado.empresas)
 
     # ===========================
     # Actualizar salario mínimo
@@ -340,7 +326,7 @@ def mercado_laboral(estado):
         aumento = estado.config.salario_mínimo_automático_aumento
 
         if estado.config.salario_mínimo == 0:
-            estado.config.salario_mínimo += salario_formal_máximo * estado.config.tasa_salario_mínimo * (aumento - 1)
+            estado.config.salario_mínimo = salario_formal_máximo * estado.config.tasa_salario_mínimo * (1 - aumento)
         if tasa_empleo > tasa_límite * 1.05:
             estado.config.salario_mínimo = min(estado.config.salario_mínimo * aumento, salario_formal_máximo * estado.config.tasa_salario_mínimo)
         elif tasa_empleo < tasa_límite * 0.95:
