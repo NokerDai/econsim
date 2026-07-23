@@ -25,3 +25,4 @@ class Estado:
         self.salario_informal_referencia = float(config.salario_informal_inicial)
         self.precio_referencia = float(config.precio_inicial)
         self.presupuesto_referencia = float(config.presupuesto_inicial)
+        self.presupuesto_referencia_persona = float(0.0)

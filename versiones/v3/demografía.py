@@ -44,6 +44,7 @@ def demografía_y_firmas(estado):
         estado.salario_informal_referencia += (salario_informal_promedio - estado.salario_informal_referencia) * alpha
         estado.precio_referencia += (precio_promedio - estado.precio_referencia) * alpha
         estado.presupuesto_referencia += (presupuesto_promedio_empresa - estado.presupuesto_referencia) * alpha
+        estado.presupuesto_referencia_persona += (presupuesto_promedio_trabajador - estado.presupuesto_referencia_persona) * alpha
 
     # ==========================================
     # 2. DINÁMICA DE PERSONAS
@@ -53,7 +54,7 @@ def demografía_y_firmas(estado):
     nuevos_habitantes = 0
     
     # Nacimientos (dependen de la riqueza promedio de los trabajadores con respecto a la referencia)
-    poder_de_compra = presupuesto_promedio_trabajador / precio_promedio if precio_promedio > 0 else 1.0
+    poder_de_compra = (presupuesto_promedio_trabajador / precio_promedio) / (estado.presupuesto_referencia_persona / estado.precio_referencia) if precio_promedio > 0 and estado.precio_referencia > 0 else 1.0
     tasa_natalidad_dinamica = config.tasa_natalidad * min(max(poder_de_compra, 0.5), 2.0)
     
     for _ in range(poblacion_actual):
