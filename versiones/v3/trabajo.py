@@ -117,8 +117,7 @@ def mercado_laboral(estado):
 
                 beneficio = (
                     emp.precio *
-                    productividad_real *
-                    emp.calidad
+                    productividad_real
                 )
 
                 u_empresa = (
@@ -267,8 +266,7 @@ def mercado_laboral(estado):
 
                 beneficio = (
                     emp.precio *
-                    productividad_real *
-                    emp.calidad
+                    productividad_real
                 )
 
                 u_empresa = (
