@@ -89,8 +89,8 @@ def mercado_laboral(estado):
                 # ==========================================================
 
                 u_trabajador = (
-                    trabajador.sensibilidad_salario * empresa.salario +
-                    trabajador.sensibilidad_satisfacción * empresa.satisfacción
+                    trabajador.sensibilidad_salario * emp.salario +
+                    trabajador.sensibilidad_satisfacción * emp.satisfacción
                 )
 
                 if u_trabajador <= trabajador.utilidad_reserva:
@@ -102,12 +102,12 @@ def mercado_laboral(estado):
 
                 error = abs(
                     trabajador.productividad -
-                    empresa.productividad_objetivo
+                    emp.productividad_objetivo
                 )
 
                 compatibilidad = max(
                     0.0,
-                    1 - error * (1 - empresa.tolerancia)
+                    1 - error * (1 - emp.tolerancia)
                 )
 
                 productividad_real = (
@@ -116,14 +116,14 @@ def mercado_laboral(estado):
                 )
 
                 beneficio = (
-                    empresa.precio *
+                    emp.precio *
                     productividad_real *
-                    empresa.calidad
+                    emp.calidad
                 )
 
                 u_empresa = (
                     beneficio -
-                    empresa.salario
+                    emp.salario
                 )
 
                 if u_empresa <= 0:
@@ -137,7 +137,7 @@ def mercado_laboral(estado):
                 beta = 1.0 - alpha
 
                 indice = (
-                    (u_trabajador - u_reserva) ** alpha *
+                    (u_trabajador - trabajador.utilidad_reserva) ** alpha *
                     u_empresa ** beta
                 )
 
@@ -145,9 +145,13 @@ def mercado_laboral(estado):
                 # Selección
                 # ==========================================================
 
-                if indice > mejor_indice:
-                    mejor_indice = indice
-                    seleccionada = empresa
+                if indice > best_score:
+                    best_score = indice
+                    best_idx_in_list = idx
+                    seleccionada = emp
+
+            if seleccionada is None:
+                continue
 
             seleccionada.empleados_formales += 1
             seleccionada.productividad_acumulada_formales += trabajador.productividad
@@ -228,15 +232,15 @@ def mercado_laboral(estado):
             seleccionada = None
 
             for idx in indices:
-                emp = vacantes_formales[idx]
+                emp = vacantes_informales[idx]
 
                 # ==========================================================
                 # Utilidad del trabajador
                 # ==========================================================
 
                 u_trabajador = (
-                    trabajador.sensibilidad_salario * empresa.salario_informal +
-                    trabajador.sensibilidad_satisfacción * empresa.satisfacción
+                    trabajador.sensibilidad_salario * emp.salario_informal +
+                    trabajador.sensibilidad_satisfacción * emp.satisfacción
                 )
 
                 if u_trabajador <= trabajador.utilidad_reserva:
@@ -248,12 +252,12 @@ def mercado_laboral(estado):
 
                 error = abs(
                     trabajador.productividad -
-                    empresa.productividad_objetivo
+                    emp.productividad_objetivo
                 )
 
                 compatibilidad = max(
                     0.0,
-                    1 - error * (1 - empresa.tolerancia)
+                    1 - error * (1 - emp.tolerancia)
                 )
 
                 productividad_real = (
@@ -262,14 +266,14 @@ def mercado_laboral(estado):
                 )
 
                 beneficio = (
-                    empresa.precio *
+                    emp.precio *
                     productividad_real *
-                    empresa.calidad
+                    emp.calidad
                 )
 
                 u_empresa = (
                     beneficio -
-                    empresa.salario_informal
+                    emp.salario_informal
                 )
 
                 if u_empresa <= 0:
@@ -283,7 +287,7 @@ def mercado_laboral(estado):
                 beta = 1.0 - alpha
 
                 indice = (
-                    (u_trabajador - u_reserva) ** alpha *
+                    (u_trabajador - trabajador.utilidad_reserva) ** alpha *
                     u_empresa ** beta
                 )
 
@@ -291,9 +295,13 @@ def mercado_laboral(estado):
                 # Selección
                 # ==========================================================
 
-                if indice > mejor_indice:
-                    mejor_indice = indice
-                    seleccionada = empresa
+                if indice > best_score:
+                    best_score = indice
+                    best_idx_in_list = idx
+                    seleccionada = emp
+
+            if seleccionada is None:
+                continue
 
             seleccionada.empleados_informales += 1
             seleccionada.productividad_acumulada_informales += trabajador.productividad
