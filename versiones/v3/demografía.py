@@ -91,7 +91,7 @@ def demografía_y_firmas(estado):
     
     sobrevivientes = []
     for t in estado.trabajadores:
-        fallece = rand.random() < config.tasa_mortalidad
+        fallece = rand.random() < config.tasa_mortalidad or t.días_sin_comprar > 30
         emigra = rand.random() < tasa_emigracion_dinamica
         
         # Si no fallece ni emigra, permanece en el sistema
