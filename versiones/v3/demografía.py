@@ -65,7 +65,7 @@ def demografía_y_firmas(estado):
     prob_inmigracion_dinamica = config.prob_inmigracion * min(max(atractivo, 0.2), 3.0)
     
     if rand.random() < prob_inmigracion_dinamica:
-        nuevos_habitantes += rand.randint(1, config.num_inmigrantes_paso_max)
+        nuevos_habitantes += 1
         
     # Inicialización e inserción de nuevos trabajadores en el estado
     for _ in range(nuevos_habitantes):
