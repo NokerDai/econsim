@@ -88,11 +88,9 @@ def mercado_laboral(estado):
                     compatibilidad
                 )
 
-                #beneficio = (
                 u_empresa = (
                     emp.precio *
-                    productividad_real #*
-                    #emp.calidad
+                    productividad_real
                 )
 
                 if u_empresa <= 0:
@@ -206,11 +204,9 @@ def mercado_laboral(estado):
                 compatibilidad
             )
 
-            #beneficio = (
             u_empresa = (
                 emp.precio *
-                productividad_real #*
-                #emp.calidad
+                productividad_real
             )
 
             if u_empresa <= 0:
