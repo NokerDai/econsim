@@ -7,7 +7,7 @@ class Config:
 
     # Simulación
     semilla: int = 0
-    velocidad: float = 0
+    velocidad: float = 0.01
     frecuencia_actualización: int = 100
     velocidad_streamlit: int = 30
 
