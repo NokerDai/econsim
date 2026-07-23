@@ -138,7 +138,7 @@ class Simulación:
     def obtener_parametros(self):
         with self.lock:
             return {
-                "emisión_diaria": self.config.emisión_diaria,
+                "tasa_emisión": self.config.tasa_emisión,
                 "salario_mínimo": self.config.salario_mínimo,
                 "velocidad": self.config.velocidad,
                 "informalidad_por_empresa": self.config.informalidad_por_empresa,

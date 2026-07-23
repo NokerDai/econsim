@@ -6,7 +6,11 @@ def actualizar_estadisticas(estado):
 
     total_ventas = sum(e.ventas_hoy for e in estado.empresas)
 
-    calidad_media_transacción = sum(e.calidad for e in estado.empresas) / total_ventas if total_ventas > 0 else 0.0
+    # Corrección del promedio ponderado de calidad según las ventas
+    if total_ventas > 0:
+        calidad_media_transacción = sum(e.calidad * e.ventas_hoy for e in estado.empresas) / total_ventas
+    else:
+        calidad_media_transacción = sum(e.calidad for e in estado.empresas) / total_empresas if total_empresas > 0 else 0.0
 
     satisfacción_media = sum(e.satisfacción for e in estado.empresas) / total_empresas if total_empresas > 0 else 0.0
     

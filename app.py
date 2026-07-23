@@ -232,8 +232,7 @@ def panel():
 
     tab_graficos, tab_flujo, tab_config = st.tabs(
         ["📈 Gráficos de Evolución", "🔄 Flujo Circular de la Economía", "⚙️ Configuración"],
-        key="pestana_activa",
-        on_change="rerun"
+        key="pestana_activa"
     )
 
     if st.session_state.pestana_activa == "⚙️ Configuración" and st.session_state.auto_avance:
