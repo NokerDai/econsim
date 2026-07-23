@@ -93,7 +93,7 @@ def mercado_laboral(estado):
                     productividad_real
                 )
 
-                if u_empresa <= empresa.utilidad_reserva:
+                if u_empresa <= emp.utilidad_reserva:
                     continue
 
                 indice = (
