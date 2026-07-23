@@ -215,8 +215,8 @@ def mercado_laboral(estado):
 
             u_empresa = beneficio - emp.salario_informal
 
-            if u_empresa <= 0:
-                continue
+            #if u_empresa <= 0:
+            #    continue
 
             indice = (
                 (u_trabajador - trabajador.utilidad_reserva) ** alpha *
