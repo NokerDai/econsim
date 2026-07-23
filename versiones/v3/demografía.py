@@ -6,192 +6,148 @@ def demografía_y_firmas(estado):
     config = estado.config
     rand = estado.aleatorio
     
-    # ==========================================
     # 1. CÁLCULO DE PROMEDIOS EN TIEMPO REAL
-    # ==========================================
     poblacion_actual = len(estado.trabajadores)
-    if poblacion_actual > 0:
-        presupuesto_promedio_trabajador = sum(t.presupuesto for t in estado.trabajadores) / poblacion_actual
-    else:
-        presupuesto_promedio_trabajador = 0.0
-
     num_empresas_actual = len(estado.empresas)
+    
+    # Fondo demográfico para garantizar la conservación del dinero en el sistema
+    if not hasattr(estado, 'pool_demografico'):
+        estado.pool_demografico = 0.0
+
+    # Promedios de mercado actuales
     if num_empresas_actual > 0:
         presupuesto_promedio_empresa = sum(e.presupuesto for e in estado.empresas) / num_empresas_actual
         precio_promedio = sum(e.precio for e in estado.empresas) / num_empresas_actual
         salario_promedio = sum(e.salario for e in estado.empresas) / num_empresas_actual
         salario_informal_promedio = sum(e.salario_informal for e in estado.empresas) / num_empresas_actual
-        trigger = True
         calidad_promedio = sum(e.calidad for e in estado.empresas) / num_empresas_actual
         satisfacción_promedio = sum(e.satisfacción for e in estado.empresas) / num_empresas_actual
-        productividad_objetivo_promedio = sum(e.productividad_objetivo for e in estado.empresas) / num_empresas_actual
-        tolerancia_promedio = sum(e.tolerancia for e in estado.empresas) / num_empresas_actual
-    else:
-        presupuesto_promedio_empresa = estado.presupuesto_referencia
-        precio_promedio = estado.precio_referencia
-        salario_promedio = estado.salario_referencia
-        salario_informal_promedio = estado.salario_informal_referencia
-        trigger = False
-
-    # Promedio móvil exponencial (EMA) para adaptar referencias lentamente (365 días)
-    if num_empresas_actual > 0:
+        
+        # Suavizado EMA de 365 días para adaptar referencias de largo plazo
         alpha = 1 / 365
         estado.salario_referencia += (salario_promedio - estado.salario_referencia) * alpha
         estado.salario_informal_referencia += (salario_informal_promedio - estado.salario_informal_referencia) * alpha
         estado.precio_referencia += (precio_promedio - estado.precio_referencia) * alpha
         estado.presupuesto_referencia += (presupuesto_promedio_empresa - estado.presupuesto_referencia) * alpha
-        estado.presupuesto_referencia_persona += (presupuesto_promedio_trabajador - estado.presupuesto_referencia_persona) * alpha
+    else:
+        precio_promedio = estado.precio_referencia
+        salario_promedio = estado.salario_referencia
+        salario_informal_promedio = estado.salario_informal_referencia
+        presupuesto_promedio_empresa = estado.presupuesto_referencia
 
-    # ==========================================
-    # DEFINICIÓN DEL FACTOR DE ESCALA Y ANCLA
-    # ==========================================
-    # Se establece un valor por defecto de 1000.0 si 'num_trabajadores' no existe
+    if poblacion_actual > 0:
+        presupuesto_promedio_trabajador = sum(t.presupuesto for t in estado.trabajadores) / poblacion_actual
+        alpha = 1 / 365
+        estado.presupuesto_referencia_persona += (presupuesto_promedio_trabajador - estado.presupuesto_referencia_persona) * alpha
+    else:
+        presupuesto_promedio_trabajador = 0.0
+
+    # 2. DEFINICIÓN DE FACTORES DE ESCALA Y ANCLA DEMOGRÁFICA
     poblacion_referencia = getattr(config, 'num_trabajadores', 1000.0)
     factor_escala = max(1.0, poblacion_actual / poblacion_referencia)
-
-    # Ancla demográfica suave: actúa como un resorte que frena entradas ante sobrepoblación
-    # y las incentiva en caso de despoblación extrema, sin anular las variables de mercado.
+    
+    # Amortiguador suave para evitar sobrepoblación o colapso
     ancla_demografica = max(0.2, 1.5 - 0.5 * (poblacion_actual / poblacion_referencia))
 
-    # ==========================================
-    # 2. DINÁMICA DE PERSONAS
-    # ==========================================
-    
-    # Cálculo de tasas de empleo y desempleo
+    # 3. DINÁMICA DE PERSONAS
     num_formales = sum(e.empleados_formales for e in estado.empresas)
     num_informales = sum(e.empleados_informales for e in estado.empresas)
-    if poblacion_actual > 0:
-        tasa_formal = num_formales / poblacion_actual
-        tasa_informal = num_informales / poblacion_actual
-        tasa_desempleo = max(0.0, 1.0 - tasa_formal - tasa_informal)
-    else:
-        tasa_desempleo = 0.0
+    
+    # Tasa de empleo como termómetro principal de la salud económica
+    tasa_empleo = (num_formales + num_informales) / poblacion_actual if poblacion_actual > 0 else 0.0
+    factor_economico = max(0.1, tasa_empleo) 
 
-    tasa_empleo = 1.0 - tasa_desempleo
+    # Tasas dinámicas basadas en la economía y el ancla demográfica
+    tasa_natalidad_dinamica = config.tasa_natalidad * factor_economico * ancla_demografica
+    prob_inmigracion_dinamica = config.prob_inmigracion * factor_economico * ancla_demografica
 
-    # --- Entradas (Natalidad e Inmigración sensibles al contexto) ---
-    nuevos_habitantes = 0
+    # Cálculo O(1) de entradas utilizando la esperanza matemática
+    media_nacimientos = poblacion_actual * tasa_natalidad_dinamica
+    nuevos_nacidos = int(media_nacimientos) + (1 if rand.random() < (media_nacimientos % 1) else 0)
     
-    # Poder de compra real
-    div_referencia = estado.presupuesto_referencia_persona / estado.precio_referencia if estado.precio_referencia * estado.presupuesto_referencia_persona > 0 else 1.0
-    poder_de_compra = (presupuesto_promedio_trabajador / precio_promedio) / div_referencia if precio_promedio > 0 else 1.0
+    media_inmigrantes = prob_inmigracion_dinamica * factor_escala
+    nuevos_inmigrantes = int(media_inmigrantes) + (1 if rand.random() < (media_inmigrantes % 1) else 0)
     
-    # El factor de estrés reduce la natalidad e inmigración si hay desempleo masivo
-    factor_estres_economico = max(0.1, tasa_empleo) 
+    nuevos_habitantes = nuevos_nacidos + nuevos_inmigrantes
     
-    # Se combinan la economía y el ancla demográfica para regular las tasas
-    tasa_natalidad_dinamica = config.tasa_natalidad * min(max(poder_de_compra, 0.5), 2.0) * factor_estres_economico * ancla_demografica
-    prob_inmigracion_dinamica = config.prob_inmigracion * min(max(poder_de_compra, 0.5), 2.0) * factor_estres_economico * ancla_demografica
-    
-    # Intentos de natalidad
-    for _ in range(poblacion_actual):
-        if rand.random() < tasa_natalidad_dinamica:
-            nuevos_habitantes += 1
-            
-    # Intentos de inmigración (escalados con el tamaño del mercado)
-    intentos_inmigracion = max(1, int(factor_escala))
-    for _ in range(intentos_inmigracion):
-        if rand.random() < prob_inmigracion_dinamica:
-            nuevos_habitantes += 1
-        
     for _ in range(nuevos_habitantes):
         nuevo_trabajador = Trabajador.crear_inicial(config, rand)
-        nuevo_trabajador.presupuesto = rand.uniform(
-            presupuesto_promedio_trabajador * 0.75, 
-            presupuesto_promedio_trabajador * 1.25
-        ) if presupuesto_promedio_trabajador > 0 else 0.0
+        # Se extrae un pequeño capital inicial del fondo común si hay fondos disponibles
+        semilla_inicial = estado.presupuesto_referencia_persona * 0.1
+        if estado.pool_demografico >= semilla_inicial:
+            estado.pool_demografico -= semilla_inicial
+            nuevo_trabajador.presupuesto = semilla_inicial
+        else:
+            nuevo_trabajador.presupuesto = 0.0
         estado.trabajadores.append(nuevo_trabajador)
-        
-    # --- Salidas (Mortalidad Dinámica y Emigración No Lineal) ---
-    # La emigración reacciona exponencialmente ante el desempleo para balancear el mercado sin requerir muertes
-    tasa_emigracion_dinamica = config.tasa_emigracion * (1.0 + 8.0 * (tasa_desempleo ** 2))
-    tasa_emigracion_dinamica = min(0.95, tasa_emigracion_dinamica) # Límite de estabilidad diario
+
+    # Salidas (Mortalidad e Emigración)
+    tasa_emigracion_dinamica = min(0.95, config.tasa_emigracion * (1.0 + 5.0 * (1.0 - tasa_empleo)))
     
     sobrevivientes = []
     for t in estado.trabajadores:
-        # Inanición gradual: El riesgo de fallecer se incrementa de forma cuadrática a partir del día 10 sin comprar
-        prob_inanicion = 0.0
-        if t.días_sin_comprar > 10:
-            prob_inanicion = min(0.95, ((t.días_sin_comprar - 10) ** 2) / 400.0) # ~10% al día 20, ~40% al día 30
-            
+        # Inanición lineal simple (se incrementa 2% diario a partir del día 10 sin comprar)
+        prob_inanicion = max(0.0, (t.días_sin_comprar - 10) * 0.02)
+        
         fallece = rand.random() < (config.tasa_mortalidad + prob_inanicion)
         emigra = rand.random() < tasa_emigracion_dinamica
         
-        if not (fallece or emigra):
+        if fallece or emigra:
+            # El presupuesto acumulado del agente se devuelve al fondo del sistema
+            estado.pool_demografico += t.presupuesto
+        else:
             sobrevivientes.append(t)
             
     estado.trabajadores = sobrevivientes
 
-    # ==========================================
-    # 3. DINÁMICA DE EMPRESAS
-    # ==========================================
-    nuevas_empresas = 0
-    
-    # Creación basada en la rentabilidad comparada con el histórico
+    # 4. DINÁMICA DE EMPRESAS
     rentabilidad = presupuesto_promedio_empresa / estado.presupuesto_referencia if estado.presupuesto_referencia > 0 else 1.0
-    prob_creacion = config.tasa_creacion_empresas * min(max(rentabilidad, 0.2), 3.0)
     
-    # Escalamiento sublineal (exponente 0.6) para simular saturación de mercado y evitar bucles infinitos
-    intentos_creacion = max(1, int(factor_escala ** 0.6))
-    for _ in range(intentos_creacion):
-        if rand.random() < prob_creacion:
-            nuevas_empresas += 1
-        
-    # Entrada extranjera (ligada al poder de compra de los consumidores)
-    prob_entrada = config.tasa_entrada_extranjeras * min(max(poder_de_compra, 0.2), 3.0)
+    # Se unifican la creación y entrada extranjera en un indicador de entrada simplificado
+    tasa_entrada_total = config.tasa_creacion_empresas + config.tasa_entrada_extranjeras
+    prob_entrada = tasa_entrada_total * max(0.2, min(rentabilidad, 2.0))
     
-    intentos_entrada = max(1, int(factor_escala ** 0.6))
-    for _ in range(intentos_entrada):
-        if rand.random() < prob_entrada:
-            nuevas_empresas += 1
-        
+    # Cálculo O(1) de nuevas empresas
+    media_nuevas = prob_entrada * (factor_escala ** 0.6)
+    nuevas_empresas = int(media_nuevas) + (1 if rand.random() < (media_nuevas % 1) else 0)
+    
     for _ in range(nuevas_empresas):
         nueva_emp = Empresa.crear_inicial(config, rand)
-        nueva_emp.presupuesto = rand.uniform(
-            presupuesto_promedio_empresa * 0.75, 
-            presupuesto_promedio_empresa * 1.25
-        )
-        nueva_emp.precio = rand.uniform(
-            precio_promedio * 0.75, 
-            precio_promedio * 1.25
-        )
-        nueva_emp.salario = max(
-            rand.uniform(salario_promedio * 0.75, salario_promedio * 1.25),
-            estado.config.salario_mínimo,
-            1.0
-        )
-        nueva_emp.salario_informal = max(
-            rand.uniform(salario_informal_promedio * 0.75, salario_informal_promedio * 1.25),
-            1.0
-        )
-        if trigger:
-            nueva_emp.tolerancia = rand.uniform(tolerancia_promedio * 0.75, tolerancia_promedio * 1.25)
-            nueva_emp.productividad_objetivo = rand.uniform(productividad_objetivo_promedio * 0.75, productividad_objetivo_promedio * 1.25)
-            nueva_emp.satisfacción = rand.uniform(satisfacción_promedio * 0.75, satisfacción_promedio * 1.25)
-            nueva_emp.calidad = rand.uniform(calidad_promedio * 0.75, calidad_promedio * 1.25)
+        
+        # El capital inicial proviene del pool acumulado (o fallback parcial si está seco)
+        presupuesto_requerido = estado.presupuesto_referencia
+        if estado.pool_demografico >= presupuesto_requerido:
+            estado.pool_demografico -= presupuesto_requerido
+            nueva_emp.presupuesto = presupuesto_requerido
         else:
-            nueva_emp.tolerancia = round(rand.uniform(0.0, 1.0), 2)
-            nueva_emp.productividad_objetivo = round(rand.uniform(0.1, 1.0), 2)
-            nueva_emp.satisfacción = round(rand.uniform(0.0, 1.0), 2)
-            nueva_emp.calidad = round(rand.uniform(0.0, 1.0), 2)
+            seed = max(estado.pool_demografico, presupuesto_requerido * 0.5)
+            estado.pool_demografico = max(0.0, estado.pool_demografico - seed)
+            nueva_emp.presupuesto = seed
+            
+        # Heredar condiciones promedio del mercado actual con margen de variación (+/- 15%)
+        if num_empresas_actual > 0:
+            nueva_emp.precio = precio_promedio * rand.uniform(0.85, 1.15)
+            nueva_emp.salario = max(salario_promedio * rand.uniform(0.85, 1.15), config.salario_mínimo, 1.0)
+            nueva_emp.salario_informal = max(salario_informal_promedio * rand.uniform(0.85, 1.15), 1.0)
+            nueva_emp.calidad = max(0.0, min(calidad_promedio * rand.uniform(0.9, 1.1), 1.0))
+            nueva_emp.satisfacción = max(0.0, min(satisfacción_promedio * rand.uniform(0.9, 1.1), 1.0))
+            
         estado.empresas.append(nueva_emp)
         
-    # --- Salidas (Cierre y Relocalización) ---
+    # Salidas (Quiebras y Cierres)
     empresas_activas = []
-    
-    # Umbral de cierre voluntario híbrido (promedio móvil + referencia)
-    benchmark_cierre = 0.2 * (presupuesto_promedio_empresa * 0.3 + estado.presupuesto_referencia * 0.7)
+    # Umbral de viabilidad financiera simple (10% de la referencia histórica)
+    benchmark_cierre = 0.1 * estado.presupuesto_referencia
     
     for emp in estado.empresas:
-        quiebra_financiera = (emp.presupuesto <= 0 and emp.inventario == 0) or (emp.días_sin_vender > 180)
-        
-        cierre_exogeno = False
-        if emp.presupuesto < benchmark_cierre:
-            cierre_exogeno = rand.random() < 0.08  # Probabilidad ligeramente superior para depurar el mercado
-        
+        quiebra_financiera = (emp.presupuesto <= 0 and emp.inventario == 0) or (emp.días_sin_vender > 120)
+        cierre_exogeno = (emp.presupuesto < benchmark_cierre) and (rand.random() < 0.05)
         relocalizacion = rand.random() < config.tasa_relocalizacion_empresas
         
-        if not (quiebra_financiera or cierre_exogeno or relocalizacion):
+        if quiebra_financiera or cierre_exogeno or relocalizacion:
+            # Liquidación del capital restante de la empresa al fondo demográfico
+            estado.pool_demografico += max(0.0, emp.presupuesto)
+        else:
             empresas_activas.append(emp)
             
     estado.empresas = empresas_activas
