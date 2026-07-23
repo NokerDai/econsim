@@ -133,8 +133,8 @@ def demografía_y_firmas(estado):
             nuevas_empresas += 1
         
     # Entrada de capital/sucursales extranjeras (depende del tamaño relativo del mercado)
-    mercado = presupuesto_promedio_trabajador / estado.presupuesto_referencia if estado.presupuesto_referencia > 0 else 1.0
-    prob_entrada = config.tasa_entrada_extranjeras * min(max(mercado, 0.2), 3.0)
+    #mercado = presupuesto_promedio_trabajador / estado.presupuesto_referencia if estado.presupuesto_referencia > 0 else 1.0
+    prob_entrada = config.tasa_entrada_extranjeras * min(max(poder_de_compra, 0.2), 3.0)
     
     # CORRECCIÓN: Los intentos de entrada extranjera escalan con el tamaño de la población de consumidores (mercado potencial)
     intentos_entrada = max(1, int(factor_escala))
