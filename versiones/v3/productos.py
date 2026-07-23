@@ -94,7 +94,7 @@ def mercado_productos(estado):
     # Ajustes de precio y productividad de las empresas
     for empresa in estado.empresas:
         empresa.precio_venta_real = empresa.precio
-        if empresa.inventario > empresa.inventario_ayer:
+        if empresa.inventario > empresa.inventario_ayer or empresa.días_sin_vender > 10:
             empresa.racha_reducido += 1
             empresa.racha_aumentado = 0
             empresa.precio *= estado.config.reducción_precio
