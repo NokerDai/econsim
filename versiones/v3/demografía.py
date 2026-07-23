@@ -89,7 +89,7 @@ def demografía_y_firmas(estado):
             nuevos_habitantes += 1
             
     # Intentos de inmigración (escalados con el tamaño del mercado)
-    intentos_inmigracion = max(1, int(factor_escala))
+    intentos_inmigracion = max(1, int(ancla_demografica))
     for _ in range(intentos_inmigracion):
         if rand.random() < prob_inmigracion_dinamica:
             nuevos_habitantes += 1
@@ -132,7 +132,7 @@ def demografía_y_firmas(estado):
     prob_creacion = config.tasa_creacion_empresas * min(max(rentabilidad, 0.2), 3.0)
     
     # Escalamiento sublineal (exponente 0.6) para simular saturación de mercado y evitar bucles infinitos
-    intentos_creacion = max(1, int(factor_escala ** 0.6))
+    intentos_creacion = max(1, int(ancla_demografica ** 0.6))
     for _ in range(intentos_creacion):
         if rand.random() < prob_creacion:
             nuevas_empresas += 1
@@ -140,7 +140,7 @@ def demografía_y_firmas(estado):
     # Entrada extranjera (ligada al poder de compra de los consumidores)
     prob_entrada = config.tasa_entrada_extranjeras * min(max(poder_de_compra, 0.2), 3.0)
     
-    intentos_entrada = max(1, int(factor_escala ** 0.6))
+    intentos_entrada = max(1, int(ancla_demografica ** 0.6))
     for _ in range(intentos_entrada):
         if rand.random() < prob_entrada:
             nuevas_empresas += 1
