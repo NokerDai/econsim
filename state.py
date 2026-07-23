@@ -20,3 +20,8 @@ class Estado:
         ]
 
         self.estadisticas = Estadisticas()
+
+        self.salario_referencia = float(config.salario_inicial)
+        self.salario_informal_referencia = float(config.salario_informal_inicial)
+        self.precio_referencia = float(config.precio_inicial)
+        self.presupuesto_referencia = float(config.presupuesto_inicial)
