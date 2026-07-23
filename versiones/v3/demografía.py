@@ -47,6 +47,16 @@ def demografía_y_firmas(estado):
         estado.presupuesto_referencia_persona += (presupuesto_promedio_trabajador - estado.presupuesto_referencia_persona) * alpha
 
     # ==========================================
+    # DEFINICIÓN DEL FACTOR DE ESCALA
+    # ==========================================
+    # Intentamos obtener la población inicial de la configuración; si no existe, usamos 100 como base.
+    poblacion_referencia = getattr(config, 'poblacion_inicial', 100.0)
+    
+    # El factor de escala nos dice cuántas veces más grande es la población actual respecto a la base.
+    # El mínimo de 1.0 asegura que la tasa de entrada nominal no caiga por debajo de la original.
+    factor_escala = max(1.0, poblacion_actual / poblacion_referencia)
+
+    # ==========================================
     # 2. DINÁMICA DE PERSONAS
     # ==========================================
     
@@ -61,11 +71,16 @@ def demografía_y_firmas(estado):
         if rand.random() < tasa_natalidad_dinamica:
             nuevos_habitantes += 1
             
-    # Inmigración (depende del poder de compra promedio de los trabajadores con respecto a la referencia)
+    # Inmigración escalada proporcionalmente
     prob_inmigracion_dinamica = config.prob_inmigracion * min(max(poder_de_compra, 0.5), 2.0)
     
-    if rand.random() < prob_inmigracion_dinamica:
-        nuevos_habitantes += 1
+    # CORRECCIÓN: El número de "intentos" de inmigración diarios escala con la población actual.
+    # Se usa max(1, ...) para que si la población se extingue temporalmente (poblacion_actual == 0),
+    # todavía exista un intento unitario que permita repoblar el sistema.
+    intentos_inmigracion = max(1, int(factor_escala))
+    for _ in range(intentos_inmigracion):
+        if rand.random() < prob_inmigracion_dinamica:
+            nuevos_habitantes += 1
         
     # Inicialización e inserción de nuevos trabajadores en el estado
     for _ in range(nuevos_habitantes):
@@ -111,15 +126,21 @@ def demografía_y_firmas(estado):
     rentabilidad = presupuesto_promedio_empresa / estado.presupuesto_referencia if estado.presupuesto_referencia > 0 else 1.0
     prob_creacion = config.tasa_creacion_empresas * min(max(rentabilidad, 0.2), 3.0)
     
-    if rand.random() < prob_creacion:
-        nuevas_empresas += 1
+    # CORRECCIÓN: Los intentos de creación de empresas locales escalan con la población (más personas -> más emprendedores potenciales)
+    intentos_creacion = max(1, int(factor_escala))
+    for _ in range(intentos_creacion):
+        if rand.random() < prob_creacion:
+            nuevas_empresas += 1
         
     # Entrada de capital/sucursales extranjeras (depende del tamaño relativo del mercado)
     mercado = presupuesto_promedio_trabajador / estado.presupuesto_referencia if estado.presupuesto_referencia > 0 else 1.0
     prob_entrada = config.tasa_entrada_extranjeras * min(max(mercado, 0.2), 3.0)
     
-    if rand.random() < prob_entrada:
-        nuevas_empresas += 1
+    # CORRECCIÓN: Los intentos de entrada extranjera escalan con el tamaño de la población de consumidores (mercado potencial)
+    intentos_entrada = max(1, int(factor_escala))
+    for _ in range(intentos_entrada):
+        if rand.random() < prob_entrada:
+            nuevas_empresas += 1
         
     # Inicialización e inserción de nuevas empresas
     for _ in range(nuevas_empresas):
