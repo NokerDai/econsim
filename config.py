@@ -50,8 +50,8 @@ class Config:
     sensibilidad_calidad: float = 1.0
 
     tasa_natalidad: float = 0.0000210 * 100
-    prob_inmigracion: float = 0.0000015 * 100
-    tasa_emigracion: float = 0.0000015 * 100
+    prob_inmigracion: float = 0.000000015 * 100
+    tasa_emigracion: float = 0.000000015 * 100
     tasa_mortalidad: float = 0.0000210 * 100
 
     tasa_creacion_empresas: float = 0.00000025 * 100
