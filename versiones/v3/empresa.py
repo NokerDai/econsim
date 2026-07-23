@@ -14,6 +14,7 @@ class Empresa:
 
     productividad_objetivo: float
     tolerancia: float
+    utilidad_reserva: float = 0.0
 
     días_sin_vender: int = 0
 
