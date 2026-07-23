@@ -9,7 +9,7 @@ class Config:
     semilla: int = 0
     velocidad: float = 0
     frecuencia_actualización: int = 100
-    velocidad_streamlit: int = 1
+    velocidad_streamlit: int = 30
 
     # Población
     num_trabajadores: int = 1000
