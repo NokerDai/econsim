@@ -1,4 +1,5 @@
 # --- demografía.py ---
+import math
 from .trabajador import Trabajador
 from .empresa import Empresa
 
@@ -58,22 +59,58 @@ def demografía_y_firmas(estado):
     tasa_empleo = (num_formales + num_informales) / poblacion_actual if poblacion_actual > 0 else 0.0
 
 
-    # 3. DINÁMICA DE TRABAJADORES (Simplificada)
+    # 3. DINÁMICA DE TRABAJADORES (Enfoque micro moderno)
     pob_objetivo = getattr(config, 'num_trabajadores', 1000)
     
-    # Ancla de población: estimula la entrada si la población cae por debajo de la meta, y la frena si se supera.
+    # Ancla de población para calibración macro
     ancla_poblacion = max(0.1, 2.0 - (poblacion_actual / pob_objetivo)) if pob_objetivo > 0 else 1.0
     
-    # Entrada (Nacimiento/Inmigración): Depende positivamente de la tasa de empleo
-    tasa_entrada_trabajador = (config.tasa_natalidad + config.prob_inmigracion) * (0.5 + 0.5 * tasa_empleo) * ancla_poblacion
+    # Envejecimiento biológico de los trabajadores (se asume incremento diario)
+    for t in estado.trabajadores:
+        if not hasattr(t, 'edad'):
+            t.edad = rand.uniform(18, 65)
+        else:
+            t.edad += 1.0 / 365.0
+
+    # A) Nacimientos (Modelo de Elección Familiar de Becker)
+    # Se introduce el costo de crianza 'q_crianza' proporcional al presupuesto promedio.
+    # Los agentes en edad fértil (18 a 45 años) evalúan la fertilidad en función de su ingreso/riqueza.
+    q_crianza = max(estado.presupuesto_referencia_persona * 0.3, 1.0)
+    nuevos_nacimientos = 0
     
-    # Cálculo O(1) de nuevos habitantes
-    media_entradas = poblacion_actual * tasa_entrada_trabajador if poblacion_actual > 0 else 5.0
-    nuevos_habitantes = int(media_entradas) + (1 if rand.random() < (media_entradas % 1) else 0)
+    if poblacion_actual > 0:
+        for t in estado.trabajadores:
+            if 18 <= t.edad <= 45:
+                # Decisión de consumo vs hijos: la probabilidad aumenta a mayor presupuesto relativo
+                prob_fertilidad = config.tasa_natalidad * min(2.0, t.presupuesto / q_crianza) * ancla_poblacion
+                if rand.random() < prob_fertilidad:
+                    nuevos_nacimientos += 1
+                    t.presupuesto = max(0.0, t.presupuesto - q_crianza)  # Costo de crianza deducido
+    else:
+        # Tasa de rescate demográfico si no hay sobrevivientes
+        nuevos_nacimientos = int(5.0 * ancla_poblacion)
+
+    # B) Migración Entrante (Logit de elección discreta)
+    # El valor del destino local V_d depende de la tasa de empleo y del nivel de precios.
+    # Se compara con un valor externo de reserva (V_externo) descontando el costo de migración.
+    V_d_local = tasa_empleo - 0.1 * (precio_promedio / max(1e-9, estado.precio_referencia))
+    V_externo = -0.5
+    costo_migracion_in = 0.5
     
-    for _ in range(nuevos_habitantes):
+    diff_in = V_d_local - V_externo - costo_migracion_in
+    diff_in = min(10.0, max(-10.0, diff_in))  # Evitar desbordamiento en exp
+    prob_inmigracion_logit = 1.0 / (1.0 + math.exp(-diff_in))
+    
+    media_inmigrantes = (poblacion_actual if poblacion_actual > 0 else 10.0) * config.prob_inmigracion * prob_inmigracion_logit * ancla_poblacion
+    nuevos_inmigrantes = int(media_inmigrantes) + (1 if rand.random() < (media_inmigrantes % 1) else 0)
+
+    # Añadir nuevos agentes al sistema
+    total_nuevos = nuevos_nacimientos + nuevos_inmigrantes
+    for _ in range(total_nuevos):
         nuevo_trabajador = Trabajador.crear_inicial(config, rand)
-        # Se le asigna un capital semilla desde el fondo común
+        nuevo_trabajador.edad = rand.uniform(18, 25)  # Nuevos integrantes comienzan jóvenes
+        
+        # Asignación de capital inicial básico desde el pozo común
         semilla_inicial = estado.presupuesto_referencia_persona * 0.2
         if estado.pool_demografico >= semilla_inicial:
             estado.pool_demografico -= semilla_inicial
@@ -82,18 +119,32 @@ def demografía_y_firmas(estado):
             nuevo_trabajador.presupuesto = 0.0
         estado.trabajadores.append(nuevo_trabajador)
 
-    # Salidas (Fallecimientos y Emigración)
+    # C) Decisión de Muerte (Logística) y Emigración (Logit)
     sobrevivientes = []
     for t in estado.trabajadores:
-        # Inanición: Incrementa progresivamente la mortalidad después de 10 días sin poder comprar
-        prob_inanicion = max(0.0, (t.días_sin_comprar - 10) * 0.02)
-        prob_muerte = config.tasa_mortalidad + prob_inanicion
+        # Probabilidad de Muerte Logística: dependiente de edad, salud y riqueza
+        salud = max(0.0, 1.0 - t.días_sin_comprar * 0.05)
+        riqueza_relativa = t.presupuesto / max(1e-9, estado.presupuesto_referencia_persona)
         
-        # Emigración: Aumenta cuando el empleo en la economía es escaso
-        prob_emigracion = config.tasa_emigracion * (2.0 - tasa_empleo)
+        # Parámetros calibrados: edad aumenta mortalidad, salud e ingresos la reducen
+        z_muerte = -9.0 + 0.08 * t.edad - 3.0 * salud - 1.0 * riqueza_relativa
+        z_muerte = min(10.0, max(-10.0, z_muerte))
+        prob_muerte = 1.0 / (1.0 + math.exp(-z_muerte))
+        prob_muerte *= config.tasa_mortalidad * 100.0  # Escalamiento según el config general
+
+        # Probabilidad de Emigración (Modelo de Elección Logit):
+        # El agente compara la utilidad en el origen (V_o) con el destino externo (V_d_ext)
+        V_o_local = -0.5 * t.días_sin_comprar + 0.5 * riqueza_relativa
+        V_d_ext = 1.0  # Valor externo de reserva
+        costo_migracion_out = 1.5
         
-        if rand.random() < (prob_muerte + prob_emigracion):
-            # Devolver capital acumulado del trabajador al pozo común
+        diff_out = V_o_local - V_d_ext + costo_migracion_out
+        diff_out = min(10.0, max(-10.0, diff_out))
+        prob_emigracion = 1.0 / (1.0 + math.exp(diff_out))
+        prob_emigracion *= config.tasa_emigracion * 10.0
+
+        if rand.random() < prob_muerte or rand.random() < prob_emigracion:
+            # Los activos del agente que se retira vuelven al pool demográfico
             estado.pool_demografico += t.presupuesto
         else:
             sobrevivientes.append(t)
@@ -101,24 +152,37 @@ def demografía_y_firmas(estado):
     estado.trabajadores = sobrevivientes
 
 
-    # 4. DINÁMICA DE EMPRESAS (Simplificada)
+    # 4. DINÁMICA DE EMPRESAS (Enfoque micro moderno)
     emp_objetivo = getattr(config, 'num_empresas', 100)
     
-    # Ancla de firmas para mantener el ecosistema balanceado
+    # Ancla de cantidad de firmas
     ancla_empresas = max(0.1, 2.0 - (num_empresas_actual / emp_objetivo)) if emp_objetivo > 0 else 1.0
     
-    # Entrada de Empresas: Depende de la rentabilidad comercial actual
-    rentabilidad = presupuesto_promedio_empresa / estado.presupuesto_referencia if estado.presupuesto_referencia > 0 else 1.0
-    tasa_entrada_emp = (config.tasa_creacion_empresas + config.tasa_entrada_extranjeras) * max(0.2, min(rentabilidad, 2.0)) * ancla_empresas
+    # A) Entrada de Empresas (Decisión de Beneficio Esperado y Logit)
+    # Se calcula la expectativa de beneficio corriente (precio * ventas - salarios pagados)
+    if num_empresas_actual > 0:
+        ventas_promedio_emp = sum(e.ventas_hoy for e in estado.empresas) / num_empresas_actual
+        empleados_promedio_emp = (num_formales + num_informales) / num_empresas_actual
+        E_pi = (precio_promedio * ventas_promedio_emp) - (salario_promedio * empleados_promedio_emp)
+    else:
+        E_pi = estado.precio_referencia * 2.0 - estado.salario_referencia
+
+    # Costo fijo de entrada F_e
+    F_e = estado.presupuesto_referencia
+    norm_emp = max(estado.presupuesto_referencia, 1.0)
+    diff_entry = (E_pi - F_e) / norm_emp
+    diff_entry = min(10.0, max(-10.0, diff_entry))
     
-    # Cálculo O(1) de nuevas empresas
+    # Probabilidad de entrada por modelo Logit
+    prob_entry = 1.0 / (1.0 + math.exp(-diff_entry))
+    tasa_entrada_emp = (config.tasa_creacion_empresas + config.tasa_entrada_extranjeras) * prob_entry * ancla_empresas
+    
     media_nuevas_emp = num_empresas_actual * tasa_entrada_emp if num_empresas_actual > 0 else 2.0
     nuevas_empresas = int(media_nuevas_emp) + (1 if rand.random() < (media_nuevas_emp % 1) else 0)
     
     for _ in range(nuevas_empresas):
         nueva_emp = Empresa.crear_inicial(config, rand)
         
-        # Se dota de capital inicial a la empresa desde el fondo común
         presupuesto_requerido = estado.presupuesto_referencia
         if estado.pool_demografico >= presupuesto_requerido:
             estado.pool_demografico -= presupuesto_requerido
@@ -128,7 +192,7 @@ def demografía_y_firmas(estado):
             estado.pool_demografico = max(0.0, estado.pool_demografico - seed)
             nueva_emp.presupuesto = seed
             
-        # Heredar condiciones de mercado vigentes (+/- 15% de variabilidad aleatoria)
+        # Heredar condiciones iniciales del ecosistema
         if num_empresas_actual > 0:
             nueva_emp.precio = precio_promedio * rand.uniform(0.85, 1.15)
             nueva_emp.salario = max(salario_promedio * rand.uniform(0.85, 1.15), config.salario_mínimo, 1.0)
@@ -138,15 +202,50 @@ def demografía_y_firmas(estado):
             
         estado.empresas.append(nueva_emp)
         
-    # Salidas de Empresas (Quiebras, Cierre por inactividad y Relocalización)
-    empresas_activas = []
+    # B) Quiebra / Salida de Empresas (Decisión Intertemporal y Umbral Hopenhayn)
+    # Se introduce el factor de descuento beta_disc para evaluar el valor de continuación.
+    # Adicionalmente, se define una productividad mínima viable 'phi_star' para firmas poco competitivas.
+    beta_disc = 0.95
+    phi_star = 0.2
+    if num_empresas_actual > 0:
+        productividad_promedio_emp = sum(e.productividad for e in estado.empresas) / num_empresas_actual
+        phi_star = max(0.1, 0.3 * productividad_promedio_emp)
+
+    empresas_sobrevivientes = []
     for emp in estado.empresas:
-        quiebra_financiera = (emp.presupuesto <= 0 and emp.inventario == 0)
-        sin_ventas = (emp.días_sin_vender > 90) # Cerrar si lleva 3 meses sin vender
-        relocalizacion = (rand.random() < config.tasa_relocalizacion_empresas)
+        # Beneficio neto del periodo
+        costos_laborales = (emp.empleados_formales * emp.salario) + (emp.empleados_informales * emp.salario_informal)
+        pi_t = (emp.ventas_hoy * emp.precio) - costos_laborales
         
-        if quiebra_financiera or sin_ventas or relocalizacion:
-            # Liquidar el remanente de presupuesto al fondo común
+        # Valor de continuar: capital actual + flujo presente + flujo futuro esperado descontado
+        V_continue = emp.presupuesto + pi_t + beta_disc * pi_t
+        
+        quiebra_financiera = (V_continue < 0) or (emp.presupuesto <= 0 and emp.inventario == 0)
+        bajo_productivo = emp.productividad < phi_star  # Selección natural por productividad
+        sin_ventas = (emp.días_sin_vender > 90)
+        
+        if quiebra_financiera or bajo_productivo or sin_ventas:
+            # Los fondos remanentes se reintegran al pool común
+            estado.pool_demografico += max(0.0, emp.presupuesto)
+        else:
+            empresas_sobrevivientes.append(emp)
+
+    # C) Relocalización de Empresas (Decisión Espacial Logit)
+    # Comparación de beneficios locales (pi_i) versus beneficios esperados en otra región (E_pi) menos costos de relocalización (costo_reloc)
+    empresas_activas = []
+    for emp in empresas_sobrevivientes:
+        costos_laborales = (emp.empleados_formales * emp.salario) + (emp.empleados_informales * emp.salario_informal)
+        pi_i = (emp.ventas_hoy * emp.precio) - costos_laborales
+        costo_reloc = estado.presupuesto_referencia * 0.2
+        
+        diff_move = ((E_pi - costo_reloc) - pi_i) / norm_emp
+        diff_move = min(10.0, max(-10.0, diff_move))
+        
+        prob_reloc = 1.0 / (1.0 + math.exp(-diff_move))
+        prob_reloc *= config.tasa_relocalizacion_empresas
+        
+        if rand.random() < prob_reloc:
+            # Liquidación del capital al pool común y salida del mercado local
             estado.pool_demografico += max(0.0, emp.presupuesto)
         else:
             empresas_activas.append(emp)
