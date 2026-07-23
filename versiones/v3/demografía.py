@@ -50,7 +50,7 @@ def demografía_y_firmas(estado):
     # DEFINICIÓN DEL FACTOR DE ESCALA
     # ==========================================
     # Intentamos obtener la población inicial de la configuración; si no existe, usamos 100 como base.
-    poblacion_referencia = getattr(config, 'poblacion_inicial', 100.0)
+    poblacion_referencia = getattr(config, 'num_trabajadores', 100.0)
     
     # El factor de escala nos dice cuántas veces más grande es la población actual respecto a la base.
     # El mínimo de 1.0 asegura que la tasa de entrada nominal no caiga por debajo de la original.
