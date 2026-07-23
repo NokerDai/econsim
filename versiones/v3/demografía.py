@@ -45,7 +45,7 @@ def demografía_y_firmas(estado):
     # ==========================================
     # DEFINICIÓN DEL FACTOR DE ESCALA
     # ==========================================
-    poblacion_referencia = getattr(config, 'num_trabajadores', 100.0)
+    poblacion_referencia = estado.config.num_trabajadores
     factor_escala = max(1.0, poblacion_actual / poblacion_referencia)
 
     # ==========================================
