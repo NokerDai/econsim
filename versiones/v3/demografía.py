@@ -134,7 +134,7 @@ def demografía_y_firmas(estado):
         )
         nueva_emp.salario = max(
             rand.uniform(salario_promedio * 0.75, salario_promedio * 1.25),
-            config.salario_mínimo,
+            estado.config.salario_mínimo,
             1.0
         )
         nueva_emp.salario_informal = max(

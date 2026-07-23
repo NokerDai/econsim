@@ -48,3 +48,13 @@ class Config:
     reducción_precio: float = 0.99
     sensibilidad_precio: float = 1.0
     sensibilidad_calidad: float = 1.0
+
+    # Entrada y salida Argentina
+    tasa_natalidad = 0.000025          # ≈ 9 nacimientos cada 1000 habitantes/año
+    prob_inmigracion = 0.0000012       # probabilidad diaria de evento migratorio
+    num_inmigrantes_paso_max = 150.0   # máximo inmigrantes en un paso de simulación
+    tasa_emigracion = 0.0000018        # ≈ 0.07 % de la población/año
+    tasa_mortalidad = 0.000022         # ≈ 8 muertes cada 1000 habitantes/año
+    tasa_creacion_empresas = 0.0000010 # ≈ 0.036 % de empresas nuevas/día
+    tasa_entrada_extranjeras = 0.00000004
+    tasa_relocalizacion_empresas = 0.0000002

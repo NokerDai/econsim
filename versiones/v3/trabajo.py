@@ -326,7 +326,7 @@ def mercado_laboral(estado):
         aumento = estado.config.salario_mínimo_automático_aumento
 
         if estado.config.salario_mínimo == 0:
-            estado.config.salario_mínimo = salario_formal_máximo * estado.config.tasa_salario_mínimo * reducción
+            estado.config.salario_mínimo += salario_formal_máximo * estado.config.tasa_salario_mínimo * (aumento - 1)
         if tasa_empleo > tasa_límite * 1.05:
             estado.config.salario_mínimo = min(estado.config.salario_mínimo * aumento, salario_formal_máximo * estado.config.tasa_salario_mínimo)
         elif tasa_empleo < tasa_límite * 0.95:
