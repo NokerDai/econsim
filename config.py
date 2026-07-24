@@ -32,7 +32,6 @@ class Config:
     tasa_emisión: float = 0
     mantenimiento_M0: bool = True
     mantenimiento_M0_suavizado: int = 10
-    mantenimiento_M0_peso_trabajadores: 0.1
 
     # Parámetros del modelo laboral
     poder_trabajadores: float = 0.5
