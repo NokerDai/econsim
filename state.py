@@ -25,5 +25,6 @@ class Estado:
         self.salario_informal_referencia = float(config.salario_informal_inicial)
         self.precio_referencia = float(config.precio_inicial)
         self.presupuesto_referencia = float(config.presupuesto_inicial)
+        self.beneficio_esperado_referencia = float(1.0)
         self.poder_de_compra_referencia = float(1.0)
-        self.presupuesto_referencia_persona = float(0.0)
+        self.presupuesto_referencia_persona = float(1.0)
