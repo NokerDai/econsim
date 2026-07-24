@@ -8,17 +8,25 @@ def demografía_y_firmas(estado):
     num_trabajadores = max(len(estado.trabajadores), 1)
     num_empresas = max(len(estado.empresas), 1)
 
+    poder = estado.poder_de_compra_medio
+    ref = estado.poder_de_compra_referencia
+
     ancla_trabajadores = min(config.num_trabajadores / num_trabajadores, 5)
     ancla_empresas = min(config.num_trabajadores / num_empresas, 5)
 
-    poder = estado.poder_de_compra_medio
-    ref = estado.poder_de_compra_referencia
+    ratio = poder / ref
+
+    exceso = max(0.0, ratio - 1.05)
+    cantidad_trabajadores = min(round(ancla_trabajadores * exceso * 5), 2)
+
+    deficit = max(0.0, 0.95 - ratio)
+    cantidad_empresas = min(round(ancla_empresas * deficit * 5), 2)
 
     ############
     # Personas #
     ############
     if poder > ref * 1.05:
-        for _ in range(round(ancla_trabajadores)):
+        for _ in range(round(cantidad_trabajadores)):
             nuevo_trabajador = Trabajador.crear_inicial(config, rand)
             nuevo_trabajador.presupuesto = estado.presupuesto_medio_trabajadores * rand.uniform(0.85, 1.15)
             nuevo_trabajador.sensibilidad_precio = estado.sensibilidad_precio_medio * rand.uniform(0.85, 1.15)
@@ -32,7 +40,7 @@ def demografía_y_firmas(estado):
     # Empresas #
     ############
     if poder < ref * 0.95:
-        for _ in range(round(ancla_empresas)):
+        for _ in range(round(cantidad_empresas)):
             nueva_empresa = Empresa.crear_inicial(config, rand)
             nueva_empresa.presupuesto = estado.presupuesto_medio_empresas * rand.uniform(0.85, 1.15)
             nueva_empresa.precio = estado.estadisticas.precio_lista_medio[-1] * rand.uniform(0.85, 1.15)
