@@ -34,7 +34,7 @@ class Config:
     mantenimiento_M0_suavizado: int = 10
 
     # Parámetros del modelo laboral
-    poder_trabajadores: float = 0.5
+    poder_trabajadores: float = 0.1
     reducción_salario: float = 0.99
     aumento_salario: float = 1.01
     informalidad_por_empresa: float = 1.0
