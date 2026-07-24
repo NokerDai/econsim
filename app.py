@@ -27,19 +27,13 @@ inyectar_estilos()
 
 # --- PANTALLA DE SELECCIÓN INICIAL (BLOQUEANTE) ---
 if "version_seleccionada" not in st.session_state:
-    st.subheader("Selección de Versión del Modelo Económico")
-    st.write(
-        "Por favor, seleccione la versión del modelo antes de continuar. "
-        "Una vez iniciada la simulación, esta configuración no podrá modificarse en caliente."
-    )
-    
     version_elegida = st.selectbox(
-        "Versión disponible del Modelo",
+        "Versión",
         options=VERSIONES_DISPONIBLES,
         key="temp_version_selector"
     )
     
-    if st.button("Confirmar Selección y Cargar Simulación", use_container_width=True):
+    if st.button("Confirmar", use_container_width=True):
         st.session_state.version_seleccionada = version_elegida
         # Se inicializa de inmediato la simulación con la versión seleccionada
         config = Config(version_modelo=version_elegida)
