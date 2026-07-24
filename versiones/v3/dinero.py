@@ -10,7 +10,7 @@ def emisión_monetaria(estado):
         M0_actual = sum(t.presupuesto for t in estado.trabajadores) + sum(e.presupuesto for e in estado.empresas)
         M0_pt_actual = M0_actual / len(estado.trabajadores)
 
-        tasa = max(1, (M0_pt_inicial / M0_pt_actual + estado.config.mantenimiento_M0_suavizado) / (estado.config.mantenimiento_M0_suavizado + 1))
+        tasa = (M0_pt_inicial / M0_pt_actual + estado.config.mantenimiento_M0_suavizado) / (estado.config.mantenimiento_M0_suavizado + 1)
     else:
         tasa = 1 + estado.config.tasa_emisión
 
