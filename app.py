@@ -141,7 +141,6 @@ def registrar_snapshots(snapshots):
                 }
                 
                 st.session_state.valores_guardados.append(nueva_captura)
-                # Selecciona automáticamente la nueva captura para la comparativa de la UI
                 st.session_state.indice_comparacion = len(st.session_state.valores_guardados)
                 st.session_state.captura_activa = nueva_captura
                 st.toast("Captura automática del Día 360 guardada en caché", icon="💾")
