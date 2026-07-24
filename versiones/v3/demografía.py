@@ -21,11 +21,11 @@ def demografía_y_firmas(estado):
     ratio_trabajadores = poder / poder_ref
     ratio_empresas = beneficio_esperado / beneficio_ref
 
-    exceso = max(0.0, ratio_trabajadores - 1.05)
-    cantidad_trabajadores = min(round(ancla_trabajadores * exceso * 5), 2)
+    exceso_trabajadores = max(0.0, ratio_trabajadores - 1.05)
+    cantidad_trabajadores = min(round(ancla_trabajadores * exceso_trabajadores * 5), 2)
 
-    deficit = max(0.0, 0.95 - ratio_empresas)
-    cantidad_empresas = min(round(ancla_empresas * deficit * 5), 2)
+    exceso_empresas = max(0.0, ratio_empresas - 1.05)
+    cantidad_empresas = min(round(ancla_empresas * exceso_empresas * 5), 2)
 
     ############
     # Personas #
