@@ -25,8 +25,8 @@ def demografía_y_firmas(estado):
     ############
     # Personas #
     ############
-    if poder > ref * 1.05:
-        for _ in range(round(cantidad_trabajadores)):
+    if poder > ref * 1.1:
+        for _ in range(cantidad_trabajadores):
             nuevo_trabajador = Trabajador.crear_inicial(config, rand)
             nuevo_trabajador.presupuesto = estado.presupuesto_medio_trabajadores * rand.uniform(0.85, 1.15)
             nuevo_trabajador.sensibilidad_precio = estado.sensibilidad_precio_medio * rand.uniform(0.85, 1.15)
@@ -39,8 +39,8 @@ def demografía_y_firmas(estado):
     ############
     # Empresas #
     ############
-    if poder < ref * 0.95:
-        for _ in range(round(cantidad_empresas)):
+    if poder < ref * 0.9:
+        for _ in range(cantidad_empresas):
             nueva_empresa = Empresa.crear_inicial(config, rand)
             nueva_empresa.presupuesto = estado.presupuesto_medio_empresas * rand.uniform(0.85, 1.15)
             nueva_empresa.precio = estado.estadisticas.precio_lista_medio[-1] * rand.uniform(0.85, 1.15)
