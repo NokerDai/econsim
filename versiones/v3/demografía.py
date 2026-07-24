@@ -14,8 +14,9 @@ def demografía_y_firmas(estado):
     beneficio_esperado = estado.beneficio_esperado_medio
     beneficio_ref = estado.beneficio_esperado_referencia
 
-    ancla_trabajadores = min(config.num_trabajadores / num_trabajadores, 5)
-    ancla_empresas = min(config.num_empresas / num_empresas, 5)
+    ratio = config.num_trabajadores / config.num_empresas
+    ancla_trabajadores = min(config.num_trabajadores / num_trabajadores, 3 * ratio)
+    ancla_empresas = min(config.num_empresas / num_empresas, 3 * ratio)
 
     ratio_trabajadores = poder / poder_ref
     ratio_empresas = beneficio_esperado / beneficio_ref
