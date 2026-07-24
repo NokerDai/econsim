@@ -1,283 +1,180 @@
-def mercado_laboral(estado):
-    vacantes_formales = []
+# --- productos.py ---
+import math
+
+def mercado_productos(estado):
+    productos_disponibles = []
+    pf = estado.config.productividad_formal
+    pi = estado.config.productividad_informal
+
+    # 1. Fase de Producción y actualización de inventario
+    for empresa in estado.empresas:
+        empresa.ventas_hoy = 0
+        empresa.días_sin_vender += 1
+        produccion_formal = empresa.productividad_acumulada_formales * pf
+        produccion_informal = empresa.productividad_acumulada_informales * pi
+        producción = (produccion_formal + produccion_informal) * empresa.productividad
+        empresa.producción = producción
+        empresa.inventario += producción
+
+    sp = estado.config.sensibilidad_precio
+    sc = estado.config.sensibilidad_calidad
+    rand = estado.aleatorio
+    random_func = rand.random  # Acceso directo al generador rápido
+
+    # 2. Mercado de Consumo (Modelo de Elección Discreta con Opción de Reserva)
+    for trabajador in estado.trabajadores:
+        trabajador.días_sin_comprar += 1
+        
+        # Filtrar empresas que tienen stock y cuyo precio es estrictamente menor al presupuesto
+        active_firms = [
+            emp for emp in estado.empresas 
+            if emp.inventario >= 1.0 and trabajador.presupuesto > emp.precio
+        ]
+        
+        n_disp = len(active_firms)
+        if n_disp > 0:
+            # Determinación de un conjunto de consideración acotado (Búsqueda aleatoria de hasta k opciones)
+            k = min(10, n_disp)
+            sampled_firms = []
+            if k == n_disp:
+                sampled_firms = active_firms
+            else:
+                seen_indices = set()
+                while len(sampled_firms) < k:
+                    idx = int(random_func() * n_disp)
+                    if idx not in seen_indices:
+                        seen_indices.add(idx)
+                        sampled_firms.append(active_firms[idx])
+            
+            peso_calidad = trabajador.sensibilidad_calidad * sc
+            peso_precio = trabajador.sensibilidad_precio * sp
+            
+            # Evaluación de la opción de reserva (No comprar, conservar todo el dinero)
+            # Utlizamos Gumbel(0,1) mediante el método de transformación inversa
+            u_noise = random_func()
+            u_noise = max(1e-15, min(u_noise, 1.0 - 1e-15))
+            eps_0 = -math.log(-math.log(u_noise))
+            
+            # Utilidad del dinero ahorrado
+            v_0 = peso_precio * math.log(max(trabajador.presupuesto, 1e-5))
+            best_utility = v_0 + eps_0
+            seleccionado = None  # Representa la opción externa
+            
+            # Evaluación de las alternativas de mercado
+            for emp in sampled_firms:
+                u_noise = random_func()
+                u_noise = max(1e-15, min(u_noise, 1.0 - 1e-15))
+                eps_j = -math.log(-math.log(u_noise))
+                
+                # Utilidad: peso_calidad * calidad + peso_precio * ln(presupuesto - precio)
+                v_j = peso_calidad * emp.calidad + peso_precio * math.log(trabajador.presupuesto - emp.precio)
+                u_j = v_j + eps_j
+                
+                if u_j > best_utility:
+                    best_utility = u_j
+                    seleccionado = emp
+            
+            # Si el consumidor prefiere un bien del mercado a la opción de reserva
+            if seleccionado is not None and seleccionado.inventario >= 1.0:
+                seleccionado.presupuesto += seleccionado.precio
+                trabajador.presupuesto -= seleccionado.precio
+                seleccionado.inventario -= 1
+                seleccionado.ventas_hoy += 1
+                trabajador.días_sin_comprar = 0
+                seleccionado.días_sin_vender = 0
+
+    # 3. Ajustes de Precio (Regla de Lerner con aprendizaje de elasticidad) y Productividad
+    alpha = 0.1   # Tasa de aprendizaje de la probabilidad de venta
+    phi = 0.15    # Velocidad de ajuste de precios (fricciones/costos de menú)
+    delta = 0.05  # Tasa de actualización de la elasticidad estimada
 
     for empresa in estado.empresas:
-        salario_seguro = max(empresa.salario, 1.0)
+        
+        # Dinámica de productividad adaptativa basada en acumulación de inventario
+        if empresa.inventario > empresa.inventario_ayer:
+            empresa.racha_reducido += 1
+            empresa.racha_aumentado = 0
+        elif empresa.inventario < empresa.inventario_ayer:
+            empresa.racha_aumentado += 1
+            empresa.racha_reducido = 0
+        else:
+            empresa.racha_reducido = 0
+            empresa.racha_aumentado = 0
+            
+        if empresa.racha_reducido > 30:
+            empresa.productividad *= 0.99
+        elif empresa.racha_aumentado > 30:
+            empresa.productividad *= 1.01
 
-        empresa.vacantes_formales = min(
-            int(empresa.presupuesto / salario_seguro),
-            len(estado.trabajadores)
+        # Estimación del Costo Marginal (MC = Salarios Esperados / Producción Esperada)
+        prod_esp = max(empresa.producción_esperada, 0.01)
+        sal_esp = max(empresa.salarios_esperados, 1.0)
+        costo_marginal = max(sal_esp / prod_esp, 1.0)
+
+        # Aprendizaje bayesiano/recursivo de la elasticidad estimada de la demanda
+        if not hasattr(empresa, 'elasticidad_estimada'):
+            empresa.elasticidad_estimada = 2.0  # Valor inicial de elasticidad
+
+        if empresa.inventario > empresa.inventario_ayer:
+            # Exceso de inventario: la demanda es más elástica de lo previsto. 
+            # Aumentamos la elasticidad estimada para reducir el margen de ganancia.
+            empresa.elasticidad_estimada *= (1.0 + delta)
+        elif empresa.inventario < empresa.inventario_ayer:
+            # Escasez o vaciado de stock: la demanda es más inelástica de lo previsto.
+            empresa.elasticidad_estimada *= (1.0 - delta)
+
+        # Restricción de límites lógicos para evitar divisiones por cero o márgenes infinitos
+        empresa.elasticidad_estimada = max(1.15, min(empresa.elasticidad_estimada, 10.0))
+
+        # Regla de Lerner: P = MC * (epsilon / (epsilon - 1))
+        markup = empresa.elasticidad_estimada / (empresa.elasticidad_estimada - 1.0)
+        precio_objetivo = costo_marginal * markup
+
+        # Suavizado de la transición del precio
+        empresa.precio_venta_real = empresa.precio
+        empresa.precio = (1.0 - phi) * empresa.precio + phi * precio_objetivo
+        empresa.precio = max(empresa.precio, 1.0)
+        
+        # Guardar estado del inventario para el siguiente periodo
+        empresa.inventario_ayer = empresa.inventario
+
+        # ==========================
+        # Actualización de Expectativas de la Empresa
+        # ==========================
+
+        empresa.producción_esperada = (
+            (
+                empresa.productividad_acumulada_formales * pf +
+                empresa.productividad_acumulada_informales * pi
+            )
+            * empresa.productividad
         )
 
-        empresa.vacantes_informales = 0
-        empresa.empleados_formales = 0
-        empresa.empleados_informales = 0
-        empresa.productividad_acumulada_formales = 0.0
-        empresa.productividad_acumulada_informales = 0.0
-
-        vacantes_formales.extend([empresa] * empresa.vacantes_formales)
-
-    ssal = estado.config.sensibilidad_salario
-    ssat = estado.config.sensibilidad_satisfacción
-    rand = estado.aleatorio
-    random_func = rand.random
-
-    informalidad = False
-    vacantes_informales = []
-
-    salario_formal_máximo = estado.config.salario_mínimo
-
-    for trabajador in estado.trabajadores:
-
-        peso_salario = trabajador.sensibilidad_salario * ssal
-        peso_satisfacción = trabajador.sensibilidad_satisfacción * ssat
-
-        # ===========================
-        # Mercado formal
-        # ===========================
-
-        n_disp = len(vacantes_formales)
-
-        if n_disp > 0:
-
-            k = min(10, n_disp)
-
-            if k == n_disp:
-                indices = list(range(n_disp))
-            else:
-                seen = set()
-                indices = []
-
-                while len(indices) < k:
-                    idx = int(random_func() * n_disp)
-                    if idx not in seen:
-                        seen.add(idx)
-                        indices.append(idx)
-
-            mejor_indice = -float("inf")
-            best_idx_in_list = -1
-            seleccionada = None
-
-            alpha = estado.config.poder_trabajadores
-            beta = 1.0 - alpha
-
-            for idx in indices:
-
-                emp = vacantes_formales[idx]
-
-                u_trabajador = (
-                    peso_salario * emp.salario +
-                    peso_satisfacción * emp.satisfacción
-                )
-
-                if u_trabajador <= trabajador.utilidad_reserva:
-                    continue
-
-                error = abs(
-                    trabajador.productividad -
-                    emp.productividad_objetivo
-                )
-
-                compatibilidad = max(
-                    0.0,
-                    1.0 - error * (1.0 - emp.tolerancia)
-                )
-
-                productividad_real = (
-                    trabajador.productividad *
-                    compatibilidad
-                )
-
-                u_empresa = (
-                    emp.precio *
-                    productividad_real
-                )
-
-                if u_empresa <= emp.utilidad_reserva:
-                    continue
-
-                indice = (
-                    (u_trabajador - trabajador.utilidad_reserva) ** alpha *
-                    (u_empresa ** beta)
-                )
-
-                if indice > mejor_indice:
-                    mejor_indice = indice
-                    seleccionada = emp
-                    best_idx_in_list = idx
-
-            if seleccionada is not None:
-
-                seleccionada.empleados_formales += 1
-                seleccionada.productividad_acumulada_formales += trabajador.productividad
-
-                trabajador.presupuesto += seleccionada.salario
-                seleccionada.presupuesto -= seleccionada.salario
-
-                salario_formal_máximo = max(
-                    salario_formal_máximo,
-                    seleccionada.salario
-                )
-
-                ultimo = len(vacantes_formales) - 1
-
-                if best_idx_in_list != ultimo:
-                    vacantes_formales[best_idx_in_list] = vacantes_formales[ultimo]
-
-                vacantes_formales.pop()
-
-                continue
-
-        # ===========================
-        # Generar mercado informal
-        # ===========================
-
-        if not informalidad:
-            informalidad = True
-
-            for empresa in estado.empresas:
-                salario_inf_seguro = max(empresa.salario_informal, 1.0)
-
-                empresa.vacantes_informales = min(
-                    int(empresa.presupuesto / salario_inf_seguro),
-                    len(estado.trabajadores)
-                )
-
-                vacantes_informales.extend(
-                    [empresa] * empresa.vacantes_informales
-                )
-
-        # ===========================
-        # Mercado informal
-        # ===========================
-
-        n_disp = len(vacantes_informales)
-
-        if n_disp == 0:
-            continue
-
-        k = min(10, n_disp)
-
-        if k == n_disp:
-            indices = list(range(n_disp))
-        else:
-            seen = set()
-            indices = []
-
-            while len(indices) < k:
-                idx = int(random_func() * n_disp)
-                if idx not in seen:
-                    seen.add(idx)
-                    indices.append(idx)
-
-        mejor_indice = -float("inf")
-        best_idx_in_list = -1
-        seleccionada = None
-
-        alpha = estado.config.poder_trabajadores
-        beta = 1.0 - alpha
-
-        for idx in indices:
-
-            emp = vacantes_informales[idx]
-
-            u_trabajador = (
-                peso_salario * emp.salario_informal +
-                peso_satisfacción * emp.satisfacción
+        if empresa.producción_esperada > 0:
+            probabilidad_real = min(
+                empresa.ventas_hoy / max(empresa.producción, 1.0),
+                1.0
+            )
+            empresa.probabilidad_venta_esperada = (
+                (1 - alpha) * empresa.probabilidad_venta_esperada +
+                alpha * probabilidad_real
             )
 
-            if u_trabajador <= trabajador.utilidad_reserva:
-                continue
+        empresa.ingresos_esperados = (
+            empresa.precio *
+            empresa.producción_esperada *
+            empresa.probabilidad_venta_esperada
+        )
 
-            error = abs(
-                trabajador.productividad -
-                emp.productividad_objetivo
-            )
+        empresa.salarios_esperados = (
+            empresa.empleados_formales * empresa.salario +
+            empresa.empleados_informales * empresa.salario_informal
+        )
 
-            compatibilidad = max(
-                0.0,
-                1.0 - error * (1.0 - emp.tolerancia)
-            )
+        empresa.otros_costos_esperados = 0.0
 
-            productividad_real = (
-                trabajador.productividad *
-                compatibilidad
-            )
-
-            u_empresa = (
-                emp.precio *
-                productividad_real
-            )
-
-            if u_empresa <= 0:
-                continue
-
-            indice = (
-                (u_trabajador - trabajador.utilidad_reserva) ** alpha *
-                (u_empresa ** beta)
-            )
-
-            if indice > mejor_indice:
-                mejor_indice = indice
-                seleccionada = emp
-                best_idx_in_list = idx
-
-        if seleccionada is None:
-            continue
-
-        seleccionada.empleados_informales += 1
-        seleccionada.productividad_acumulada_informales += trabajador.productividad
-
-        trabajador.presupuesto += seleccionada.salario_informal
-        seleccionada.presupuesto -= seleccionada.salario_informal
-
-        ultimo = len(vacantes_informales) - 1
-
-        if best_idx_in_list != ultimo:
-            vacantes_informales[best_idx_in_list] = vacantes_informales[ultimo]
-
-        vacantes_informales.pop()
-
-    # ===========================
-    # Ajustar salarios empresas
-    # ===========================
-
-    vacantes_formales_proyectadas = len(estado.trabajadores) / len(estado.empresas)
-    num_empleados_formales = sum(
-        empresa.empleados_formales
-        for empresa in estado.empresas
-    )
-    num_empleados_informales_proyectados = len(estado.trabajadores) - num_empleados_formales
-    vacantes_informales_proyectadas = (num_empleados_informales_proyectados * estado.config.informalidad_por_empresa) / len(estado.empresas)
-
-    # ===========================
-    # Actualizar salario mínimo
-    # ===========================
-
-    if estado.config.salario_mínimo_automático and estado.día % estado.config.salario_mínimo_automático_intervalo == 0:
-        if estado.trabajadores:
-            tasa_empleo = num_empleados_formales / len(estado.trabajadores)
-        else:
-            tasa_empleo = 0.0
-        tasa_límite = estado.config.salario_mínimo_automático_formalidad_límite
-        reducción = estado.config.salario_mínimo_automático_reducción
-        aumento = estado.config.salario_mínimo_automático_aumento
-
-        if estado.config.salario_mínimo == 0:
-            estado.config.salario_mínimo = salario_formal_máximo * estado.config.tasa_salario_mínimo * (aumento - 1)
-        if tasa_empleo > tasa_límite * 1.05:
-            estado.config.salario_mínimo = min(estado.config.salario_mínimo * aumento, salario_formal_máximo * estado.config.tasa_salario_mínimo)
-        elif tasa_empleo < tasa_límite * 0.95:
-            estado.config.salario_mínimo *= reducción
-
-    for empresa in estado.empresas:
-        empresa.salario_pago_real = empresa.salario
-        empresa.salario_informal_pago_real = empresa.salario_informal
-
-        ratio = (empresa.vacantes_formales - vacantes_formales_proyectadas) * 0.3
-        empresa.salario *= 1 + ratio / 100
-        empresa.salario = max(empresa.salario, estado.config.salario_mínimo, 1.0)
-
-        ratio = (empresa.vacantes_informales - vacantes_informales_proyectadas) * 0.3
-        empresa.salario_informal *= 1 + ratio / 100
-        empresa.salario_informal = max(empresa.salario_informal, 1.0)
+        empresa.beneficio_esperado = (
+            empresa.ingresos_esperados
+            - empresa.salarios_esperados
+            - empresa.otros_costos_esperados
+        )

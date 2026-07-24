@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Config:
-    version_modelo: str = "v1"
+    version_modelo: str = "v3"
 
     # Simulación
     semilla: int = 0
