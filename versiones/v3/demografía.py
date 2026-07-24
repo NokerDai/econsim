@@ -5,10 +5,16 @@ from .empresa import Empresa
 def demografía_y_firmas(estado):
     config = estado.config
     rand = estado.aleatorio
+    num_trabajadores = max(len(estado.trabajadores), 1)
+    num_empresas = max(len(estado.empresas), 1)
+
+    ancla_trabajadores = max(config.num_trabajadores / num_trabajadores, 1)
+    ancla_empresas = max(config.num_trabajadores / num_empresas, 1)
+
     ############
     # Personas #
     ############
-    if estado.poder_de_compra_medio > estado.poder_de_compra_referencia:
+    if estado.poder_de_compra_medio > estado.poder_de_compra_referencia and rand.random() < ancla_trabajadores:
         nuevo_trabajador = Trabajador.crear_inicial(config, rand)
         nuevo_trabajador.presupuesto = estado.presupuesto_medio_trabajadores * rand.uniform(0.85, 1.15)
         nuevo_trabajador.sensibilidad_precio = estado.sensibilidad_precio_medio * rand.uniform(0.85, 1.15)
@@ -21,7 +27,7 @@ def demografía_y_firmas(estado):
     ############
     # Empresas #
     ############
-    if estado.poder_de_compra_medio < estado.poder_de_compra_referencia:
+    if estado.poder_de_compra_medio < estado.poder_de_compra_referencia and rand.random() < ancla_empresas:
         nueva_empresa = Empresa.crear_inicial(config, rand)
         nueva_empresa.presupuesto = estado.presupuesto_medio_empresas * rand.uniform(0.85, 1.15)
         nueva_empresa.precio = estado.estadisticas.precio_lista_medio[-1] * rand.uniform(0.85, 1.15)
