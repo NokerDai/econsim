@@ -34,11 +34,21 @@ class Empresa:
 
     inventario: float = 0.0
     inventario_ayer: float = 0.0
+    producción: float = 0.0
 
     racha_reducido: int = 0
     racha_aumentado: int = 0
 
     ventas_hoy: int = 0
+
+    beneficio_esperado: float = 0.0
+
+    probabilidad_venta_esperada: float = 1.0
+    producción_esperada: float = 0.0
+
+    ingresos_esperados: float = 0.0
+    salarios_esperados: float = 0.0
+    otros_costos_esperados: float = 0.0
 
     @classmethod
     def crear_inicial(cls, config, aleatorio):

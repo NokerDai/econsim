@@ -88,3 +88,72 @@ def actualizar_estadisticas(estado):
     estado.salario_informal_referencia = 0.99 * estado.salario_informal_referencia + 0.01 * salario_informal_medio
     estado.precio_referencia = 0.99 * estado.precio_referencia + 0.01 * precio_lista_medio
     estado.poder_de_compra_referencia = 0.99 * estado.poder_de_compra_referencia + 0.01 * poder_de_compra_medio
+
+    pf = estado.config.productividad_formal
+    pi = estado.config.productividad_informal
+
+    alpha = 0.1
+    for empresa in estado.empresas:
+
+        # ==========================
+        # Producción esperada
+        # ==========================
+
+        empresa.producción_esperada = (
+            (
+                empresa.productividad_acumulada_formales * pf +
+                empresa.productividad_acumulada_informales * pi
+            )
+            * empresa.productividad
+        )
+
+        # ==========================
+        # Aprender probabilidad de venta
+        # ==========================
+
+        if empresa.producción_esperada > 0:
+
+            probabilidad_real = min(
+                empresa.ventas_hoy / empresa.producción,
+                1.0
+            )
+
+            empresa.probabilidad_venta_esperada = (
+                (1 - alpha) * empresa.probabilidad_venta_esperada +
+                alpha * probabilidad_real
+            )
+
+        # ==========================
+        # Ingresos esperados
+        # ==========================
+
+        empresa.ingresos_esperados = (
+            empresa.precio *
+            empresa.producción_esperada *
+            empresa.probabilidad_venta_esperada
+        )
+
+        # ==========================
+        # Salarios esperados
+        # ==========================
+
+        empresa.salarios_esperados = (
+            empresa.empleados_formales * empresa.salario +
+            empresa.empleados_informales * empresa.salario_informal
+        )
+
+        # ==========================
+        # Otros costos
+        # ==========================
+
+        empresa.otros_costos_esperados = 0.0
+
+        # ==========================
+        # Beneficio esperado
+        # ==========================
+
+        empresa.beneficio_esperado = (
+            empresa.ingresos_esperados
+            - empresa.salarios_esperados
+            - empresa.otros_costos_esperados
+        )
