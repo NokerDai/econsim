@@ -34,9 +34,17 @@ def demografía_y_firmas(estado):
         nueva_empresa.tolerancia = estado.tolerancia_medio * rand.uniform(0.85, 1.15)
         estado.empresas.append(nueva_empresa)
 
-    for e in estado.empresas:
-        if (e.presupuesto < e.salario_informal and e.inventario == 0) or (e.días_sin_vender > 180 and rand.random() < 0.10):
-            estado.empresas.remove(e)
-    for t in estado.trabajadores:
-        if t.días_sin_comprar > 10 and rand.random() < 0.10:
-            estado.trabajadores.remove(e)
+    estado.empresas = [
+        e for e in estado.empresas
+        if not (
+            (e.presupuesto < e.salario_informal and e.inventario == 0)
+            or (e.días_sin_vender > 180 and rand.random() < 0.10)
+        )
+    ]
+
+    estado.trabajadores = [
+        t for t in estado.trabajadores
+        if not (
+            t.días_sin_comprar > 10 and rand.random() < 0.10
+        )
+    ]
