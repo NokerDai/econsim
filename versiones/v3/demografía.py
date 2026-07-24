@@ -44,7 +44,7 @@ def demografía_y_firmas(estado):
     ############
     # Empresas #
     ############
-    if beneficio_esperado < beneficio_ref * 0.9:
+    if beneficio_esperado > beneficio_ref * 1.1:
         for _ in range(cantidad_empresas):
             nueva_empresa = Empresa.crear_inicial(config, rand)
             nueva_empresa.presupuesto = estado.presupuesto_medio_empresas * rand.uniform(0.85, 1.15)
