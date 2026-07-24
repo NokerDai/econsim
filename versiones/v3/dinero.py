@@ -3,10 +3,9 @@ def emisión_monetaria(estado):
 
     tasa = 1
     if config.mantenimiento_M0 and estado.config.tasa_emisión == 0:
-        peso_trabajadores = config.mantenimiento_M0_peso_trabajadores
-
         num_empresas = estado.config.num_empresas
         num_trabajadores = estado.config.num_trabajadores
+        peso_trabajadores = num_empresas / num_trabajadores
 
         M0_inicial = estado.config.presupuesto_inicial * num_empresas
         M0_pt_inicial = M0_inicial / num_trabajadores
