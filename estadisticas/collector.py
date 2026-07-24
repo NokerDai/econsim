@@ -157,3 +157,7 @@ def actualizar_estadisticas(estado):
             - empresa.salarios_esperados
             - empresa.otros_costos_esperados
         )
+
+    beneficio_esperado_medio = sum(e.beneficio_esperado for e in estado.empresas) / total_empresas
+    estado.beneficio_esperado_medio = beneficio_esperado_medio
+    estado.beneficio_esperado_referencia = 0.99 * estado.beneficio_esperado_referencia + 0.01 * beneficio_esperado_medio

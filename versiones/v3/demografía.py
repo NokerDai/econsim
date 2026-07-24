@@ -9,23 +9,27 @@ def demografía_y_firmas(estado):
     num_empresas = max(len(estado.empresas), 1)
 
     poder = estado.poder_de_compra_medio
-    ref = estado.poder_de_compra_referencia
+    poder_ref = estado.poder_de_compra_referencia
+
+    beneficio_esperado = estado.beneficio_esperado_medio
+    beneficio_ref = estado.beneficio_esperado_referencia
 
     ancla_trabajadores = min(config.num_trabajadores / num_trabajadores, 5)
     ancla_empresas = min(config.num_trabajadores / num_empresas, 5)
 
-    ratio = poder / ref
+    ratio_trabajadores = poder / poder_ref
+    ratio_empresas = beneficio_esperado / beneficio_ref
 
-    exceso = max(0.0, ratio - 1.05)
+    exceso = max(0.0, ratio_trabajadores - 1.05)
     cantidad_trabajadores = min(round(ancla_trabajadores * exceso * 5), 2)
 
-    deficit = max(0.0, 0.95 - ratio)
+    deficit = max(0.0, 0.95 - ratio_empresas)
     cantidad_empresas = min(round(ancla_empresas * deficit * 5), 2)
 
     ############
     # Personas #
     ############
-    if poder > ref * 1.1:
+    if poder > poder_ref * 1.1:
         for _ in range(cantidad_trabajadores):
             nuevo_trabajador = Trabajador.crear_inicial(config, rand)
             nuevo_trabajador.presupuesto = estado.presupuesto_medio_trabajadores * rand.uniform(0.85, 1.15)
@@ -39,7 +43,7 @@ def demografía_y_firmas(estado):
     ############
     # Empresas #
     ############
-    if poder < ref * 0.9:
+    if beneficio_esperado < beneficio_ref * 0.9:
         for _ in range(cantidad_empresas):
             nueva_empresa = Empresa.crear_inicial(config, rand)
             nueva_empresa.presupuesto = estado.presupuesto_medio_empresas * rand.uniform(0.85, 1.15)
