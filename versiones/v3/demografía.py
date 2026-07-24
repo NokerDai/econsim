@@ -24,9 +24,9 @@ def demografía_y_firmas(estado):
     if estado.poder_de_compra_medio < estado.poder_de_compra_referencia:
         nueva_empresa = Empresa.crear_inicial(config, rand)
         nueva_empresa.presupuesto = estado.presupuesto_medio_empresas * rand.uniform(0.85, 1.15)
-        nueva_empresa.precio = estado.precio_lista_medio[-1] * rand.uniform(0.85, 1.15)
-        nueva_empresa.salario = max(estado.salario_medio[-1] * rand.uniform(0.85, 1.15), config.salario_mínimo, 1.0)
-        nueva_empresa.salario_informal = max(estado.salario_informal_medio[-1] * rand.uniform(0.85, 1.15), 1.0)
+        nueva_empresa.precio = estado.estadisticas.precio_lista_medio[-1] * rand.uniform(0.85, 1.15)
+        nueva_empresa.salario = max(estado.estadisticas.salario_medio[-1] * rand.uniform(0.85, 1.15), config.salario_mínimo, 1.0)
+        nueva_empresa.salario_informal = max(estado.estadisticas.salario_informal_medio[-1] * rand.uniform(0.85, 1.15), 1.0)
         nueva_empresa.calidad = estado.calidad_medio * rand.uniform(0.85, 1.15)
         nueva_empresa.satisfacción = estado.satisfacción_medio * rand.uniform(0.85, 1.15)
         nueva_empresa.productividad = estado.productividad_medio_empresas * rand.uniform(0.85, 1.15)
