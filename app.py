@@ -105,6 +105,47 @@ def registrar_snapshots(snapshots):
         if len(st.session_state.historial) > 1000:
             st.session_state.historial = st.session_state.historial.tail(1000)
 
+        # --- CAPTURA AUTOMÁTICA DEL DÍA 360 ---
+        if 360 in st.session_state.historial.index:
+            # Evita duplicar la captura si ya fue registrada anteriormente
+            ya_guardado = any(cap.get("Día") == 360 for cap in st.session_state.valores_guardados)
+            if not ya_guardado:
+                row = st.session_state.historial.loc[360]
+                total_trabajadores = len(sim.estado.trabajadores)
+                total_empresas_c = len(sim.estado.empresas)
+                num_formales_c = float(row["Empleo formal"]) * total_trabajadores
+                num_informales_c = float(row["Empleo informal"]) * total_trabajadores
+
+                nueva_captura = {
+                    "Día": 360,
+                    "Número Empresas": int(total_empresas_c),
+                    "Número Personas": int(total_trabajadores),
+                    "Salario Mínimo": float(sim.config.salario_mínimo),
+                    "Salario Medio": float(row["Salario"]),
+                    "Salario Informal": float(row["Salario informal"]),
+                    "Precio Lista": float(row["Precio Lista"]),
+                    "Precio Transac.": float(row["Precio Transacción"]),
+                    "Poder Compra Form.": float(row["Poder Compra Formal"]),
+                    "Poder Compra Inf.": float(row["Poder Compra Informal"]),
+                    "Emp. Formal": float(row["Empleo formal"]),
+                    "Emp. Informal": float(row["Empleo informal"]),
+                    "Desempleo": float(row["Desempleo"]),
+                    "Bienes Vendidos": float(row["Bienes Vendidos"]),
+                    "Calidad Media Transacción": float(row["Calidad Media Transacción"]),
+                    "Satisfacción Media": float(row["Satisfacción Media"]),
+                    "Flujo Empresas (Ing)": float(row["Empresas Ingreso"]),
+                    "Flujo Empresas (Gast)": float(row["Empresas Gasto"]),
+                    "Trabajadores Form.": int(num_formales_c),
+                    "Trabajadores Inf.": int(num_informales_c),
+                    "Hora": time.strftime("%H:%M:%S")
+                }
+                
+                st.session_state.valores_guardados.append(nueva_captura)
+                # Selecciona automáticamente la nueva captura para la comparativa de la UI
+                st.session_state.indice_comparacion = len(st.session_state.valores_guardados)
+                st.session_state.captura_activa = nueva_captura
+                st.toast("Captura automática del Día 360 guardada en caché", icon="💾")
+
 
 def marcar_valor(nombre, valor, día=None):
     if nombre is None:
