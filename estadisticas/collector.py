@@ -1,6 +1,7 @@
 # --- collector.py ---
 def actualizar_estadisticas(estado):
     total_empresas = len(estado.empresas)
+    total_trabajadores = len(estado.trabajadores)
     
     precio_lista_medio = sum(e.precio for e in estado.empresas) / total_empresas if total_empresas > 0 else 0.0
 
@@ -40,19 +41,38 @@ def actualizar_estadisticas(estado):
 
     total_gasto_empresas = suma_salarios_formales + suma_salarios_informales
 
+    salario_medio = suma_salarios_formales / num_formales if num_formales > 0 else 0.0
+    salario_informal_medio = suma_salarios_informales / num_informales if num_informales > 0 else 0.0
+
     estado.estadisticas.salario_medio.append(
-        suma_salarios_formales / num_formales if num_formales > 0 else 0.0
+        salario_medio
     )
     estado.estadisticas.salario_informal_medio.append(
-        suma_salarios_informales / num_informales if num_informales > 0 else 0.0
+        salario_informal_medio
     )
     estado.estadisticas.precio_lista_medio.append(precio_lista_medio)
     estado.estadisticas.precio_transaccion_medio.append(precio_transaccion_medio)
 
-    total_trabajadores = len(estado.trabajadores)
     tasa_formal = num_formales / total_trabajadores if total_trabajadores > 0 else 0.0
     tasa_informal = num_informales / total_trabajadores if total_trabajadores > 0 else 0.0
     tasa_desempleo = max(0.0, 1.0 - tasa_formal - tasa_informal)
+
+    poder_de_compra_medio = (tasa_formal * salario_medio + tasa_informal * salario_informal_medio) / precio_lista_medio
+    estado.poder_de_compra_medio = poder_de_compra_medio
+
+    estado.presupuesto_medio_trabajadores = sum(t.presupuesto for t in estado.trabajadores) / total_trabajadores
+    estado.sensibilidad_precio_medio = sum(t.sensibilidad_precio for t in estado.trabajadores) / total_trabajadores
+    estado.sensibilidad_calidad_medio = sum(t.sensibilidad_calidad for t in estado.trabajadores) / total_trabajadores
+    estado.sensibilidad_salario_medio = sum(t.sensibilidad_salario for t in estado.trabajadores) / total_trabajadores
+    estado.sensibilidad_satisfacción_medio = sum(t.sensibilidad_satisfacción for t in estado.trabajadores) / total_trabajadores
+    estado.productividad_medio_trabajadores = sum(t.productividad for t in estado.trabajadores) / total_trabajadores
+
+    estado.presupuesto_medio_empresas = sum(e.presupuesto for e in estado.empresas) / total_empresas
+    estado.calidad_medio = sum(e.calidad for e in estado.empresas) / total_empresas
+    estado.satisfacción_medio = sum(e.satisfacción for e in estado.empresas) / total_empresas
+    estado.productividad_medio_empresas = sum(e.productividad for e in estado.empresas) / total_empresas
+    estado.productividad_objetivo_medio = sum(e.productividad_objetivo for e in estado.empresas) / total_empresas
+    estado.tolerancia_medio = sum(e.tolerancia for e in estado.empresas) / total_empresas
 
     estado.estadisticas.empleo_formal.append(tasa_formal)
     estado.estadisticas.empleo_informal.append(tasa_informal)
@@ -63,3 +83,8 @@ def actualizar_estadisticas(estado):
     estado.estadisticas.satisfacción_media.append(float(satisfacción_media))
     estado.estadisticas.empresas_ingreso.append(float(total_ingreso_empresas))
     estado.estadisticas.empresas_gasto.append(float(total_gasto_empresas))
+
+    estado.salario_referencia = 0.95 * estado.salario_referencia + 0.05 * salario_medio
+    estado.salario_informal_referencia = 0.95 * estado.salario_informal_referencia + 0.05 * salario_informal_medio
+    estado.precio_referencia = 0.95 * estado.precio_referencia + 0.05 * precio_lista_medio
+    estado.poder_de_compra_referencia = 0.95 * estado.poder_de_compra_referencia + 0.05 * poder_de_compra_medio

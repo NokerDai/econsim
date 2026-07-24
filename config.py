@@ -48,12 +48,3 @@ class Config:
     reducción_precio: float = 0.99
     sensibilidad_precio: float = 1.0
     sensibilidad_calidad: float = 1.0
-
-    tasa_natalidad: float = 0.0000210 * 100
-    prob_inmigracion: float = 0.0000015 * 100
-    tasa_emigracion: float = 0.0000015 * 100
-    tasa_mortalidad: float = 0.0000210 * 100
-
-    tasa_creacion_empresas: float = 0.00000025 * 100
-    tasa_entrada_extranjeras: float = 0.00000015 * 100
-    tasa_relocalizacion_empresas: float = 0.00000040 * 100
