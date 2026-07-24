@@ -35,8 +35,8 @@ def demografía_y_firmas(estado):
         estado.empresas.append(nueva_empresa)
 
     for e in estado.empresas:
-        if (e.presupuesto < e.salario_informal and e.inventario == 0) or (e.días_sin_vender > 180 and rand.random < 0.10):
+        if (e.presupuesto < e.salario_informal and e.inventario == 0) or (e.días_sin_vender > 180 and rand.random() < 0.10):
             estado.empresas.remove(e)
     for t in estado.trabajadores:
-        if t.días_sin_comprar > 10 and rand.random < 0.10:
+        if t.días_sin_comprar > 10 and rand.random() < 0.10:
             estado.trabajadores.remove(e)
