@@ -55,6 +55,8 @@ def demografía_y_firmas(estado):
             nueva_empresa.productividad = estado.productividad_medio_empresas * rand.uniform(0.85, 1.15)
             nueva_empresa.productividad_objetivo = estado.productividad_objetivo_medio * rand.uniform(0.85, 1.15)
             nueva_empresa.tolerancia = estado.tolerancia_medio * rand.uniform(0.85, 1.15)
+            nueva_empresa.probabilidad_venta_esperada = min(estado.probabilidad_venta_esperada_medio * rand.uniform(0.85, 1.15), 1.0)
+            nueva_empresa.beneficio_esperado = estado.beneficio_esperado_medio * rand.uniform(0.85, 1.15)
             estado.empresas.append(nueva_empresa)
 
     estado.empresas = [

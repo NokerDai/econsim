@@ -73,6 +73,7 @@ def actualizar_estadisticas(estado):
     estado.productividad_medio_empresas = sum(e.productividad for e in estado.empresas) / total_empresas
     estado.productividad_objetivo_medio = sum(e.productividad_objetivo for e in estado.empresas) / total_empresas
     estado.tolerancia_medio = sum(e.tolerancia for e in estado.empresas) / total_empresas
+    estado.probabilidad_venta_esperada_medio = sum(e.probabilidad_venta_esperada for e in estado.empresas) / total_empresas
 
     estado.estadisticas.empleo_formal.append(tasa_formal)
     estado.estadisticas.empleo_informal.append(tasa_informal)
