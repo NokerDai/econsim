@@ -84,7 +84,7 @@ def actualizar_estadisticas(estado):
     estado.estadisticas.empresas_ingreso.append(float(total_ingreso_empresas))
     estado.estadisticas.empresas_gasto.append(float(total_gasto_empresas))
 
-    estado.salario_referencia = 0.95 * estado.salario_referencia + 0.05 * salario_medio
-    estado.salario_informal_referencia = 0.95 * estado.salario_informal_referencia + 0.05 * salario_informal_medio
-    estado.precio_referencia = 0.95 * estado.precio_referencia + 0.05 * precio_lista_medio
-    estado.poder_de_compra_referencia = 0.95 * estado.poder_de_compra_referencia + 0.05 * poder_de_compra_medio
+    estado.salario_referencia = 0.99 * estado.salario_referencia + 0.01 * salario_medio
+    estado.salario_informal_referencia = 0.99 * estado.salario_informal_referencia + 0.01 * salario_informal_medio
+    estado.precio_referencia = 0.99 * estado.precio_referencia + 0.01 * precio_lista_medio
+    estado.poder_de_compra_referencia = 0.99 * estado.poder_de_compra_referencia + 0.01 * poder_de_compra_medio
