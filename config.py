@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Config:
-    version_modelo: str = "v3"
+    version_modelo: str = "v4"
 
     # Simulación
     semilla: int = 0
@@ -30,7 +30,7 @@ class Config:
     salario_mínimo_automático_reducción: float = 0.9
     tasa_salario_mínimo: float = 0.3
     tasa_emisión: float = 0
-    mantenimiento_M0: str = "mixto"
+    mantenimiento_M0: str = "ventas"
     mantenimiento_M0_suavizado: int = 10
 
     # Parámetros del modelo laboral
