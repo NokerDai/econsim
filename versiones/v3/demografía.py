@@ -15,7 +15,7 @@ def demografía_y_firmas(estado):
     # Personas #
     ############
     if estado.poder_de_compra_medio > estado.poder_de_compra_referencia:
-        for _ in range(int(ancla_trabajadores)):
+        for _ in range(round(ancla_trabajadores)):
             nuevo_trabajador = Trabajador.crear_inicial(config, rand)
             nuevo_trabajador.presupuesto = estado.presupuesto_medio_trabajadores * rand.uniform(0.85, 1.15)
             nuevo_trabajador.sensibilidad_precio = estado.sensibilidad_precio_medio * rand.uniform(0.85, 1.15)
@@ -29,7 +29,7 @@ def demografía_y_firmas(estado):
     # Empresas #
     ############
     if estado.poder_de_compra_medio < estado.poder_de_compra_referencia:
-        for _ in range(int(ancla_empresas)):
+        for _ in range(round(ancla_empresas)):
             nueva_empresa = Empresa.crear_inicial(config, rand)
             nueva_empresa.presupuesto = estado.presupuesto_medio_empresas * rand.uniform(0.85, 1.15)
             nueva_empresa.precio = estado.estadisticas.precio_lista_medio[-1] * rand.uniform(0.85, 1.15)
